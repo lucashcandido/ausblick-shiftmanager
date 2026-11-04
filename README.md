@@ -10,6 +10,10 @@ Einfacher Schichtplaner und **Basis für die Schichtplanung aller Ausblick-Kunde
   - **Línea** – ein Tag als Zeitstrahl, eine Zeile pro Person, darunter Öffnungszeiten und Abdeckung (grün = Mindestbesetzung erfüllt, rot = fehlt, blau = jemand da). Er zeigt immer 0–24 Uhr; Öffnungs- und Betriebszeit sind darin farbig hinterlegt. In eine leere Zeile tippen legt dort eine Schicht an.
   - **Tabla** – Person × Tag mit Stundensumme. Am PC Schichten per **Drag & Drop** verschieben, mit Alt/Strg kopieren. Druckt im Querformat.
 - **Schicht anlegen:** Datum, Von/Bis (Nachtschicht automatisch ☾), Rolle, Mitarbeiter, Notiz. „Turnos típicos“ füllen mit einem Tipp. „Repetir también en“ für weitere Tage. Bestehende Schicht: Löschen oder Duplizieren.
+- **Personalgruppen** (z. B. Küche, Floor 1, Floor 2; Personal → Grupos oder Configuración):
+  - Jede Person ist in höchstens einer Gruppe. Zeitstrahl und Personalliste zeigen die Namen eingerahmt pro Gruppe, die Tabelle mit einer Kopfzeile je Gruppe. Leere Gruppen bleiben als Ziel sichtbar.
+  - **Drag & Drop:** Personen in eine andere Gruppe ziehen oder innerhalb der Gruppe umsortieren – im Zeitstrahl (am Namen), in der Tabelle (erste Spalte) und in der Personalliste. Maus: drücken und ziehen. Handy: kurz gedrückt halten, dann ziehen (normales Wischen scrollt weiter). Mit Rückgängig.
+  - Gruppen umbenennen, sortieren (↑ ↓) und löschen; wird eine Gruppe gelöscht, sind ihre Leute „Ohne Gruppe“.
 - **Öffnungs- und Betriebszeiten** (Configuración → Horario de apertura):
   - Pro Wochentag geöffnet von–bis oder geschlossen.
   - Dazu Vorbereitung vor Öffnung und Nachbereitung nach Schließung in Minuten; Betriebszeit = Öffnungszeit plus beides.
@@ -59,6 +63,7 @@ Sicherheit:
 |---|---|
 | `emp` | Mitarbeiter: `n`, `tel`, `pos` (IDs), `h` (Soll-Std./Woche), `notas` |
 | `pos` | Rolle: `n`, `col`, `o` |
+| `grp` | Personalgruppe: `n`, `o` (Reihenfolge); beim Mitarbeiter `g` (Gruppe) und `o` (Platz in der Gruppe) |
 | `tpl` | Typische Schicht: `n`, `a`, `b`, `pos` |
 | `need` | Mindestbesetzung: `pos` (leer = egal), `days` (0 = So … 6 = Sa), `a`, `b`, `n` |
 | `sh` | Schicht: `d`, `a`/`b` (`b ≤ a` = endet am Folgetag), `pos`, `emp` (leer = unbesetzt), `note`, `by` |
