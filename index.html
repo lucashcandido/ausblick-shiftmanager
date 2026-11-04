@@ -15,7 +15,8 @@
 <style>
 /* Ausblick – shift manager. The base for the shift planning of every customer app.
    Same build as ausblick-clientes: one file, data in a private GitHub repository (turnos.json),
-   token published encrypted (access.json) and opened with a 12-character code. */
+   token published encrypted (access.json) and opened with a 12-character code.
+   Staff see their own shifts through a separate team repository (plan copy + day-off requests). */
 :root{--bg:#f3f4f7;--card:#fff;--text:#171a21;--muted:#667085;--line:#e2e5eb;--accent:#1d4ed8;--accent-soft:#e3ebff;--in:#15803d;--in-soft:#dcf5e4;--out:#c62828;--out-soft:#fde4e4;--warn:#b45309;--warn-soft:#fdeed3;--vio:#7c3aed;--vio-soft:#ede5ff}
 @media (prefers-color-scheme: dark){:root{--bg:#0f1218;--card:#191d26;--text:#eef0f4;--muted:#98a2b3;--line:#2a303c;--accent:#6b93ff;--accent-soft:#1d2a4d;--in:#4ade80;--in-soft:#12301f;--out:#f87171;--out-soft:#3a1a1a;--warn:#fbbf24;--warn-soft:#3a2a0d;--vio:#b79bff;--vio-soft:#2a1f45}}
 *{box-sizing:border-box}
@@ -28,7 +29,7 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .logo{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
 .top h1{font-size:20px;margin:0;line-height:1.15;min-width:0;flex:1}
 .top .sub{display:block;font-size:14px;color:var(--muted);font-weight:500;overflow-wrap:anywhere}
-.icon{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;flex:none}
+.icon{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;flex:none;font-size:22px}
 .icon.add{background:var(--accent);border-color:var(--accent);color:#fff}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 .btn{border-radius:14px;padding:0 20px;min-height:52px;font-size:17px;font-weight:700;cursor:pointer;background:var(--card);border:1px solid var(--line)}
@@ -59,84 +60,137 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .pill i{width:9px;height:9px;border-radius:50%;background:var(--muted)}
 .pill.ok i{background:var(--in)} .pill.wait i{background:var(--warn)} .pill.err i{background:var(--out)}
 .empty{color:var(--muted);padding:14px 16px;background:var(--card);border:1px dashed var(--line);border-radius:14px}
-/* week navigation and toolbar */
-.weekbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+/* avatars: initials in a colour that belongs to the person */
+.av{width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:800;flex:none;background:var(--avb);color:var(--avt);letter-spacing:.02em}
+.av.sm{width:24px;height:24px;font-size:10px}
+.av.open{background:var(--warn-soft);color:var(--warn);border:1.5px dashed var(--warn)}
+/* week navigation (stays at the top while scrolling) */
+.stick{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0 2px;margin:0 -16px;padding-left:16px;padding-right:16px}
+.weekbar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .weekbar .wk{flex:1;text-align:center;font-weight:750;font-size:17px;min-width:0}
 .weekbar .wk small{display:block;color:var(--muted);font-weight:500;font-size:13px}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:10px}
+.strip button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:5px 0 6px;cursor:pointer;text-align:center;line-height:1.15}
+.strip button small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.strip button b{font-size:16px}
+.strip button i{display:block;height:4px;border-radius:2px;margin:5px 7px 0;background:var(--line)}
+.strip button.ok i{background:var(--in)} .strip button.w i{background:var(--warn)} .strip button.e i{background:var(--out)}
+.strip button.today{border-color:var(--accent)} .strip button.today b{color:var(--accent)}
+.strip button.sel{background:var(--accent-soft);border-color:var(--accent)}
+.strip button.past{opacity:.55}
 .tools{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .tools select{flex:1 1 160px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-size:15px;min-width:0}
 .seg{display:flex;gap:4px;flex:none} .seg button{padding:8px 12px}
 .stats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .stat{font-size:14px;font-weight:650;border-radius:999px;padding:4px 12px;background:var(--card);border:1px solid var(--line)}
 .stat.w{background:var(--warn-soft);color:var(--warn);border-color:transparent;cursor:pointer} .stat.e{background:var(--out-soft);color:var(--out);border-color:transparent;cursor:pointer}
+.stat.v{background:var(--vio-soft);color:var(--vio);border-color:transparent;cursor:pointer}
+.stat.on{outline:2px solid currentColor}
 /* day view */
 .days{display:grid;gap:10px}
-.day{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;scroll-margin-top:150px}
 .day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.day.past{opacity:.62}
 .dh{display:flex;align-items:center;gap:8px}
 .dh b{flex:1;font-size:16px} .dh span{color:var(--muted);font-size:13px}
 .dh button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:20px;line-height:1;flex:none}
 .shl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
-.sh{border:1px solid var(--line);border-left:5px solid var(--c,var(--accent));border-radius:12px;padding:8px 10px;cursor:pointer;display:flex;gap:10px;align-items:center}
-.sh:hover{border-color:var(--accent);border-left-color:var(--c,var(--accent))}
-.sh .tm{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
-.sh .tm small{display:block;color:var(--muted);font-weight:500;font-size:13px}
-.sh .who{flex:1;min-width:0;overflow-wrap:anywhere}
-.sh .who small{display:block;color:var(--muted);font-size:13px}
-.open{color:var(--warn);font-weight:700}
-.tag{display:inline-block;font-size:12px;font-weight:700;color:var(--c,var(--vio));background:color-mix(in srgb,var(--c,var(--vio)) 14%,transparent);border-radius:6px;padding:1px 7px}
+.sh{border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.sh:hover{border-color:var(--accent)}
+.sh.bad{border-color:var(--out)}
+.sh.open{border:1.5px dashed var(--warn)}
+.sh .who{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:650}
+.sh .who small{display:block;color:var(--muted);font-weight:500;font-size:14px;font-variant-numeric:tabular-nums}
+.sh .who .ow{color:var(--warn)}
+.tag{display:inline-block;font-size:12px;font-weight:700;color:var(--c,var(--vio));background:color-mix(in srgb,var(--c,var(--vio)) 14%,transparent);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.sh .tag{flex:none;align-self:flex-start}
 .wn{display:block;font-size:13px;font-weight:650;color:var(--out)}
+.wn.y{color:var(--warn)}
 .offl{font-size:14px;color:var(--muted);margin-top:6px} .offl b{font-weight:650}
+.offl .wsh{color:var(--vio)}
 .none{color:var(--muted);font-size:14px;margin:6px 0 0}
+/* timeline view */
+.line{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.lh{display:flex;align-items:center;gap:8px;margin-bottom:10px} .lh b{flex:1} .lh span{color:var(--muted);font-size:13px}
+.axis,.lrow,.cov{display:grid;grid-template-columns:76px 1fr;gap:8px;align-items:center}
+@media (min-width:700px){.axis,.lrow,.cov{grid-template-columns:150px 1fr}.gaps{margin-left:158px!important}}
+.axis div:last-child{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.lrow{margin-top:6px}
+.lname{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:650;min-width:0} .lname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{position:relative;height:34px;border-radius:8px;background:var(--bg);cursor:pointer;background-image:linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:25% 100%}
+.track.off{background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,var(--line) 6px,var(--line) 8px)}
+.track.wish{outline:1.5px dashed var(--vio)}
+.track .offt{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);pointer-events:none}
+.bar{position:absolute;top:4px;bottom:4px;border-radius:6px;background:color-mix(in srgb,var(--c,var(--accent)) 30%,var(--card));border:1.5px solid var(--c,var(--accent));font-size:12px;font-weight:700;padding:0 4px;overflow:hidden;white-space:nowrap;display:flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums}
+.bar.bad{outline:2px solid var(--out);outline-offset:1px}
+.bar.cl{border-left-style:dashed;border-top-left-radius:0;border-bottom-left-radius:0}
+.bar.cr{border-right-style:dashed;border-top-right-radius:0;border-bottom-right-radius:0}
+.lrow.openrow .track{outline:1.5px dashed var(--warn)}
+.cov{margin-top:12px} .cov .lname{font-size:12px;color:var(--muted);font-weight:600}
+.covbar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg)}
+.covbar i{display:block;height:100%}
+.covbar .g{background:var(--in)} .covbar .r{background:var(--out)} .covbar .a{background:color-mix(in srgb,var(--accent) 45%,transparent)}
+.gaps{margin:8px 0 0 84px;font-size:13px;color:var(--out);font-weight:650}
 /* table view */
 .tblwrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;-webkit-overflow-scrolling:touch}
 table.grid{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
 .grid th,.grid td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px;vertical-align:top;text-align:left}
 .grid th{font-size:13px;color:var(--muted);font-weight:700;background:var(--bg);white-space:nowrap}
 .grid th.today{color:var(--accent)}
-.grid td:first-child,.grid th:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:120px;font-weight:700}
+.grid th.past,.grid td.past{background:color-mix(in srgb,var(--bg) 60%,transparent)}
+.grid td:first-child,.grid th:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:130px;font-weight:700}
+.grid td:first-child .nm{display:flex;align-items:center;gap:6px}
 .grid th:first-child{background:var(--bg)}
 .grid td.cell{cursor:pointer;min-width:92px;height:52px}
-.grid td.cell:hover{background:var(--accent-soft)}
+.grid td.cell:hover,.grid td.cell.drop{background:var(--accent-soft)}
 .grid td.sum{font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
 .grid td.sum.over{color:var(--out)}
-.cs{display:block;width:100%;text-align:left;border:0;border-left:4px solid var(--c,var(--accent));background:color-mix(in srgb,var(--c,var(--accent)) 12%,transparent);border-radius:6px;padding:3px 6px;margin-bottom:3px;cursor:pointer;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.cs{display:block;width:100%;text-align:left;border:0;border-left:4px solid var(--c,var(--accent));background:color-mix(in srgb,var(--c,var(--accent)) 12%,transparent);border-radius:0 6px 6px 0;padding:3px 6px;margin-bottom:3px;cursor:pointer;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.cs[draggable=true]{cursor:grab}
 .cs small{display:block;font-weight:500;color:var(--muted)}
 .cs.bad{outline:2px solid var(--out)}
-.offc{display:block;font-size:12px;font-weight:700;color:var(--muted);background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,transparent 6px,transparent 12px);border-radius:6px;padding:3px 6px}
+.offc{display:block;font-size:12px;font-weight:700;color:var(--muted);background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,transparent 6px,transparent 12px);border-radius:6px;padding:3px 6px;margin-bottom:3px}
+.offc.wsh{color:var(--vio);background:var(--vio-soft)}
 .grid tr.openrow td:first-child{color:var(--warn)}
 /* people */
 .list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer}
 .item:hover{border-color:var(--accent)}
-.ih{display:flex;align-items:flex-start;gap:10px}
+.ih{display:flex;align-items:center;gap:12px}
 .iname{flex:1;min-width:0;font-weight:700;font-size:18px;line-height:1.25;overflow-wrap:anywhere}
 .iname .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .hrs{flex:none;font-weight:750;font-variant-numeric:tabular-nums;text-align:right}
 .hrs small{display:block;color:var(--muted);font-weight:500;font-size:13px}
 .hrs.over{color:var(--out)}
-.meta{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px;font-size:15px;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px;font-size:15px;color:var(--muted);padding-left:44px}
 .meta a{text-decoration:none}
+.meta .plus{color:var(--in);font-weight:650} .meta .minus{color:var(--warn);font-weight:650}
 /* windows */
 .ov{position:fixed;inset:0;background:rgba(10,14,22,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
 .sheet{background:var(--card);border-radius:20px;padding:20px;width:100%;max-width:560px;max-height:calc(100vh - 32px);overflow:auto}
 .sheet h3{margin:0 0 14px;font-size:20px}
 .row2{display:flex;gap:10px;flex-wrap:wrap} .row2 .btn{flex:1}
 .quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.quick button{border:1px solid var(--line);border-left:4px solid var(--c,var(--accent));border-radius:10px;background:var(--card);padding:6px 10px;cursor:pointer;font-size:14px;font-weight:700}
+.quick button{border:1px solid var(--line);border-left:4px solid var(--c,var(--accent));border-radius:0 10px 10px 0;background:var(--card);padding:6px 10px;cursor:pointer;font-size:14px;font-weight:700}
 .quick button small{font-weight:500;color:var(--muted);margin-left:4px}
 .wd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .wd button{border:2px solid var(--line);border-radius:10px;background:var(--card);padding:8px 0;font-weight:700;cursor:pointer;font-size:14px}
 .wd button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .wd button:disabled{opacity:.35;cursor:default}
 .rows{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
-.rows li{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:6px 8px}
+.rows li{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;flex-wrap:wrap}
 .rows li .grow{flex:1;min-width:0;overflow-wrap:anywhere}
 .rows li small{color:var(--muted)}
 .x{border:0;background:none;color:var(--out);font-size:20px;cursor:pointer;width:34px;height:34px;border-radius:8px;flex:none}
 .sw{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);background:var(--c);cursor:pointer;flex:none}
 .addrow{display:flex;gap:8px;flex-wrap:wrap} .addrow .inp{flex:1 1 140px;min-width:0;width:auto} .addrow input[type=time]{flex:0 0 110px}
-.addrow select.inp{flex:0 1 150px}
+.addrow select.inp{flex:0 1 150px} .addrow input[type=number]{flex:0 0 80px}
+.acct{display:flex;align-items:center;gap:8px;margin-bottom:6px} .acct b{flex:1;text-align:center}
+.acct button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.acctv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center} .acctv div{background:var(--bg);border-radius:10px;padding:8px 4px;font-size:13px;color:var(--muted)} .acctv b{display:block;font-size:18px;color:var(--text)}
+.acctv .plus b{color:var(--in)} .acctv .minus b{color:var(--warn)}
+.badge{flex:none;font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.b-p{background:var(--vio-soft);color:var(--vio)} .b-ok{background:var(--in-soft);color:var(--in)} .b-no{background:var(--out-soft);color:var(--out)}
 hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#171a21;color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:14px;align-items:center;z-index:60;width:max-content;max-width:calc(100% - 32px);font-size:16px}
 .toast button{background:none;border:0;color:#9db8ff;font-weight:700;cursor:pointer;font-size:16px}
@@ -149,17 +203,19 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .presets button{border:2px solid var(--line);border-radius:12px;background:var(--card);padding:12px;font-weight:700;cursor:pointer;text-align:left}
 .presets button small{display:block;font-weight:500;color:var(--muted);font-size:13px;margin-top:2px}
 .presets button:hover{border-color:var(--accent)}
+.dhint{color:var(--muted);font-size:13px;margin:8px 2px 0}
+@media (hover:none){.dhint{display:none}}
 .printhead{display:none}
 @media print{
   @page{size:landscape;margin:10mm}
   body{background:#fff;color:#000;font-size:12px}
   main{max-width:none;padding:0}
-  .top,.tools,.weekbar,.stats,#views,#bottom,.toast,#layer{display:none!important}
+  .top,.tools,.stick,.stats,#views,#bottom,.toast,#layer,.dhint{display:none!important}
   .printhead{display:block;font-size:18px;font-weight:800;margin-bottom:8px}
   .tblwrap{border:0;overflow:visible}
   table.grid{min-width:0}
   .grid td:first-child,.grid th:first-child{position:static}
-  .cs{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .cs,.av{print-color-adjust:exact;-webkit-print-color-adjust:exact}
 }
 </style>
 </head>
@@ -177,6 +233,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div id="mToken" hidden>
         <div class="field"><label for="sToken" data-t="token"></label><input id="sToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"><p class="hint" data-th="token_hint"></p></div>
         <div class="field"><label for="sRepo" data-t="repo"></label><input id="sRepo" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="sTeam" data-t="team"></label><input id="sTeam" autocomplete="off" spellcheck="false"><p class="hint" data-t="team_hint"></p></div>
       </div>
       <button class="btn primary wide" id="sGo" type="button" data-t="go"></button>
       <button class="btn wide" id="sBack" type="button" hidden style="margin-top:10px" data-t="back"></button>
@@ -184,20 +241,23 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     </div>
   </section>
 
-  <!-- the plan -->
+  <!-- the plan (manager) -->
   <section id="app" hidden>
     <div class="top">
       <div class="logo">A</div>
-      <h1><span id="bizName"></span><span class="sub"><span class="pill" id="sync"><i></i><span>—</span></span></span></h1>
+      <h1><span id="bizName"></span><span class="sub"><span class="pill" data-sync><i></i><span>—</span></span></span></h1>
       <button class="icon add" id="add" type="button" data-ta="new_shift"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
       <button class="icon" id="gear" type="button" data-ta="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     </div>
     <div class="views" id="views"></div>
     <div id="planView">
-      <div class="weekbar">
-        <button class="icon" id="prev" type="button" data-ta="prev_week">‹</button>
-        <div class="wk" id="wk"></div>
-        <button class="icon" id="next" type="button" data-ta="next_week">›</button>
+      <div class="stick">
+        <div class="weekbar">
+          <button class="icon" id="prev" type="button" data-ta="prev_week">‹</button>
+          <div class="wk" id="wk"></div>
+          <button class="icon" id="next" type="button" data-ta="next_week">›</button>
+        </div>
+        <div class="strip" id="strip"></div>
       </div>
       <div class="tools">
         <select id="who" data-ta="show"></select>
@@ -214,25 +274,46 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <ul class="list" id="people"></ul>
     </div>
   </section>
+
+  <!-- my shifts (staff) -->
+  <section id="staff" hidden>
+    <div class="top">
+      <div class="logo">A</div>
+      <h1><span id="stTitle"></span><span class="sub"><span class="pill" data-sync><i></i><span>—</span></span></span></h1>
+      <button class="icon" id="stGear" type="button" data-ta="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+    <div class="stick">
+      <div class="weekbar">
+        <button class="icon" id="stPrev" type="button" data-ta="prev_week">‹</button>
+        <div class="wk" id="stWk"></div>
+        <button class="icon" id="stNext" type="button" data-ta="next_week">›</button>
+      </div>
+    </div>
+    <div id="stBody"></div>
+  </section>
 </main>
 <div id="layer"></div>
 <script>
 (function(){
 'use strict';
 var $ = function(s, el){ return (el || document).querySelector(s); };
+var $$ = function(s, el){ return [].slice.call((el || document).querySelectorAll(s)); };
 
 /* ---------- per-customer settings ----------
    To give a customer their own copy: change these lines (repositories, storage prefix, branch model).
    Everything else in the file stays the same. */
 var APP = {
-  repo: 'lucashcandido/ausblick-shiftmanager',          /* public repository with this file and access.json */
-  data: 'lucashcandido/ausblick-shiftmanager-data',     /* private repository with turnos.json */
+  repo: 'lucashcandido/ausblick-shiftmanager',          /* public repository with this file, access.json and access-staff.json */
+  data: 'lucashcandido/ausblick-shiftmanager-data',     /* private repository with turnos.json (the plan) */
+  team: 'lucashcandido/ausblick-shiftmanager-team',     /* private repository for staff: plan.json (copy) and wishes.json */
   file: 'turnos.json',
   prefix: 'as',                                         /* storage prefix on the device, different per app */
   preset: ''                                            /* branch model offered first: parking, hair, food, retail, general */
 };
 var ACCESS_URL = 'https://api.github.com/repos/' + APP.repo + '/contents/access.json';
-var KEY = { cfg: APP.prefix + '.cfg.v1', data: APP.prefix + '.data.v1', dirty: APP.prefix + '.dirty.v1', lang: APP.prefix + '.lang', ui: APP.prefix + '.ui' };
+var STAFF_URL = 'https://api.github.com/repos/' + APP.repo + '/contents/access-staff.json';
+var KEY = { cfg: APP.prefix + '.cfg.v1', data: APP.prefix + '.data.v1', dirty: APP.prefix + '.dirty.v1', lang: APP.prefix + '.lang', ui: APP.prefix + '.ui',
+  wish: APP.prefix + '.wish.v1', dirtyW: APP.prefix + '.dirtyw.v1', plan: APP.prefix + '.plan.v1', pub: APP.prefix + '.pub.v1' };
 var store = {
   get: function(k, d){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set: function(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
@@ -243,8 +324,9 @@ var LANGS = [['es', 'Español'], ['en', 'English'], ['de', 'Deutsch']];
 var TX = {
 es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo', tab_code:'Tengo el código', tab_token:'Primera vez (token)',
   name:'Tu nombre', name_hint:'Se guarda en cada cambio, así sabemos quién armó qué turno.', code:'Código de acceso',
-  code_hint:'Lo tiene quien configuró la app por primera vez (Configuración → Compartir acceso).', token:'Token de GitHub',
-  token_hint:'Fine-grained token con acceso <b>solo</b> al repositorio de datos, permiso «Contents: Read and write».', repo:'Repositorio de datos',
+  code_hint:'Te lo da quien administra los turnos (sirve el código del equipo o el del personal).', token:'Token de GitHub',
+  token_hint:'Fine-grained token con acceso <b>solo</b> al repositorio de datos (y al del equipo, si lo usás), permiso «Contents: Read and write».', repo:'Repositorio de datos',
+  team:'Repositorio del equipo (opcional)', team_hint:'Para «Mis turnos» del personal. Vacío = sin acceso para el personal.',
   go:'Preparar dispositivo', back:'Volver sin cambios', settings:'Configuración',
   err_name:'Escribí tu nombre.', err_code12:'Escribí el código completo (12 letras y números).', err_token:'Pegá el token de GitHub.',
   err_repo:'Repositorio: usuario/nombre, por ejemplo {0}.', preparing:'Preparando…', e_code:'Código incorrecto.',
@@ -255,15 +337,16 @@ es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo'
   share_hint:'Para que el código funcione, el archivo <b>access.json</b> tiene que estar en el repositorio de la app ({0}). Contiene el token cifrado: sin el código no sirve.',
   dl_access:'Descargar access.json', done:'Listo',
   v_plan:'Plan', v_people:'Personal', prev_week:'Semana anterior', next_week:'Semana siguiente', week_n:'Semana {0}', today_btn:'Hoy', show:'Mostrar',
-  m_days:'Días', m_table:'Tabla', all_people:'Todo el personal', only_open:'Sin asignar', new_shift:'Nuevo turno', new_emp:'Nuevo empleado',
-  st_shifts:'{0} turnos', st_hours:'{0} h', st_open:'{0} sin asignar', st_issues:'{0} conflictos',
-  no_shifts:'Sin turnos.', open:'Sin asignar', removed:'(eliminado)', h:'h', total:'Total',
-  w_overlap:'Se superpone con otro turno de {0}', w_absent:'{0} está ausente ({1})', w_role:'{0} no tiene el puesto {1}', w_hours:'{0} supera sus horas ({1} de {2})',
+  m_days:'Días', m_line:'Línea', m_table:'Tabla', all_people:'Todo el personal', only_open:'Sin asignar', new_shift:'Nuevo turno', new_emp:'Nuevo empleado',
+  st_shifts:'{0} turnos', st_hours:'{0} h', st_open:'{0} sin asignar', st_issues:'{0} conflictos', st_gaps:'{0} faltantes', st_wishes:'{0} pedidos',
+  no_shifts:'Sin turnos.', open:'Sin asignar', removed:'(eliminado)', h:'h', total:'Total', cover:'Cobertura', anyone:'personal',
+  w_overlap:'Se superpone con otro turno de {0}', w_absent:'{0} está ausente ({1})', w_role:'{0} no tiene el puesto {1}', w_rest:'{0}: solo {1} h de descanso',
+  w_wish:'{0} pidió franco ese día', w_need:'Falta {0} {1} ({2})',
   copy_week:'Copiar semana anterior', copy_none:'La semana anterior no tiene turnos.', copied:'{0} turnos copiados', copy_skip:'{0} ya existían',
-  print:'Imprimir semana',
+  print:'Imprimir semana', wa_all:'Enviar plan (WhatsApp)', wa_all_hi:'Turnos {0} – {1}', moved:'Turno movido.', dcopied:'Turno copiado.', drag_hint:'Arrastrá un turno a otra celda para moverlo (con Alt o Ctrl: copiar).',
   start_title:'Empecemos', start_text:'Elegí el rubro: se cargan puestos y turnos típicos. Después podés cambiar todo.', start_emp:'Después cargá el personal.',
   f_date:'Fecha', f_from:'Desde', f_to:'Hasta', f_pos:'Puesto', f_emp:'Empleado', f_note:'Nota', ph_note:'Ej. abrir local, cubre a Juan…', no_pos:'Sin puesto',
-  tpls:'Turnos típicos', repeat:'Repetir también en', next_day:'termina al día siguiente', busy:'ocupado {0}', absent_s:'ausente',
+  tpls:'Turnos típicos', repeat:'Repetir también en', next_day:'termina al día siguiente', busy:'ocupado {0}', absent_s:'ausente', wish_s:'pidió franco',
   err_time:'Poné hora de inicio y de fin (distintas).', delete:'Eliminar', cancel:'Cancelar', save:'Guardar', duplicate:'Duplicar',
   saved:'Guardado.', added:'{0} agregado.', deleted:'{0} eliminado.', undo:'Deshacer', shift_added:'Turno agregado.', shifts_added:'{0} turnos agregados.', shift_deleted:'Turno eliminado.',
   e_name:'Nombre y apellido', e_tel:'Teléfono', e_pos:'Puestos', e_pos_hint:'Si no marcás ninguno, puede cubrir cualquier puesto.', e_hours:'Horas por semana (objetivo)', ph_hours:'Ej. 40',
@@ -271,18 +354,28 @@ es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo'
   absences:'Ausencias', no_abs:'Sin ausencias cargadas.', ab_vac:'Vacaciones', ab_sick:'Enfermedad', ab_off:'Franco / otro', ab_add:'Agregar ausencia', ab_err:'Elegí desde y hasta.',
   this_week:'esta semana', of_h:'de {0} h', send_wa:'Enviar horario por WhatsApp', wa_hi:'Hola {0}, tus turnos de la semana {1}:', wa_none:'Hola {0}, no tenés turnos en la semana {1}.',
   emp_shifts_left:'{0} tiene turnos cargados. Quedan como «sin asignar».', no_people:'Todavía no hay personal. Tocá «Nuevo empleado».',
-  s_biz:'Nombre del negocio', ph_biz:'Ej. Cochera Centro', s_ws:'La semana empieza', mon:'Lunes', sun:'Domingo',
-  s_pos:'Puestos y turnos típicos', s_pos_hint:'Puestos = áreas o tareas (caja, cocina…). Turnos típicos = horarios que se repiten, para cargar con un toque.',
+  acct:'Cuenta de horas', a_plan:'Trabajadas', a_goal:'Objetivo', a_bal:'Saldo', acct_hint:'Objetivo = horas por semana ÷ 7 por día; vacaciones y enfermedad no cuentan.',
+  s_biz:'Nombre del negocio', ph_biz:'Ej. Cochera Centro', s_ws:'La semana empieza', mon:'Lunes', sun:'Domingo', s_rest:'Descanso mínimo entre turnos (horas)', s_rest_hint:'0 = no controlar.',
+  s_pos:'Puestos, turnos típicos y mínimos', s_pos_hint:'Puestos = áreas o tareas (caja, cocina…). Turnos típicos = horarios que se repiten, para cargar con un toque.',
   pos_list:'Puestos', ph_pos:'Nuevo puesto', tpl_list:'Turnos típicos', ph_tpl:'Nombre (ej. Mañana)', add_btn:'Agregar', preset_apply:'Cargar modelo de rubro', preset_done:'Modelo «{0}» cargado.',
-  g_share:'Compartir acceso (código)', g_export:'Exportar (CSV para Excel)', g_sync:'Sincronizar ahora', g_setup:'Cambiar nombre o acceso', close:'Cerrar',
+  needs:'Mínimo de personal', needs_hint:'Cuántas personas tienen que estar como mínimo. La app marca lo que falta.', need_any:'Cualquier puesto', ph_count:'Cant.', err_need:'Elegí días, horario y cantidad.',
+  g_share:'Compartir acceso (código)', g_staff:'Acceso para el personal', g_export:'Exportar (CSV para Excel)', g_sync:'Sincronizar ahora', g_setup:'Cambiar nombre o acceso', close:'Cerrar',
   dev_of:'Dispositivo de <b>{0}</b>', data_in:'Datos en {0}', language:'Idioma',
   ex_title:'Exportar', ex_from:'Desde', ex_to:'Hasta', ex_shifts:'Turnos (CSV)', ex_hours:'Horas por persona (CSV)',
-  csv_sh:['Fecha', 'Día', 'Desde', 'Hasta', 'Horas', 'Puesto', 'Empleado', 'Nota'], csv_h:['Empleado', 'Turnos', 'Horas', 'Ausencias (días)'],
-  s_saving:'Guardando…', s_saved:'Guardado {0}', s_expired:'Token vencido: hay que renovarlo', s_later:'Sin conexión – se guarda después', s_offline:'Sin conexión', s_error:'Error {0} – tocá para ver', s_later_err:'Error {0} – no se guardó', err_title:'Problema de sincronización', err_retry:'Reintentar', err_write:'El token puede leer pero no guardar. En GitHub → Settings → Developer settings → Fine-grained tokens → Edit, poné «Contents» en «Read and write» para el repositorio de datos. El token sigue igual; después tocá Reintentar.' },
+  csv_sh:['Fecha', 'Día', 'Desde', 'Hasta', 'Horas', 'Puesto', 'Empleado', 'Nota'], csv_h:['Empleado', 'Turnos', 'Horas', 'Objetivo', 'Saldo', 'Ausencias (días)'],
+  wishes:'Pedidos de franco', no_wishes:'No hay pedidos.', accept:'Aceptar', decline:'Rechazar', w_p:'Pendiente', w_ok:'Aceptado', w_no:'Rechazado', wants_off:'{0} pide franco', wish_from:'pedido de {0}',
+  staff_need_team:'Primero hace falta el repositorio del equipo: Configuración → Cambiar nombre o acceso → Primera vez (token), con el repositorio del equipo completado. El token tiene que llegar a los dos repositorios.',
+  staff_token:'Token del personal', staff_token_hint:'Fine-grained token con acceso <b>solo</b> al repositorio del equipo ({0}), «Contents: Read and write». Con él no se puede ver ni cambiar el plan real, ni teléfonos ni notas.',
+  staff_bad:'Este token también llega al repositorio de datos. Creá uno que solo tenga el repositorio del equipo.', staff_make:'Crear código para el personal', staff_code:'Código para el personal:',
+  staff_share_hint:'Subí <b>access-staff.json</b> al repositorio de la app ({0}). Cada persona abre la app, pone su nombre y este código, y ve solo sus turnos.', dl_staff:'Descargar access-staff.json',
+  my_title:'Mis turnos', who_am_i:'¿Quién sos?', pick_hint:'Elegí tu nombre de la lista del equipo.', with:'Con: {0}', you_off:'Ausente', my_none:'No tenés turnos esta semana.', my_total:'{0} h esta semana',
+  wish_btn:'Pedir franco', wish_note:'Motivo (opcional)', wish_sent:'Pedido enviado.', wish_cancel:'Retirar', my_wishes:'Mis pedidos', plan_wait:'Cargando el plan…', plan_none:'Todavía no hay plan publicado.', g_who:'Cambiar de persona',
+  s_saving:'Guardando…', s_saved:'Guardado {0}', s_expired:'Token vencido: hay que renovarlo', s_later:'Sin conexión – se guarda después', s_offline:'Sin conexión', s_error:'Error {0} – tocá para ver', s_later_err:'Error {0} – no se guardó', err_title:'Problema de sincronización', err_retry:'Reintentar', err_write:'El token puede leer pero no guardar. En GitHub → Settings → Developer settings → Fine-grained tokens → Edit, poné «Contents» en «Read and write» para el repositorio. El token sigue igual; después tocá Reintentar.' },
 en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have the code', tab_token:'First time (token)',
   name:'Your name', name_hint:'Saved with every change, so we know who planned which shift.', code:'Access code',
-  code_hint:'Whoever set up the app first has it (Settings → Share access).', token:'GitHub token',
-  token_hint:'Fine-grained token with access <b>only</b> to the data repository, permission “Contents: Read and write”.', repo:'Data repository',
+  code_hint:'You get it from whoever manages the shifts (the team code or the staff code both work).', token:'GitHub token',
+  token_hint:'Fine-grained token with access <b>only</b> to the data repository (and the team one, if used), permission “Contents: Read and write”.', repo:'Data repository',
+  team:'Team repository (optional)', team_hint:'For the staff’s “My shifts”. Empty = no staff access.',
   go:'Set up device', back:'Back without changes', settings:'Settings',
   err_name:'Enter your name.', err_code12:'Enter the full code (12 letters and numbers).', err_token:'Paste the GitHub token.',
   err_repo:'Repository: user/name, for example {0}.', preparing:'Setting up…', e_code:'Wrong code.',
@@ -293,15 +386,16 @@ en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have
   share_hint:'For the code to work, the file <b>access.json</b> must be in the app repository ({0}). It contains the encrypted token: without the code it is useless.',
   dl_access:'Download access.json', done:'Done',
   v_plan:'Plan', v_people:'Staff', prev_week:'Previous week', next_week:'Next week', week_n:'Week {0}', today_btn:'Today', show:'Show',
-  m_days:'Days', m_table:'Table', all_people:'All staff', only_open:'Unassigned', new_shift:'New shift', new_emp:'New employee',
-  st_shifts:'{0} shifts', st_hours:'{0} h', st_open:'{0} unassigned', st_issues:'{0} conflicts',
-  no_shifts:'No shifts.', open:'Unassigned', removed:'(removed)', h:'h', total:'Total',
-  w_overlap:'Overlaps another shift of {0}', w_absent:'{0} is absent ({1})', w_role:'{0} doesn’t have the role {1}', w_hours:'{0} is over their hours ({1} of {2})',
+  m_days:'Days', m_line:'Timeline', m_table:'Table', all_people:'All staff', only_open:'Unassigned', new_shift:'New shift', new_emp:'New employee',
+  st_shifts:'{0} shifts', st_hours:'{0} h', st_open:'{0} unassigned', st_issues:'{0} conflicts', st_gaps:'{0} gaps', st_wishes:'{0} requests',
+  no_shifts:'No shifts.', open:'Unassigned', removed:'(removed)', h:'h', total:'Total', cover:'Coverage', anyone:'staff',
+  w_overlap:'Overlaps another shift of {0}', w_absent:'{0} is absent ({1})', w_role:'{0} doesn’t have the role {1}', w_rest:'{0}: only {1} h rest',
+  w_wish:'{0} asked for that day off', w_need:'Missing {0} {1} ({2})',
   copy_week:'Copy previous week', copy_none:'The previous week has no shifts.', copied:'{0} shifts copied', copy_skip:'{0} already existed',
-  print:'Print week',
+  print:'Print week', wa_all:'Send plan (WhatsApp)', wa_all_hi:'Shifts {0} – {1}', moved:'Shift moved.', dcopied:'Shift copied.', drag_hint:'Drag a shift to another cell to move it (hold Alt or Ctrl to copy).',
   start_title:'Let’s start', start_text:'Pick the business type: typical roles and shifts get added. You can change everything later.', start_emp:'Then add the staff.',
   f_date:'Date', f_from:'From', f_to:'To', f_pos:'Role', f_emp:'Employee', f_note:'Note', ph_note:'E.g. opens the shop, covers for Juan…', no_pos:'No role',
-  tpls:'Typical shifts', repeat:'Also repeat on', next_day:'ends the next day', busy:'busy {0}', absent_s:'absent',
+  tpls:'Typical shifts', repeat:'Also repeat on', next_day:'ends the next day', busy:'busy {0}', absent_s:'absent', wish_s:'asked for time off',
   err_time:'Enter a start and an end time (different).', delete:'Delete', cancel:'Cancel', save:'Save', duplicate:'Duplicate',
   saved:'Saved.', added:'{0} added.', deleted:'{0} deleted.', undo:'Undo', shift_added:'Shift added.', shifts_added:'{0} shifts added.', shift_deleted:'Shift deleted.',
   e_name:'Full name', e_tel:'Phone', e_pos:'Roles', e_pos_hint:'If none is ticked, they can cover any role.', e_hours:'Hours per week (target)', ph_hours:'E.g. 40',
@@ -309,18 +403,28 @@ en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have
   absences:'Absences', no_abs:'No absences entered.', ab_vac:'Vacation', ab_sick:'Sick', ab_off:'Day off / other', ab_add:'Add absence', ab_err:'Choose from and to.',
   this_week:'this week', of_h:'of {0} h', send_wa:'Send schedule via WhatsApp', wa_hi:'Hi {0}, your shifts for the week {1}:', wa_none:'Hi {0}, you have no shifts in the week {1}.',
   emp_shifts_left:'{0} has shifts planned. They stay as “unassigned”.', no_people:'No staff yet. Tap “New employee”.',
-  s_biz:'Business name', ph_biz:'E.g. Downtown Parking', s_ws:'Week starts on', mon:'Monday', sun:'Sunday',
-  s_pos:'Roles and typical shifts', s_pos_hint:'Roles = areas or tasks (cashier, kitchen…). Typical shifts = recurring times, to add with one tap.',
+  acct:'Hours balance', a_plan:'Worked', a_goal:'Target', a_bal:'Balance', acct_hint:'Target = hours per week ÷ 7 per day; vacation and sick days don’t count.',
+  s_biz:'Business name', ph_biz:'E.g. Downtown Parking', s_ws:'Week starts on', mon:'Monday', sun:'Sunday', s_rest:'Minimum rest between shifts (hours)', s_rest_hint:'0 = don’t check.',
+  s_pos:'Roles, typical shifts and minimums', s_pos_hint:'Roles = areas or tasks (cashier, kitchen…). Typical shifts = recurring times, to add with one tap.',
   pos_list:'Roles', ph_pos:'New role', tpl_list:'Typical shifts', ph_tpl:'Name (e.g. Morning)', add_btn:'Add', preset_apply:'Load business type', preset_done:'Type “{0}” loaded.',
-  g_share:'Share access (code)', g_export:'Export (CSV for Excel)', g_sync:'Sync now', g_setup:'Change name or access', close:'Close',
+  needs:'Minimum staffing', needs_hint:'How many people must be there at least. The app marks what’s missing.', need_any:'Any role', ph_count:'No.', err_need:'Choose days, times and a number.',
+  g_share:'Share access (code)', g_staff:'Staff access', g_export:'Export (CSV for Excel)', g_sync:'Sync now', g_setup:'Change name or access', close:'Close',
   dev_of:'Device of <b>{0}</b>', data_in:'Data in {0}', language:'Language',
   ex_title:'Export', ex_from:'From', ex_to:'To', ex_shifts:'Shifts (CSV)', ex_hours:'Hours per person (CSV)',
-  csv_sh:['Date', 'Day', 'From', 'To', 'Hours', 'Role', 'Employee', 'Note'], csv_h:['Employee', 'Shifts', 'Hours', 'Absence (days)'],
-  s_saving:'Saving…', s_saved:'Saved {0}', s_expired:'Token expired: it needs renewing', s_later:'Offline – will save later', s_offline:'Offline', s_error:'Error {0} – tap for details', s_later_err:'Error {0} – not saved', err_title:'Sync problem', err_retry:'Try again', err_write:'The token can read but not save. On GitHub → Settings → Developer settings → Fine-grained tokens → Edit, set “Contents” to “Read and write” for the data repository. The token stays the same; then tap Try again.' },
+  csv_sh:['Date', 'Day', 'From', 'To', 'Hours', 'Role', 'Employee', 'Note'], csv_h:['Employee', 'Shifts', 'Hours', 'Target', 'Balance', 'Absence (days)'],
+  wishes:'Day-off requests', no_wishes:'No requests.', accept:'Approve', decline:'Decline', w_p:'Pending', w_ok:'Approved', w_no:'Declined', wants_off:'{0} asks for time off', wish_from:'request by {0}',
+  staff_need_team:'The team repository is needed first: Settings → Change name or access → First time (token), with the team repository filled in. The token has to reach both repositories.',
+  staff_token:'Staff token', staff_token_hint:'Fine-grained token with access <b>only</b> to the team repository ({0}), “Contents: Read and write”. It can’t see or change the real plan, phone numbers or notes.',
+  staff_bad:'This token also reaches the data repository. Create one that only has the team repository.', staff_make:'Create staff code', staff_code:'Code for the staff:',
+  staff_share_hint:'Upload <b>access-staff.json</b> to the app repository ({0}). Everyone opens the app, enters their name and this code, and sees only their own shifts.', dl_staff:'Download access-staff.json',
+  my_title:'My shifts', who_am_i:'Who are you?', pick_hint:'Pick your name from the team list.', with:'With: {0}', you_off:'Absent', my_none:'You have no shifts this week.', my_total:'{0} h this week',
+  wish_btn:'Request day off', wish_note:'Reason (optional)', wish_sent:'Request sent.', wish_cancel:'Withdraw', my_wishes:'My requests', plan_wait:'Loading the plan…', plan_none:'No plan published yet.', g_who:'Switch person',
+  s_saving:'Saving…', s_saved:'Saved {0}', s_expired:'Token expired: it needs renewing', s_later:'Offline – will save later', s_offline:'Offline', s_error:'Error {0} – tap for details', s_later_err:'Error {0} – not saved', err_title:'Sync problem', err_retry:'Try again', err_write:'The token can read but not save. On GitHub → Settings → Developer settings → Fine-grained tokens → Edit, set “Contents” to “Read and write” for the repository. The token stays the same; then tap Try again.' },
 de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_code:'Ich habe den Code', tab_token:'Erstes Mal (Token)',
   name:'Dein Name', name_hint:'Wird bei jeder Änderung gespeichert, damit wir wissen, wer welche Schicht geplant hat.', code:'Zugangscode',
-  code_hint:'Hat, wer die App zuerst eingerichtet hat (Einstellungen → Zugang teilen).', token:'GitHub-Token',
-  token_hint:'Fine-grained Token mit Zugriff <b>nur</b> auf das Daten-Repository, Berechtigung „Contents: Read and write“.', repo:'Daten-Repository',
+  code_hint:'Bekommst du von der Person, die die Schichten plant (Team-Code oder Mitarbeiter-Code).', token:'GitHub-Token',
+  token_hint:'Fine-grained Token mit Zugriff <b>nur</b> auf das Daten-Repository (und das Team-Repository, falls genutzt), Berechtigung „Contents: Read and write“.', repo:'Daten-Repository',
+  team:'Team-Repository (optional)', team_hint:'Für „Meine Schichten“ der Mitarbeitenden. Leer = kein Mitarbeiter-Zugang.',
   go:'Gerät einrichten', back:'Zurück ohne Änderungen', settings:'Einstellungen',
   err_name:'Gib deinen Namen ein.', err_code12:'Gib den ganzen Code ein (12 Buchstaben und Zahlen).', err_token:'Füge den GitHub-Token ein.',
   err_repo:'Repository: Nutzer/Name, zum Beispiel {0}.', preparing:'Wird eingerichtet…', e_code:'Falscher Code.',
@@ -331,15 +435,16 @@ de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_
   share_hint:'Damit der Code funktioniert, muss die Datei <b>access.json</b> im Repository der App liegen ({0}). Sie enthält den verschlüsselten Token: ohne den Code ist sie nutzlos.',
   dl_access:'access.json herunterladen', done:'Fertig',
   v_plan:'Plan', v_people:'Personal', prev_week:'Vorige Woche', next_week:'Nächste Woche', week_n:'KW {0}', today_btn:'Heute', show:'Anzeigen',
-  m_days:'Tage', m_table:'Tabelle', all_people:'Alle Mitarbeiter', only_open:'Unbesetzt', new_shift:'Neue Schicht', new_emp:'Neuer Mitarbeiter',
-  st_shifts:'{0} Schichten', st_hours:'{0} h', st_open:'{0} unbesetzt', st_issues:'{0} Konflikte',
-  no_shifts:'Keine Schichten.', open:'Unbesetzt', removed:'(gelöscht)', h:'h', total:'Summe',
-  w_overlap:'Überschneidet sich mit einer anderen Schicht von {0}', w_absent:'{0} ist abwesend ({1})', w_role:'{0} hat die Rolle {1} nicht', w_hours:'{0} über Soll-Stunden ({1} von {2})',
+  m_days:'Tage', m_line:'Zeitstrahl', m_table:'Tabelle', all_people:'Alle Mitarbeiter', only_open:'Unbesetzt', new_shift:'Neue Schicht', new_emp:'Neuer Mitarbeiter',
+  st_shifts:'{0} Schichten', st_hours:'{0} h', st_open:'{0} unbesetzt', st_issues:'{0} Konflikte', st_gaps:'{0} Lücken', st_wishes:'{0} Wünsche',
+  no_shifts:'Keine Schichten.', open:'Unbesetzt', removed:'(gelöscht)', h:'h', total:'Summe', cover:'Abdeckung', anyone:'Personal',
+  w_overlap:'Überschneidet sich mit einer anderen Schicht von {0}', w_absent:'{0} ist abwesend ({1})', w_role:'{0} hat die Rolle {1} nicht', w_rest:'{0}: nur {1} h Ruhezeit',
+  w_wish:'{0} hat sich den Tag frei gewünscht', w_need:'Es fehlt {0}× {1} ({2})',
   copy_week:'Vorwoche kopieren', copy_none:'Die Vorwoche hat keine Schichten.', copied:'{0} Schichten kopiert', copy_skip:'{0} gab es schon',
-  print:'Woche drucken',
+  print:'Woche drucken', wa_all:'Plan senden (WhatsApp)', wa_all_hi:'Schichten {0} – {1}', moved:'Schicht verschoben.', dcopied:'Schicht kopiert.', drag_hint:'Schicht in eine andere Zelle ziehen, um sie zu verschieben (mit Alt oder Strg: kopieren).',
   start_title:'Los geht’s', start_text:'Wähle die Branche: typische Rollen und Schichten werden angelegt. Später lässt sich alles ändern.', start_emp:'Danach das Personal anlegen.',
   f_date:'Datum', f_from:'Von', f_to:'Bis', f_pos:'Rolle', f_emp:'Mitarbeiter', f_note:'Notiz', ph_note:'Z. B. schließt auf, vertritt Juan…', no_pos:'Ohne Rolle',
-  tpls:'Typische Schichten', repeat:'Auch wiederholen am', next_day:'endet am nächsten Tag', busy:'belegt {0}', absent_s:'abwesend',
+  tpls:'Typische Schichten', repeat:'Auch wiederholen am', next_day:'endet am nächsten Tag', busy:'belegt {0}', absent_s:'abwesend', wish_s:'wünscht frei',
   err_time:'Gib Start- und Endzeit ein (verschieden).', delete:'Löschen', cancel:'Abbrechen', save:'Speichern', duplicate:'Duplizieren',
   saved:'Gespeichert.', added:'{0} hinzugefügt.', deleted:'{0} gelöscht.', undo:'Rückgängig', shift_added:'Schicht hinzugefügt.', shifts_added:'{0} Schichten hinzugefügt.', shift_deleted:'Schicht gelöscht.',
   e_name:'Vor- und Nachname', e_tel:'Telefon', e_pos:'Rollen', e_pos_hint:'Ist keine angehakt, kann die Person jede Rolle übernehmen.', e_hours:'Stunden pro Woche (Soll)', ph_hours:'Z. B. 40',
@@ -347,18 +452,28 @@ de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_
   absences:'Abwesenheiten', no_abs:'Keine Abwesenheiten eingetragen.', ab_vac:'Urlaub', ab_sick:'Krank', ab_off:'Frei / Sonstiges', ab_add:'Abwesenheit eintragen', ab_err:'Wähle von und bis.',
   this_week:'diese Woche', of_h:'von {0} h', send_wa:'Plan per WhatsApp senden', wa_hi:'Hallo {0}, deine Schichten in der Woche {1}:', wa_none:'Hallo {0}, du hast keine Schichten in der Woche {1}.',
   emp_shifts_left:'{0} hat geplante Schichten. Sie bleiben als „unbesetzt“.', no_people:'Noch kein Personal. Tippe auf „Neuer Mitarbeiter“.',
-  s_biz:'Name des Betriebs', ph_biz:'Z. B. Parkhaus Zentrum', s_ws:'Woche beginnt am', mon:'Montag', sun:'Sonntag',
-  s_pos:'Rollen und typische Schichten', s_pos_hint:'Rollen = Bereiche oder Aufgaben (Kasse, Küche…). Typische Schichten = wiederkehrende Zeiten, mit einem Tipp eingetragen.',
+  acct:'Stundenkonto', a_plan:'Gearbeitet', a_goal:'Soll', a_bal:'Saldo', acct_hint:'Soll = Wochenstunden ÷ 7 pro Tag; Urlaub und Krankheit zählen nicht.',
+  s_biz:'Name des Betriebs', ph_biz:'Z. B. Parkhaus Zentrum', s_ws:'Woche beginnt am', mon:'Montag', sun:'Sonntag', s_rest:'Mindestruhezeit zwischen Schichten (Stunden)', s_rest_hint:'0 = nicht prüfen.',
+  s_pos:'Rollen, typische Schichten und Mindestbesetzung', s_pos_hint:'Rollen = Bereiche oder Aufgaben (Kasse, Küche…). Typische Schichten = wiederkehrende Zeiten, mit einem Tipp eingetragen.',
   pos_list:'Rollen', ph_pos:'Neue Rolle', tpl_list:'Typische Schichten', ph_tpl:'Name (z. B. Früh)', add_btn:'Hinzufügen', preset_apply:'Branchen-Modell laden', preset_done:'Modell „{0}“ geladen.',
-  g_share:'Zugang teilen (Code)', g_export:'Exportieren (CSV für Excel)', g_sync:'Jetzt synchronisieren', g_setup:'Name oder Zugang ändern', close:'Schließen',
+  needs:'Mindestbesetzung', needs_hint:'Wie viele Personen mindestens da sein müssen. Die App markiert, was fehlt.', need_any:'Beliebige Rolle', ph_count:'Anz.', err_need:'Wähle Tage, Zeiten und eine Anzahl.',
+  g_share:'Zugang teilen (Code)', g_staff:'Zugang für Mitarbeitende', g_export:'Exportieren (CSV für Excel)', g_sync:'Jetzt synchronisieren', g_setup:'Name oder Zugang ändern', close:'Schließen',
   dev_of:'Gerät von <b>{0}</b>', data_in:'Daten in {0}', language:'Sprache',
   ex_title:'Exportieren', ex_from:'Von', ex_to:'Bis', ex_shifts:'Schichten (CSV)', ex_hours:'Stunden pro Person (CSV)',
-  csv_sh:['Datum', 'Tag', 'Von', 'Bis', 'Stunden', 'Rolle', 'Mitarbeiter', 'Notiz'], csv_h:['Mitarbeiter', 'Schichten', 'Stunden', 'Abwesenheit (Tage)'],
-  s_saving:'Speichert…', s_saved:'Gespeichert {0}', s_expired:'Token abgelaufen: muss erneuert werden', s_later:'Offline – wird später gespeichert', s_offline:'Offline', s_error:'Fehler {0} – antippen für Details', s_later_err:'Fehler {0} – nicht gespeichert', err_title:'Problem beim Synchronisieren', err_retry:'Nochmal versuchen', err_write:'Der Token darf lesen, aber nicht speichern. Auf GitHub → Settings → Developer settings → Fine-grained tokens → Edit „Contents“ auf „Read and write“ für das Daten-Repository stellen. Der Token bleibt gleich; danach Nochmal versuchen.' }
+  csv_sh:['Datum', 'Tag', 'Von', 'Bis', 'Stunden', 'Rolle', 'Mitarbeiter', 'Notiz'], csv_h:['Mitarbeiter', 'Schichten', 'Stunden', 'Soll', 'Saldo', 'Abwesenheit (Tage)'],
+  wishes:'Frei-Wünsche', no_wishes:'Keine Wünsche.', accept:'Genehmigen', decline:'Ablehnen', w_p:'Offen', w_ok:'Genehmigt', w_no:'Abgelehnt', wants_off:'{0} wünscht frei', wish_from:'Wunsch von {0}',
+  staff_need_team:'Zuerst braucht es das Team-Repository: Einstellungen → Name oder Zugang ändern → Erstes Mal (Token), mit ausgefülltem Team-Repository. Der Token muss beide Repositories erreichen.',
+  staff_token:'Mitarbeiter-Token', staff_token_hint:'Fine-grained Token mit Zugriff <b>nur</b> auf das Team-Repository ({0}), „Contents: Read and write“. Damit lässt sich der echte Plan weder sehen noch ändern, auch keine Telefonnummern oder Notizen.',
+  staff_bad:'Dieser Token erreicht auch das Daten-Repository. Erstelle einen, der nur das Team-Repository hat.', staff_make:'Mitarbeiter-Code erstellen', staff_code:'Code für die Mitarbeitenden:',
+  staff_share_hint:'Lade <b>access-staff.json</b> ins Repository der App ({0}). Alle öffnen die App, geben ihren Namen und diesen Code ein und sehen nur ihre eigenen Schichten.', dl_staff:'access-staff.json herunterladen',
+  my_title:'Meine Schichten', who_am_i:'Wer bist du?', pick_hint:'Wähle deinen Namen aus der Teamliste.', with:'Mit: {0}', you_off:'Abwesend', my_none:'Du hast diese Woche keine Schichten.', my_total:'{0} h diese Woche',
+  wish_btn:'Frei wünschen', wish_note:'Grund (optional)', wish_sent:'Wunsch gesendet.', wish_cancel:'Zurückziehen', my_wishes:'Meine Wünsche', plan_wait:'Plan wird geladen…', plan_none:'Noch kein Plan veröffentlicht.', g_who:'Person wechseln',
+  s_saving:'Speichert…', s_saved:'Gespeichert {0}', s_expired:'Token abgelaufen: muss erneuert werden', s_later:'Offline – wird später gespeichert', s_offline:'Offline', s_error:'Fehler {0} – antippen für Details', s_later_err:'Fehler {0} – nicht gespeichert', err_title:'Problem beim Synchronisieren', err_retry:'Nochmal versuchen', err_write:'Der Token darf lesen, aber nicht speichern. Auf GitHub → Settings → Developer settings → Fine-grained tokens → Edit „Contents“ auf „Read and write“ für das Repository stellen. Der Token bleibt gleich; danach Nochmal versuchen.' }
 };
 
 /* ---------- branch models ----------
-   Roles and typical shifts per business type, in all three languages. Loading one only adds what is missing. */
+   Roles and typical shifts per business type, in all three languages. Loading one only adds what is missing.
+   The typical shifts get the first role of the model. */
 var L3 = function(es, en, de){ return { es: es, en: en, de: de }; };
 var TN = { m: L3('Mañana', 'Morning', 'Früh'), a: L3('Tarde', 'Afternoon', 'Spät'), n: L3('Noche', 'Night', 'Nacht'), f: L3('Completo', 'Full day', 'Ganztags'), l: L3('Mediodía', 'Lunch', 'Mittag') };
 var PRESETS = [
@@ -368,7 +483,9 @@ var PRESETS = [
   { id: 'retail', name: L3('Comercio', 'Shop', 'Einzelhandel'), pos: [L3('Ventas', 'Sales', 'Verkauf'), L3('Caja', 'Cashier', 'Kasse'), L3('Depósito', 'Stock', 'Lager')], tpl: [['m', '08:00', '14:00'], ['a', '14:00', '20:00']] },
   { id: 'general', name: L3('Otro / general', 'Other / general', 'Sonstige / allgemein'), pos: [L3('Atención', 'Front desk', 'Kundendienst'), L3('Administración', 'Office', 'Verwaltung')], tpl: [['m', '08:00', '14:00'], ['a', '14:00', '20:00']] }
 ];
-var COLORS = ['#2563eb', '#16a34a', '#d97706', '#9333ea', '#dc2626', '#0891b2', '#db2777', '#65a30d'];
+var COLORS = ['#0d9488', '#d97706', '#9333ea', '#16a34a', '#dc2626', '#2563eb', '#db2777', '#65a30d'];
+/* avatar colours: pale background, dark text; readable in light and dark mode */
+var AVC = [['#dbeafe', '#1e3a8a'], ['#dcfce7', '#14532d'], ['#fef3c7', '#78350f'], ['#f3e8ff', '#581c87'], ['#ffe4e6', '#881337'], ['#cffafe', '#164e63'], ['#fce7f3', '#831843'], ['#ecfccb', '#365314'], ['#e0e7ff', '#312e81'], ['#ffedd5', '#7c2d12']];
 
 var lang = store.get(KEY.lang, null);
 if(!TX[lang]){ var nl = String(navigator.language || '').slice(0, 2).toLowerCase(); lang = TX[nl] ? nl : 'es'; }
@@ -377,16 +494,16 @@ function th(k){ var a = [k]; for(var i = 1; i < arguments.length; i++) a.push(es
 function langButtons(cur){ return LANGS.map(function(l){ return '<button type="button" data-lang="' + l[0] + '"' + (l[0] === cur ? ' class="on"' : '') + ' title="' + l[1] + '">' + (this.big ? l[1] : l[0].toUpperCase()) + '</button>'; }, this || {}).join(''); }
 function applyLang(){
   document.documentElement.lang = lang;
-  [].forEach.call(document.querySelectorAll('[data-t]'), function(el){ el.textContent = t(el.dataset.t); });
-  [].forEach.call(document.querySelectorAll('[data-th]'), function(el){ el.innerHTML = t(el.dataset.th); });
-  [].forEach.call(document.querySelectorAll('[data-tp]'), function(el){ el.placeholder = t(el.dataset.tp); });
-  [].forEach.call(document.querySelectorAll('[data-ta]'), function(el){ el.setAttribute('aria-label', t(el.dataset.ta)); el.title = t(el.dataset.ta); });
+  $$('[data-t]').forEach(function(el){ el.textContent = t(el.dataset.t); });
+  $$('[data-th]').forEach(function(el){ el.innerHTML = t(el.dataset.th); });
+  $$('[data-tp]').forEach(function(el){ el.placeholder = t(el.dataset.tp); });
+  $$('[data-ta]').forEach(function(el){ el.setAttribute('aria-label', t(el.dataset.ta)); el.title = t(el.dataset.ta); });
   $('#langTop').innerHTML = langButtons.call({}, lang);
   if(sync.label) setSync(sync.label[0], sync.label[1], sync.label[2]);
   render();
 }
 function setLang(l){ if(!TX[l]) return; lang = l; store.set(KEY.lang, l); $('#sMsg').innerHTML = ''; applyLang(); }
-document.addEventListener('click', function(e){ var b = e.target.closest('[data-lang]'); if(b){ setLang(b.dataset.lang); [].forEach.call(document.querySelectorAll('[data-lang]'), function(o){ o.classList.toggle('on', o.dataset.lang === lang); }); } });
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-lang]'); if(b){ setLang(b.dataset.lang); $$('[data-lang]').forEach(function(o){ o.classList.toggle('on', o.dataset.lang === lang); }); } });
 
 var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); };
 var pad = function(n){ return (n < 10 ? '0' : '') + n; };
@@ -394,6 +511,7 @@ var uid = function(){ return Date.now().toString(36) + Math.random().toString(36
 var iso = function(dt){ return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()); };
 var todayIso = function(){ return iso(new Date()); };
 var hm = function(ts){ var d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+var hhmm = function(m){ m = ((m % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
 var digits = function(v){ return String(v || '').replace(/\D/g, ''); };
 var telHref = function(v){ var s = String(v || '').trim(); return s ? 'tel:' + (s.charAt(0) === '+' ? '+' : '') + digits(s) : ''; };
 var waNum = function(v){ var d = digits(v); if(d.length < 8) return ''; if(String(v).trim().charAt(0) !== '+' && d.indexOf('54') !== 0) d = '549' + d.replace(/^0/, ''); return d; };
@@ -402,7 +520,8 @@ var copy = function(x){ return JSON.parse(JSON.stringify(x)); };
 
 /* ---------- days and times ----------
    A day is a number (days since 1970, UTC), so weeks and overnight shifts are plain arithmetic.
-   A shift is {d:'2026-11-04', a:'22:00', b:'06:00'}: an end at or before the start means it ends the next day. */
+   A shift is {d:'2026-11-04', a:'22:00', b:'06:00'}: an end at or before the start means it ends the next day.
+   span() gives minutes since 1970 for start and end. */
 var dayNum = function(s){ var p = String(s).split('-'); return Math.round(Date.UTC(+p[0], +p[1] - 1, +p[2]) / 864e5); };
 var numIso = function(n){ var d = new Date(n * 864e5); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); };
 var numDate = function(n){ var d = new Date(n * 864e5); return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12); };
@@ -411,26 +530,38 @@ var mins = function(s){ var m = /^(\d{1,2}):(\d{2})/.exec(s || ''); return m ? +
 var dur = function(x){ var a = mins(x.a), b = mins(x.b); return isNaN(a) || isNaN(b) ? 0 : ((b - a) + 1440) % 1440 || 1440; };
 var overnight = function(x){ return mins(x.b) <= mins(x.a); };
 var span = function(x){ var s = dayNum(x.d) * 1440 + mins(x.a); return [s, s + dur(x)]; };
-var hrs = function(m){ return (m / 60).toLocaleString(t('locale'), { maximumFractionDigits: 2 }); };
+var hrs = function(m){ return (m / 60).toLocaleString(t('locale'), { maximumFractionDigits: 1 }); };
+var signed = function(m){ return (m > 0 ? '+' : m < 0 ? '−' : '±') + hrs(Math.abs(m)); };
 var fmtDay = function(n, o){ return numDate(n).toLocaleDateString(t('locale'), o || { weekday: 'short', day: 'numeric', month: 'short' }); };
 var isoWeek = function(n){ var d = new Date(n * 864e5), wd = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - wd + 3); var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 4)); return 1 + Math.round(((d - y) / 864e5 - 3 + ((y.getUTCDay() + 6) % 7)) / 7); };
+var initials = function(n){ var p = String(n || '?').trim().split(/\s+/); return ((p[0] || '?').charAt(0) + (p.length > 1 ? p[p.length - 1].charAt(0) : '')).toUpperCase(); };
+var avColor = function(id){ var h = 0; String(id).split('').forEach(function(c){ h = (h * 31 + c.charCodeAt(0)) >>> 0; }); return AVC[h % AVC.length]; };
+var avatar = function(id, name, cls){ if(!id) return '<span class="av open ' + (cls || '') + '">?</span>'; var c = avColor(id); return '<span class="av ' + (cls || '') + '" style="--avb:' + c[0] + ';--avt:' + c[1] + '" aria-hidden="true">' + esc(initials(name)) + '</span>'; };
 
 /* ---------- data ----------
    Everything lives in one map, id -> record, each record with a kind:
-   emp {n, tel, pos:[ids], h, notas}      people
-   pos {n, col}                           roles / areas (cashier, kitchen…)
-   tpl {n, a, b, pos}                     typical shifts, to add with one tap
-   sh  {d, a, b, pos, emp, note, by}      shifts (emp '' = unassigned)
-   off {emp, from, to, kind, note}        absences
-   set {biz, ws}                          settings (one record, id 'set')
-   Every record has t (last change) and del (deleted); the newer change wins when two devices meet. */
-var cfg = store.get(KEY.cfg, null);              /* {repo, token, code, name} */
+   emp  {n, tel, pos:[ids], h, notas}        people
+   pos  {n, col, o}                          roles / areas (cashier, kitchen…)
+   tpl  {n, a, b, pos}                       typical shifts, to add with one tap
+   need {pos, days:[0–6], a, b, n}           minimum staffing (0 = Sunday, like getDay)
+   sh   {d, a, b, pos, emp, note, by}        shifts (emp '' = unassigned)
+   off  {emp, from, to, kind, note}          absences (vac, sick, off)
+   set  {biz, ws, rest}                      settings (one record, id 'set')
+   Every record has t (last change) and del (deleted); the newer change wins when two devices meet.
+   Day-off requests live in the team repository (wishes.json): {emp, from, to, note, st:''|'ok'|'no', by}. */
+var cfg = store.get(KEY.cfg, null);              /* {role:'mgr'|'staff', repo, token, code, name, team, emp} */
+if(cfg && !cfg.role) cfg.role = 'mgr';
 var data = store.get(KEY.data, {});
 var dirty = store.get(KEY.dirty, false);
+var wish = store.get(KEY.wish, {});
+var dirtyW = store.get(KEY.dirtyW, false);
+var plan = store.get(KEY.plan, null);            /* staff: the published copy */
 var ui = Object.assign({ view: 'plan', mode: 'days', who: '' }, store.get(KEY.ui, {}));
+var onlyBad = false, lineOff = null;
 var sync = { busy: false, timer: 0, again: false, label: null };
+var isStaff = function(){ return cfg && cfg.role === 'staff'; };
 var live = function(k){ return Object.keys(data).map(function(id){ return data[id]; }).filter(function(x){ return x && !x.del && x.k === k; }); };
-var settings = function(){ var s = data.set; return Object.assign({ biz: '', ws: 1 }, s && !s.del ? s : {}); };
+var settings = function(){ var s = data.set; return Object.assign({ biz: '', ws: 1, rest: 12 }, s && !s.del ? s : {}); };
 var byName = function(a, b){ return norm(a.n).localeCompare(norm(b.n)); };
 var emps = function(){ return live('emp').sort(byName); };
 var poses = function(){ return live('pos').sort(function(a, b){ return (a.o || 0) - (b.o || 0) || byName(a, b); }); };
@@ -440,57 +571,108 @@ var empName = function(id){ var e = id && data[id]; return !id ? t('open') : e &
 var posOf = function(id){ return id ? rec(id) : null; };
 var colOf = function(x){ var p = posOf(x.pos); return p ? p.col : 'var(--accent)'; };
 var abName = function(k){ return t({ vac: 'ab_vac', sick: 'ab_sick', off: 'ab_off' }[k] || 'ab_off'); };
+var pendingWishes = function(){ return Object.keys(wish).map(function(id){ return wish[id]; }).filter(function(w){ return w && !w.del && !w.st && rec(w.emp); }); };
+var wishOn = function(emp, d){ return pendingWishes().filter(function(w){ return w.emp === emp && w.from <= d && d <= w.to; })[0] || null; };
 
-var week0 = function(n){ return n - ((dow(n) - settings().ws + 7) % 7); };
-var curWeek = week0(dayNum(todayIso()));
+var weekStartDay = function(){ return isStaff() ? (plan && plan.ws != null ? plan.ws : 1) : settings().ws; };
+var week0 = function(n){ return n - ((dow(n) - weekStartDay() + 7) % 7); };
+var curWeek = 0;
 var weekShifts = function(n0, n1){ return live('sh').filter(function(s){ var d = dayNum(s.d); return d >= n0 && d <= n1; }); };
 var absentOn = function(emp, d){ return live('off').filter(function(o){ return o.emp === emp && o.from <= d && d <= o.to; })[0] || null; };
-/* problems of one shift: double booked, absent, role the person does not have */
+/* problems of one shift: double booked, too little rest, absent, asked for the day off, role the person does not have */
 function problems(s, pool){
   var out = [];
   if(!s.emp) return out;
-  var e = rec(s.emp), sp = span(s), name = empName(s.emp);
-  if(pool.some(function(o){ if(o.id === s.id || o.emp !== s.emp) return false; var op = span(o); return op[0] < sp[1] && sp[0] < op[1]; })) out.push(t('w_overlap', name));
+  var e = rec(s.emp), sp = span(s), name = empName(s.emp), rest = (+settings().rest || 0) * 60, shortRest = null;
+  pool.forEach(function(o){
+    if(o.id === s.id || o.emp !== s.emp) return;
+    var op = span(o);
+    if(op[0] < sp[1] && sp[0] < op[1]){ if(out.indexOf(t('w_overlap', name)) < 0) out.push(t('w_overlap', name)); return; }
+    var gap = op[1] <= sp[0] ? sp[0] - op[1] : op[0] - sp[1];
+    if(rest && gap < rest && (shortRest == null || gap < shortRest)) shortRest = gap;
+  });
+  if(shortRest != null) out.push(t('w_rest', name, hrs(shortRest)));
   var ab = absentOn(s.emp, s.d); if(ab) out.push(t('w_absent', name, abName(ab.kind)));
+  else if(wishOn(s.emp, s.d)) out.push(t('w_wish', name));
   if(e && s.pos && (e.pos || []).length && e.pos.indexOf(s.pos) < 0){ var p = posOf(s.pos); if(p) out.push(t('w_role', name, p.n)); }
   return out;
 }
 var empMinutes = function(emp, list){ return list.reduce(function(m, s){ return m + (s.emp === emp ? dur(s) : 0); }, 0); };
 
+/* ---------- minimum staffing ----------
+   For a day: every rule that applies on that weekday, checked in 15-minute steps against the shifts
+   (an overnight shift from the day before counts too). Returns the missing stretches. */
+var STEP = 15;
+function needsOn(n){ var wd = dow(n); return live('need').filter(function(x){ return (x.days || []).indexOf(wd) >= 0 && x.a && x.b && x.a !== x.b && +x.n > 0; }); }
+function coverage(n, pool){
+  var gaps = [], d0 = n * 1440;
+  var spans = pool.filter(function(s){ return s.emp; }).map(function(s){ return { s: span(s), pos: s.pos }; });   /* an unassigned shift covers nobody */
+  needsOn(n).forEach(function(nd){
+    var a = d0 + mins(nd.a), b = a + dur(nd), cur = null;
+    for(var m = a; m < b; m += STEP){
+      var c = spans.filter(function(x){ return (!nd.pos || x.pos === nd.pos) && x.s[0] <= m && m < x.s[1]; }).length;
+      if(c < +nd.n){ if(!cur){ cur = { need: nd, from: m, to: m + STEP, miss: +nd.n - c }; gaps.push(cur); } else { cur.to = m + STEP; cur.miss = Math.max(cur.miss, +nd.n - c); } }
+      else cur = null;
+    }
+  });
+  return gaps;
+}
+var gapText = function(g){ var p = posOf(g.need.pos); return t('w_need', g.miss, p ? p.n : t('anyone'), hhmm(g.from) + '–' + hhmm(g.to)); };
+
+/* ---------- hours balance ----------
+   Target per calendar day = weekly hours ÷ 7; vacation and sick days have no target. */
+function balance(e, n0, n1){
+  var list = live('sh').filter(function(s){ var d = dayNum(s.d); return s.emp === e.id && d >= n0 && d <= n1; });
+  var worked = empMinutes(e.id, list), goal = 0, absDays = 0;
+  var offs = live('off').filter(function(o){ return o.emp === e.id; });
+  for(var n = n0; n <= n1; n++){
+    var d = numIso(n), ab = offs.filter(function(o){ return o.from <= d && d <= o.to; })[0];
+    if(ab) absDays++;
+    if(e.h && !(ab && (ab.kind === 'vac' || ab.kind === 'sick'))) goal += e.h * 60 / 7;
+  }
+  return { worked: worked, goal: Math.round(goal), bal: e.h ? Math.round(worked - goal) : 0, shifts: list.length, abs: absDays };
+}
+var monthRange = function(y, m){ return [dayNum(y + '-' + pad(m + 1) + '-01'), dayNum(iso(new Date(y, m + 1, 0)))]; };
+
 /* ---------- screens ---------- */
 function show(){
-  $('#setup').hidden = !!cfg; $('#app').hidden = !cfg;
+  $('#setup').hidden = !!cfg; $('#app').hidden = !cfg || isStaff(); $('#staff').hidden = !isStaff();
   if(!cfg){ drawSetup(); return; }
+  curWeek = week0(curWeek || dayNum(todayIso()));
   render();
 }
 var mode = 'code';
 function setMode(m){
   mode = m;
-  [].forEach.call(document.querySelectorAll('.tabs button'), function(b){ b.classList.toggle('on', b.dataset.mode === m); });
+  $$('.tabs button').forEach(function(b){ b.classList.toggle('on', b.dataset.mode === m); });
   $('#mCode').hidden = m !== 'code'; $('#mToken').hidden = m !== 'token'; $('#sMsg').innerHTML = '';
 }
 function drawSetup(){
   $('#sBack').hidden = !cfg;
   if(!$('#sName').value && cfg) $('#sName').value = cfg.name || '';
   if(!$('#sRepo').value) $('#sRepo').value = (cfg && cfg.repo) || APP.data;
+  if(!$('#sTeam').value && cfg && cfg.team && !isStaff()) $('#sTeam').value = cfg.team;
+  $('#sTeam').placeholder = APP.team;
 }
 $('.tabs').addEventListener('click', function(e){ var b = e.target.closest('[data-mode]'); if(b) setMode(b.dataset.mode); });
 
-/* ---------- access code ----------
-   access.json (in the public app repository) = AES-GCM(PBKDF2(code)) of {repo, token}.
-   Without the code the file is useless. Whoever sets the app up with the token gets the code and the file. */
+/* ---------- access codes ----------
+   access.json       = AES-GCM(PBKDF2(code)) of {repo, token, team}   for whoever plans
+   access-staff.json = the same with {team, token}                   for the staff (token reaches only the team repository)
+   Both live in the public app repository and are useless without their code. */
 var cleanCode = function(c){ return String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); };
 var showCode = function(c){ return cleanCode(c).slice(0, 12).replace(/(.{4})(?=.)/g, '$1-'); };
 var b64bytes = function(s){ var x = atob(String(s)), b = new Uint8Array(x.length); for(var i = 0; i < x.length; i++) b[i] = x.charCodeAt(i); return b; };
 var bytesb64 = function(b){ var x = ''; b = new Uint8Array(b); for(var i = 0; i < b.length; i++) x += String.fromCharCode(b[i]); return btoa(x); };
 var b64e = function(s){ return bytesb64(new TextEncoder().encode(s)); };
 var b64d = function(s){ return new TextDecoder().decode(b64bytes(String(s).replace(/\s/g, ''))); };
+var repoOk = function(r){ return /^[\w.-]+\/[\w.-]+$/.test(r || ''); };
 async function keyFor(code, salt, it, use){
   var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(cleanCode(code)), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: it, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, [use]);
 }
-async function openAccess(code){
-  var r = await fetch(ACCESS_URL, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+async function openAccess(code, url){
+  var r = await fetch(url || ACCESS_URL, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
   if(r.status === 404) throw new Error('none');
   if(!r.ok) throw new Error('net');
   var j = await r.json(), blob = JSON.parse(b64d(j.content));
@@ -498,13 +680,13 @@ async function openAccess(code){
   var k = await keyFor(code, b64bytes(blob.salt), blob.it, 'decrypt'), plain;
   try{ plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64bytes(blob.iv) }, k, b64bytes(blob.ct)); }catch(e){ throw new Error('code'); }
   var conf = JSON.parse(new TextDecoder().decode(plain));
-  if(!conf || typeof conf.token !== 'string' || !/^[\w.-]+\/[\w.-]+$/.test(conf.repo || '')) throw new Error('format');
+  if(!conf || typeof conf.token !== 'string' || !(repoOk(conf.repo) || repoOk(conf.team))) throw new Error('format');
   return conf;
 }
-async function sealAccess(code, repo, token){
+async function sealAccess(code, obj){
   var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), it = 310000;
   var k = await keyFor(code, salt, it, 'encrypt');
-  var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify({ repo: repo, token: token })));
+  var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify(obj)));
   return JSON.stringify({ v: 1, it: it, salt: bytesb64(salt), iv: bytesb64(iv), ct: bytesb64(ct) }, null, 2) + '\n';
 }
 function newCode(){
@@ -515,7 +697,7 @@ function newCode(){
 async function checkRepo(repo, token){
   var r = await fetch('https://api.github.com/repos/' + repo, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }, cache: 'no-store' });
   if(r.status === 401) throw new Error('expired');
-  if(r.status === 404 || r.status === 403) throw new Error('norepo');
+  if(r.status === 404 || r.status === 403){ var e = new Error('norepo'); e.repo = repo; throw e; }
   if(!r.ok) throw new Error('net');
   var j = await r.json();
   if(j.permissions && !j.permissions.push) throw new Error('readonly');
@@ -529,7 +711,31 @@ function shareAccess(firstTime){
     '<p>' + esc(t('share_code')) + '</p><div class="code">' + esc(showCode(cfg.code)) + '</div>' +
     '<p class="hint">' + th('share_hint', APP.repo) + '</p>' +
     '<div class="row2" style="margin-top:14px"><button class="btn" id="dlAcc" type="button">' + esc(t('dl_access')) + '</button><button class="btn primary" data-close type="button">' + esc(t('done')) + '</button></div>', function(el){
-    $('#dlAcc', el).onclick = async function(){ download('access.json', await sealAccess(cfg.code, cfg.repo, cfg.token)); };
+    $('#dlAcc', el).onclick = async function(){ download('access.json', await sealAccess(cfg.code, { repo: cfg.repo, token: cfg.token, team: cfg.team || '' })); };
+  });
+}
+/* staff access: a second token that only reaches the team repository, sealed with its own code */
+function staffAccess(){
+  if(!cfg.team){ modal('<h3>' + esc(t('g_staff')) + '</h3><div class="msg warn">' + esc(t('staff_need_team')) + '</div><div class="row2" style="margin-top:14px"><button class="btn primary" data-close type="button">' + esc(t('close')) + '</button></div>'); return; }
+  var showResult = function(el){
+    $('#saBody', el).innerHTML = '<p>' + esc(t('staff_code')) + '</p><div class="code">' + esc(showCode(cfg.scode)) + '</div><p class="hint">' + th('staff_share_hint', APP.repo) + '</p>' +
+      '<div class="row2" style="margin-top:14px"><button class="btn" id="dlSt" type="button">' + esc(t('dl_staff')) + '</button><button class="btn primary" data-close type="button">' + esc(t('done')) + '</button></div>';
+    $('#dlSt', el).onclick = async function(){ download('access-staff.json', await sealAccess(cfg.scode, { team: cfg.team, token: cfg.stoken })); };
+  };
+  modal('<h3>' + esc(t('g_staff')) + '</h3><div id="saBody">' +
+    '<div class="field"><label for="saTok">' + esc(t('staff_token')) + '</label><input id="saTok" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"><p class="hint">' + th('staff_token_hint', cfg.team) + '</p></div>' +
+    '<button class="btn primary wide" id="saGo" type="button">' + esc(t('staff_make')) + '</button><div id="saMsg"></div></div>', function(el){
+    if(cfg.scode && cfg.stoken){ showResult(el); return; }
+    $('#saGo', el).onclick = async function(){
+      var tok = $('#saTok', el).value.trim(), msg = function(s, c){ $('#saMsg', el).innerHTML = '<div class="msg ' + (c || 'err') + '">' + esc(s) + '</div>'; };
+      if(!tok) return msg(t('err_token'));
+      msg(t('preparing'), 'warn');
+      try{ await checkRepo(cfg.team, tok); }catch(e){ var k = { expired: 'e_expired', norepo: 'e_norepo', readonly: 'e_readonly' }[e.message] || 'e_net'; return msg(t(k, cfg.team)); }
+      var leak = false; try{ await checkRepo(cfg.repo, tok); leak = true; }catch(e){}
+      if(leak) return msg(t('staff_bad'));
+      cfg.scode = newCode(); cfg.stoken = tok; store.set(KEY.cfg, cfg);
+      showResult(el);
+    };
   });
 }
 $('#sCode').addEventListener('input', function(){ this.value = showCode(this.value); });
@@ -537,31 +743,38 @@ $('#sCode').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('#s
 $('#sBack').onclick = function(){ show(); };
 $('#sGo').onclick = async function(){
   var msg = function(s, c){ $('#sMsg').innerHTML = '<div class="msg ' + (c || 'err') + '">' + esc(s) + '</div>'; };
-  var name = $('#sName').value.trim(), conf, code;
+  var name = $('#sName').value.trim(), conf, code, role = 'mgr', clean = function(v){ return String(v || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$|\/$/g, ''); };
   if(!name) return msg(t('err_name'));
   if(mode === 'code'){
     code = cleanCode($('#sCode').value);
     if(code.length !== 12) return msg(t('err_code12'));
   } else {
-    conf = { token: $('#sToken').value.trim(), repo: $('#sRepo').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$|\/$/g, '') };
+    conf = { token: $('#sToken').value.trim(), repo: clean($('#sRepo').value), team: clean($('#sTeam').value) };
     if(!conf.token) return msg(t('err_token'));
-    if(!/^[\w.-]+\/[\w.-]+$/.test(conf.repo)) return msg(t('err_repo', APP.data));
-    code = (cfg && cfg.code) || newCode();        /* a new token keeps the code, so the other devices pick it up by themselves */
+    if(!repoOk(conf.repo)) return msg(t('err_repo', APP.data));
+    if(conf.team && !repoOk(conf.team)) return msg(t('err_repo', APP.team));
+    code = (cfg && cfg.role === 'mgr' && cfg.code) || newCode();        /* a new token keeps the code, so the other devices pick it up by themselves */
   }
   msg(t('preparing'), 'warn'); $('#sGo').disabled = true;
   try{
-    if(mode === 'code') conf = await openAccess(code);
-    await checkRepo(conf.repo, conf.token);
+    if(mode === 'code'){
+      /* the team code opens access.json; otherwise it may be the staff code */
+      try{ conf = await openAccess(code, ACCESS_URL); }
+      catch(e){ if(e.message !== 'code' && e.message !== 'none') throw e; try{ conf = await openAccess(code, STAFF_URL); role = 'staff'; }catch(x){ throw x.message === 'none' ? e : x; } }
+    }
+    if(role === 'mgr') await checkRepo(conf.repo, conf.token);
+    if(conf.team) await checkRepo(conf.team, conf.token);
   }catch(e){
     $('#sGo').disabled = false;
     var k = { code: 'e_code', none: 'e_none', expired: 'e_expired', norepo: 'e_norepo', readonly: 'e_readonly', format: 'e_format' }[e.message] || 'e_net';
-    return msg(t(k, k === 'e_none' ? APP.repo : (conf ? conf.repo : APP.data)));
+    return msg(t(k, k === 'e_none' ? APP.repo : (e.repo || (conf ? conf.repo : APP.data))));
   }
   $('#sGo').disabled = false;
-  var changedRepo = cfg && cfg.repo !== conf.repo;
-  cfg = { repo: conf.repo, token: conf.token, code: code, name: name };
+  var old = cfg, changed = !old || old.role !== role || (role === 'mgr' ? old.repo !== conf.repo : old.team !== conf.team);
+  if(role === 'mgr') cfg = { role: 'mgr', repo: conf.repo, token: conf.token, team: conf.team || '', code: code, name: name, scode: old && old.role === 'mgr' && old.team === conf.team ? old.scode : '', stoken: old && old.role === 'mgr' && old.team === conf.team ? old.stoken : '' };
+  else cfg = { role: 'staff', team: conf.team, token: conf.token, code: code, name: name, emp: old && old.role === 'staff' && !changed ? old.emp : '' };
   store.set(KEY.cfg, cfg);
-  if(changedRepo){ data = {}; dirty = false; store.set(KEY.data, data); store.set(KEY.dirty, dirty); }
+  if(changed){ data = {}; wish = {}; plan = null; dirty = dirtyW = false; store.set(KEY.data, data); store.set(KEY.wish, wish); store.set(KEY.plan, plan); store.set(KEY.dirty, false); store.set(KEY.dirtyW, false); store.set(KEY.pub, ''); }
   $('#sCode').value = ''; $('#sToken').value = ''; $('#sMsg').innerHTML = '';
   show(); syncNow();
   if(mode === 'token') shareAccess(true);
@@ -573,13 +786,14 @@ $('#sGo').onclick = async function(){
   history.replaceState(null, '', location.pathname + location.search);
   if(cfg && cfg.code === cleanCode(c)) return;
   if(cfg && dirty) return;
-  setTimeout(function(){ $('#setup').hidden = false; $('#app').hidden = true; drawSetup(); setMode('code'); $('#sCode').value = showCode(c); $('#sName').focus(); });
+  setTimeout(function(){ $('#setup').hidden = false; $('#app').hidden = true; $('#staff').hidden = true; drawSetup(); setMode('code'); $('#sCode').value = showCode(c); $('#sName').focus(); });
 })();
 
 /* ---------- drawing ---------- */
 function saveUi(){ store.set(KEY.ui, ui); }
 function render(){
   if(!cfg) return;
+  if(isStaff()){ renderStaff(); return; }
   var s = settings();
   $('#bizName').textContent = s.biz || ('Ausblick – ' + t('title'));
   document.title = (s.biz ? s.biz + ' – ' : 'Ausblick – ') + t('title');
@@ -589,55 +803,113 @@ function render(){
 }
 $('#views').addEventListener('click', function(e){ var b = e.target.closest('[data-v]'); if(b){ ui.view = b.dataset.v; saveUi(); render(); window.scrollTo(0, 0); } });
 
+/* everything the plan view needs about the shown week, computed once */
+function weekInfo(){
+  var n0 = curWeek, n6 = n0 + 6;
+  var pool = weekShifts(n0 - 1, n6 + 1), week = pool.filter(function(x){ var d = dayNum(x.d); return d >= n0 && d <= n6; });
+  var bad = {}; week.forEach(function(x){ var p = problems(x, pool); if(p.length) bad[x.id] = p; });
+  var gaps = {}; for(var n = n0; n <= n6; n++){ var g = coverage(n, pool); if(g.length) gaps[n] = g; }
+  return { n0: n0, n6: n6, pool: pool, week: week, bad: bad, gaps: gaps };
+}
+var sortShifts = function(list){ return list.slice().sort(function(a, b){ return a.d.localeCompare(b.d) || mins(a.a) - mins(b.a) || norm(empName(a.emp)).localeCompare(norm(empName(b.emp))); }); };
+
 function renderPlan(){
   curWeek = week0(curWeek + 3);                   /* stays on the same week if another device changed the first weekday */
-  var n0 = curWeek, n6 = n0 + 6, today = dayNum(todayIso()), people = emps();
+  var W = weekInfo(), n0 = W.n0, n6 = W.n6, today = dayNum(todayIso()), people = emps();
   if(ui.who && ui.who !== '-' && !rec(ui.who)) ui.who = '';
+  if(ui.mode === 'line'){ if(lineOff == null) lineOff = today >= n0 && today <= n6 ? today - n0 : 0; }
   $('#wk').innerHTML = esc(fmtDay(n0, { day: 'numeric', month: 'short' }) + ' – ' + fmtDay(n6, { day: 'numeric', month: 'short', year: 'numeric' })) + '<small>' + esc(t('week_n', isoWeek(n0 + 3))) + '</small>';
-  $('#today').hidden = today >= n0 && today <= n6;
+  $('#today').hidden = today >= n0 && today <= n6 && (ui.mode !== 'line' || lineOff === today - n0);
   $('#who').innerHTML = '<option value="">' + esc(t('all_people')) + '</option><option value="-"' + (ui.who === '-' ? ' selected' : '') + '>' + esc(t('only_open')) + '</option>' + people.map(function(e){ return '<option value="' + esc(e.id) + '"' + (ui.who === e.id ? ' selected' : '') + '>' + esc(e.n) + '</option>'; }).join('');
-  $('#mode').innerHTML = [['days', 'm_days'], ['table', 'm_table']].map(function(m){ return '<button type="button" data-m="' + m[0] + '"' + (ui.mode === m[0] ? ' class="on"' : '') + '>' + esc(t(m[1])) + '</button>'; }).join('');
-  /* the pool has one day on each side, so overnight shifts across the week edge are checked too */
-  var pool = weekShifts(n0 - 1, n6 + 1), week = pool.filter(function(x){ var d = dayNum(x.d); return d >= n0 && d <= n6; });
-  var shown = week.filter(function(x){ return !ui.who || (ui.who === '-' ? !x.emp : x.emp === ui.who); });
-  var bad = {}; week.forEach(function(x){ var p = problems(x, pool); if(p.length) bad[x.id] = p; });
-  var open = week.filter(function(x){ return !x.emp; }).length, nbad = Object.keys(bad).length;
+  $('#mode').innerHTML = [['days', 'm_days'], ['line', 'm_line'], ['table', 'm_table']].map(function(m){ return '<button type="button" data-m="' + m[0] + '"' + (ui.mode === m[0] ? ' class="on"' : '') + '>' + esc(t(m[1])) + '</button>'; }).join('');
+  /* the strip: one tile per day with a traffic light */
+  $('#strip').innerHTML = [0, 1, 2, 3, 4, 5, 6].map(function(i){
+    var n = n0 + i, d = numIso(n), list = W.week.filter(function(x){ return x.d === d; });
+    var red = W.gaps[n] || list.some(function(x){ return W.bad[x.id]; }), yellow = list.some(function(x){ return !x.emp; });
+    var st = red ? 'e' : yellow ? 'w' : list.length ? 'ok' : '';
+    return '<button type="button" data-day="' + i + '" class="' + st + (n === today ? ' today' : '') + (n < today ? ' past' : '') + (ui.mode === 'line' && lineOff === i ? ' sel' : '') + '"><small>' + esc(fmtDay(n, { weekday: 'short' }).replace('.', '')) + '</small><b>' + numDate(n).getDate() + '</b><i></i></button>';
+  }).join('');
+  var shown = W.week.filter(function(x){ return (!ui.who || (ui.who === '-' ? !x.emp : x.emp === ui.who)) && (!onlyBad || W.bad[x.id]); });
+  var open = W.week.filter(function(x){ return !x.emp; }).length, nbad = Object.keys(W.bad).length;
+  var ngaps = Object.keys(W.gaps).reduce(function(c, k){ return c + W.gaps[k].length; }, 0), nwish = pendingWishes().length;
+  if(!nbad) onlyBad = false;
   $('#stats').innerHTML = '<span class="stat">' + esc(t('st_shifts', shown.length)) + '</span><span class="stat">' + esc(t('st_hours', hrs(shown.reduce(function(m, x){ return m + dur(x); }, 0)))) + '</span>' +
-    (open ? '<span class="stat w" data-who="-">' + esc(t('st_open', open)) + '</span>' : '') + (nbad ? '<span class="stat e">' + esc(t('st_issues', nbad)) + '</span>' : '');
+    (open ? '<span class="stat w' + (ui.who === '-' ? ' on' : '') + '" data-stat="open">' + esc(t('st_open', open)) + '</span>' : '') +
+    (nbad ? '<span class="stat e' + (onlyBad ? ' on' : '') + '" data-stat="bad">' + esc(t('st_issues', nbad)) + '</span>' : '') +
+    (ngaps ? '<span class="stat e" data-stat="gaps">' + esc(t('st_gaps', ngaps)) + '</span>' : '') +
+    (nwish ? '<span class="stat v" data-stat="wish">' + esc(t('st_wishes', nwish)) + '</span>' : '');
   $('#printhead').textContent = (settings().biz || 'Ausblick') + ' · ' + $('#wk').firstChild.textContent;
-  var sorted = function(list){ return list.slice().sort(function(a, b){ return a.d.localeCompare(b.d) || mins(a.a) - mins(b.a) || norm(empName(a.emp)).localeCompare(norm(empName(b.emp))); }); };
-  if(!people.length && !week.length && !poses().length){ $('#plan').innerHTML = startCard(); $('#bottom').innerHTML = ''; return; }
-  var offs = live('off');
-  if(ui.mode === 'table'){
-    var rows = (ui.who === '-' ? [] : people.filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n, h: e.h }; });
-    /* people who were removed but still have shifts this week */
-    week.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
-    if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
-    var head = '<tr><th></th>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){ return '<th' + (n0 + i === today ? ' class="today"' : '') + '>' + esc(fmtDay(n0 + i)) + '</th>'; }).join('') + '<th>' + esc(t('total')) + '</th></tr>';
-    var body = rows.map(function(r){
-      var mine = week.filter(function(x){ return (x.emp || '') === r.id; }), tot = mine.reduce(function(m, x){ return m + dur(x); }, 0);
-      if(r.open && !mine.length && ui.who !== '-') return '';
-      return '<tr' + (r.open ? ' class="openrow"' : '') + '><td>' + esc(r.n) + '</td>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){
-        var d = numIso(n0 + i), cell = sorted(mine.filter(function(x){ return x.d === d; })), ab = r.id ? offs.filter(function(o){ return o.emp === r.id && o.from <= d && d <= o.to; })[0] : null;
-        return '<td class="cell" data-new="' + esc(r.id) + '|' + d + '">' + (ab ? '<span class="offc">' + esc(abName(ab.kind)) + '</span>' : '') + cell.map(function(x){ var p = posOf(x.pos); return '<button type="button" class="cs' + (bad[x.id] ? ' bad' : '') + '" data-sh="' + esc(x.id) + '" style="--c:' + esc(colOf(x)) + '"' + (bad[x.id] ? ' title="' + esc(bad[x.id].join(' · ')) + '"' : '') + '>' + esc(x.a + '–' + x.b) + (p ? '<small>' + esc(p.n) + '</small>' : '') + '</button>'; }).join('') + '</td>';
-      }).join('') + '<td class="sum' + (r.h && tot > r.h * 60 ? ' over' : '') + '">' + esc(hrs(tot)) + (r.h ? ' / ' + esc(r.h) : '') + ' ' + esc(t('h')) + '</td></tr>';
-    }).join('');
-    $('#plan').innerHTML = '<div class="tblwrap"><table class="grid"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
-  } else {
-    $('#plan').innerHTML = '<div class="days">' + [0, 1, 2, 3, 4, 5, 6].map(function(i){
-      var n = n0 + i, d = numIso(n), list = sorted(shown.filter(function(x){ return x.d === d; }));
-      var away = offs.filter(function(o){ return o.from <= d && d <= o.to && rec(o.emp) && (!ui.who || ui.who === o.emp); });
-      return '<section class="day' + (n === today ? ' today' : '') + '"><div class="dh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'short' })) + '</b><span>' + (list.length ? esc(t('st_hours', hrs(list.reduce(function(m, x){ return m + dur(x); }, 0)))) : '') + '</span><button type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '">+</button></div>' +
-        (list.length ? '<ul class="shl">' + list.map(function(x){
-          var p = posOf(x.pos);
-          return '<li class="sh" data-sh="' + esc(x.id) + '" style="--c:' + esc(colOf(x)) + '"><div class="tm">' + esc(x.a + '–' + x.b) + '<small>' + esc(hrs(dur(x)) + ' ' + t('h')) + (overnight(x) ? ' ☾' : '') + '</small></div>' +
-            '<div class="who">' + (x.emp ? esc(empName(x.emp)) : '<span class="open">' + esc(t('open')) + '</span>') + (p ? ' <span class="tag" style="--c:' + esc(p.col) + '">' + esc(p.n) + '</span>' : '') + (x.note ? '<small>' + esc(x.note) + '</small>' : '') +
-            (bad[x.id] ? bad[x.id].map(function(w){ return '<span class="wn">⚠ ' + esc(w) + '</span>'; }).join('') : '') + '</div></li>';
-        }).join('') + '</ul>' : '<p class="none">' + esc(t('no_shifts')) + '</p>') +
-        (away.length ? '<div class="offl">' + away.map(function(o){ return '<b>' + esc(empName(o.emp)) + '</b> – ' + esc(abName(o.kind)); }).join(' · ') + '</div>' : '') + '</section>';
-    }).join('') + '</div>';
+  if(!people.length && !W.week.length && !poses().length){ $('#plan').innerHTML = startCard(); $('#bottom').innerHTML = ''; return; }
+  if(ui.mode === 'table') $('#plan').innerHTML = tableHtml(W, shown, today);
+  else if(ui.mode === 'line') $('#plan').innerHTML = lineHtml(W, n0 + lineOff, today);
+  else $('#plan').innerHTML = daysHtml(W, shown, today);
+  $('#bottom').innerHTML = '<button class="btn" id="copyWeek" type="button">' + esc(t('copy_week')) + '</button><button class="btn" id="waWeek" type="button">' + esc(t('wa_all')) + '</button><button class="btn" id="printWeek" type="button">' + esc(t('print')) + '</button>';
+}
+
+function shiftLi(x, bad){
+  var p = posOf(x.pos);
+  return '<li class="sh' + (bad ? ' bad' : '') + (!x.emp ? ' open' : '') + '" data-sh="' + esc(x.id) + '">' + avatar(x.emp, empName(x.emp)) +
+    '<div class="who">' + (x.emp ? esc(empName(x.emp)) : '<span class="ow">' + esc(t('open')) + '</span>') + '<small>' + esc(x.a + '–' + x.b + ' · ' + hrs(dur(x)) + ' ' + t('h')) + (overnight(x) ? ' ☾' : '') + (x.note ? ' · ' + esc(x.note) : '') + '</small>' +
+    (bad ? bad.map(function(w){ return '<span class="wn">⚠ ' + esc(w) + '</span>'; }).join('') : '') + '</div>' +
+    (p ? '<span class="tag" style="--c:' + esc(p.col) + '">' + esc(p.n) + '</span>' : '') + '</li>';
+}
+function daysHtml(W, shown, today){
+  var offs = live('off'), wl = pendingWishes();
+  return '<div class="days">' + [0, 1, 2, 3, 4, 5, 6].map(function(i){
+    var n = W.n0 + i, d = numIso(n), list = sortShifts(shown.filter(function(x){ return x.d === d; }));
+    var away = offs.filter(function(o){ return o.from <= d && d <= o.to && rec(o.emp) && (!ui.who || ui.who === o.emp); });
+    var wants = wl.filter(function(w){ return w.from <= d && d <= w.to && (!ui.who || ui.who === w.emp); });
+    var gaps = onlyBad ? [] : (W.gaps[n] || []);
+    return '<section class="day' + (n === today ? ' today' : '') + (n < today ? ' past' : '') + '" id="day' + i + '"><div class="dh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'short' })) + '</b><span>' + (list.length ? esc(t('st_hours', hrs(list.reduce(function(m, x){ return m + dur(x); }, 0)))) : '') + '</span><button type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '">+</button></div>' +
+      (list.length ? '<ul class="shl">' + list.map(function(x){ return shiftLi(x, W.bad[x.id]); }).join('') + '</ul>' : '<p class="none">' + esc(t('no_shifts')) + '</p>') +
+      gaps.map(function(g){ return '<span class="wn" style="margin-top:6px">⚠ ' + esc(gapText(g)) + '</span>'; }).join('') +
+      (away.length || wants.length ? '<div class="offl">' + away.map(function(o){ return '<b>' + esc(empName(o.emp)) + '</b> – ' + esc(abName(o.kind)); }).concat(wants.map(function(w){ return '<span class="wsh" data-wish="1">' + esc(t('wants_off', empName(w.emp))) + '</span>'; })).join(' · ') + '</div>' : '') + '</section>';
+  }).join('') + '</div>';
+}
+/* one day, 0–24 h, one row per person; below it the coverage (green = minimum met, red = missing, blue = someone there) */
+function lineHtml(W, n, today){
+  var d = numIso(n), d0 = n * 1440, pool = W.pool, offs = live('off');
+  var rows = (ui.who === '-' ? [] : emps().filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n }; });
+  pool.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && !rows.some(function(r){ return r.id === x.emp; })){ var sp = span(x); if(sp[1] > d0 && sp[0] < d0 + 1440) rows.push({ id: x.emp, n: empName(x.emp) }); } });
+  if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
+  var pct = function(m){ return Math.max(0, Math.min(100, (m - d0) / 14.4)); };
+  var body = rows.map(function(r){
+    var mine = pool.filter(function(x){ var sp = span(x); return (x.emp || '') === r.id && sp[1] > d0 && sp[0] < d0 + 1440; });
+    var ab = r.id ? offs.filter(function(o){ return o.emp === r.id && o.from <= d && d <= o.to; })[0] : null, ws = r.id ? wishOn(r.id, d) : null;
+    return '<div class="lrow' + (r.open ? ' openrow' : '') + '"><div class="lname" title="' + esc(r.n) + '">' + avatar(r.id, r.n, 'sm') + '<span>' + esc(r.open || innerWidth >= 700 ? r.n : String(r.n).split(' ')[0]) + '</span></div><div class="track' + (ab ? ' off' : '') + (ws ? ' wish' : '') + '" data-track="' + esc(r.id) + '" data-d="' + d + '">' +
+      (ab ? '<span class="offt">' + esc(abName(ab.kind)) + '</span>' : ws ? '<span class="offt" style="color:var(--vio)">' + esc(t('wish_s')) + '</span>' : '') +
+      mine.map(function(x){ var sp = span(x), l = pct(sp[0]), w = pct(sp[1]) - l; return '<span class="bar' + (W.bad[x.id] ? ' bad' : '') + (sp[0] < d0 ? ' cl' : '') + (sp[1] > d0 + 1440 ? ' cr' : '') + '" data-sh="' + esc(x.id) + '" style="left:' + l + '%;width:' + w + '%;--c:' + esc(colOf(x)) + '" title="' + esc(x.a + '–' + x.b + (W.bad[x.id] ? ' · ' + W.bad[x.id].join(' · ') : '')) + '">' + (w > 14 ? esc(x.a + '–' + x.b) : '') + '</span>'; }).join('') + '</div></div>';
+  }).join('');
+  /* coverage in 15-minute steps */
+  var needs = needsOn(n), gaps = W.gaps[n] || [], segs = [], spans = pool.map(span);
+  for(var m = d0; m < d0 + 1440; m += STEP){
+    var miss = gaps.some(function(g){ return g.from <= m && m < g.to; });
+    var needed = needs.some(function(nd){ var a = d0 + mins(nd.a); return a <= m && m < a + dur(nd); });
+    var anyone = spans.some(function(sp){ return sp[0] <= m && m < sp[1]; });
+    var c = miss ? 'r' : needed ? 'g' : anyone ? 'a' : '';
+    if(segs.length && segs[segs.length - 1].c === c) segs[segs.length - 1].w++; else segs.push({ c: c, w: 1 });
   }
-  $('#bottom').innerHTML = '<button class="btn" id="copyWeek" type="button">' + esc(t('copy_week')) + '</button><button class="btn" id="printWeek" type="button">' + esc(t('print')) + '</button>';
+  return '<div class="line"><div class="lh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'long' })) + '</b><span>' + esc(t('st_hours', hrs(W.week.filter(function(x){ return x.d === d; }).reduce(function(s, x){ return s + dur(x); }, 0)))) + '</span><button class="icon" type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '" style="width:36px;height:36px;font-size:20px">+</button></div>' +
+    '<div class="axis"><div></div><div><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div></div>' + body +
+    '<div class="cov"><div class="lname">' + esc(t('cover')) + '</div><div class="covbar">' + segs.map(function(s){ return '<i class="' + s.c + '" style="width:' + (s.w * 100 / 96) + '%"></i>'; }).join('') + '</div></div>' +
+    (gaps.length ? '<div class="gaps">' + gaps.map(function(g){ return '⚠ ' + esc(gapText(g)); }).join('<br>') + '</div>' : '') + '</div>';
+}
+function tableHtml(W, shown, today){
+  var people = emps(), offs = live('off'), n0 = W.n0;
+  var rows = (ui.who === '-' ? [] : people.filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n, h: e.h }; });
+  W.week.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
+  if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
+  var head = '<tr><th></th>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){ var n = n0 + i; return '<th class="' + (n === today ? 'today' : '') + (n < today ? ' past' : '') + '">' + esc(fmtDay(n)) + (W.gaps[n] ? ' <span style="color:var(--out)">⚠</span>' : '') + '</th>'; }).join('') + '<th>' + esc(t('total')) + '</th></tr>';
+  var body = rows.map(function(r){
+    var mine = shown.filter(function(x){ return (x.emp || '') === r.id; }), tot = mine.reduce(function(m, x){ return m + dur(x); }, 0);
+    if(r.open && !mine.length && ui.who !== '-') return '';
+    return '<tr' + (r.open ? ' class="openrow"' : '') + '><td><span class="nm">' + avatar(r.id, r.n, 'sm') + esc(r.n) + '</span></td>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){
+      var n = n0 + i, d = numIso(n), cell = sortShifts(mine.filter(function(x){ return x.d === d; })), ab = r.id ? offs.filter(function(o){ return o.emp === r.id && o.from <= d && d <= o.to; })[0] : null, ws = r.id && !ab ? wishOn(r.id, d) : null;
+      return '<td class="cell' + (n < today ? ' past' : '') + '" data-new="' + esc(r.id) + '|' + d + '">' + (ab ? '<span class="offc">' + esc(abName(ab.kind)) + '</span>' : '') + (ws ? '<span class="offc wsh">' + esc(t('wish_s')) + '</span>' : '') +
+        cell.map(function(x){ var p = posOf(x.pos); return '<button type="button" draggable="true" class="cs' + (W.bad[x.id] ? ' bad' : '') + '" data-sh="' + esc(x.id) + '" style="--c:' + esc(colOf(x)) + '"' + (W.bad[x.id] ? ' title="' + esc(W.bad[x.id].join(' · ')) + '"' : '') + '>' + esc(x.a + '–' + x.b) + (p ? '<small>' + esc(p.n) + '</small>' : '') + '</button>'; }).join('') + '</td>';
+    }).join('') + '<td class="sum' + (r.h && tot > r.h * 60 ? ' over' : '') + '">' + esc(hrs(tot)) + (r.h ? ' / ' + esc(r.h) : '') + ' ' + esc(t('h')) + '</td></tr>';
+  }).join('');
+  return '<div class="tblwrap"><table class="grid"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div><p class="dhint">' + esc(t('drag_hint')) + '</p>';
 }
 function startCard(){
   return '<div class="card"><h3 style="margin:0 0 6px">' + esc(t('start_title')) + '</h3><p style="margin:0">' + esc(t('start_text')) + '</p>' + presetButtons() + '<p class="hint">' + esc(t('start_emp')) + '</p></div>';
@@ -657,30 +929,72 @@ function applyPreset(id){
   });
   var firstPos = byN[norm(p.pos[0][lang])], tn = {};
   tpls().forEach(function(x){ tn[norm(x.n) + x.a + x.b] = 1; });
-  p.tpl.forEach(function(x){ var n = TN[x[0]][lang]; if(!tn[norm(n) + x[1] + x[2]]) changes.push({ id: uid(), k: 'tpl', n: n, a: x[1], b: x[2], pos: '' }); });
-  var s = settings(); if(!s.biz && !rec('set')) changes.push(Object.assign({ id: 'set', k: 'set' }, s));
+  p.tpl.forEach(function(x){ var n = TN[x[0]][lang]; if(!tn[norm(n) + x[1] + x[2]]) changes.push({ id: uid(), k: 'tpl', n: n, a: x[1], b: x[2], pos: firstPos || '' }); });
   touchMany(changes);
   toast(t('preset_done', p.name[lang]));
-  return firstPos;
 }
-document.addEventListener('click', function(e){ var b = e.target.closest('[data-preset]'); if(b && !b.closest('.ov')){ applyPreset(b.dataset.preset); } });
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-preset]'); if(b && !b.closest('.ov')) applyPreset(b.dataset.preset); });
 
-$('#prev').onclick = function(){ curWeek -= 7; render(); };
-$('#next').onclick = function(){ curWeek += 7; render(); };
-$('#today').onclick = function(){ curWeek = week0(dayNum(todayIso())); render(); };
+function goWeek(step){ curWeek += 7 * step; render(); }
+$('#prev').onclick = function(){ goWeek(-1); };
+$('#next').onclick = function(){ goWeek(1); };
+$('#today').onclick = function(){ var n = dayNum(todayIso()); curWeek = week0(n); lineOff = n - curWeek; render(); };
 $('#who').onchange = function(){ ui.who = this.value; saveUi(); render(); };
 $('#mode').addEventListener('click', function(e){ var b = e.target.closest('[data-m]'); if(b){ ui.mode = b.dataset.m; saveUi(); render(); } });
-$('#stats').addEventListener('click', function(e){ var b = e.target.closest('[data-who]'); if(b){ ui.who = b.dataset.who; saveUi(); render(); } });
+$('#strip').addEventListener('click', function(e){
+  var b = e.target.closest('[data-day]'); if(!b) return; var i = +b.dataset.day;
+  if(ui.mode === 'line'){ lineOff = i; render(); return; }
+  if(ui.mode === 'table'){ ui.mode = 'line'; lineOff = i; saveUi(); render(); return; }
+  var el = $('#day' + i); if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+$('#stats').addEventListener('click', function(e){
+  var b = e.target.closest('[data-stat]'); if(!b) return; var k = b.dataset.stat;
+  if(k === 'open'){ ui.who = ui.who === '-' ? '' : '-'; saveUi(); render(); }
+  if(k === 'bad'){ onlyBad = !onlyBad; if(onlyBad && ui.mode !== 'days'){ ui.mode = 'days'; saveUi(); } render(); }
+  if(k === 'gaps'){ var g = weekInfo().gaps, first = Object.keys(g).sort()[0]; if(first != null){ ui.mode = 'line'; lineOff = +first - curWeek; saveUi(); render(); } }
+  if(k === 'wish') wishesWin();
+});
 $('#plan').addEventListener('click', function(e){
+  if(e.target.closest('[data-wish]')){ wishesWin(); return; }
   var s = e.target.closest('[data-sh]'); if(s){ editShift(data[s.dataset.sh]); return; }
   var nd = e.target.closest('[data-newday]'); if(nd){ editShift(null, { d: nd.dataset.newday, emp: ui.who && ui.who !== '-' ? ui.who : '' }); return; }
+  var tr = e.target.closest('[data-track]');
+  if(tr){ var r = tr.getBoundingClientRect(), h = Math.max(0, Math.min(23, Math.floor((e.clientX - r.left) / r.width * 24))); editShift(null, { emp: tr.dataset.track && rec(tr.dataset.track) ? tr.dataset.track : '', d: tr.dataset.d, a: pad(h) + ':00', b: pad((h + 8) % 24) + ':00' }); return; }
   var c = e.target.closest('[data-new]'); if(c){ var p = c.dataset.new.split('|'); editShift(null, { emp: p[0] && rec(p[0]) ? p[0] : '', d: p[1] }); }
 });
+/* drag a shift to another cell of the table: move it there (Alt / Ctrl: copy) */
+var dragId = null;
+$('#plan').addEventListener('dragstart', function(e){ var b = e.target.closest('.cs[data-sh]'); if(!b) return; dragId = b.dataset.sh; e.dataTransfer.effectAllowed = 'copyMove'; try{ e.dataTransfer.setData('text/plain', dragId); }catch(x){} });
+$('#plan').addEventListener('dragover', function(e){ var c = e.target.closest('td.cell'); if(!c || !dragId) return; e.preventDefault(); e.dataTransfer.dropEffect = e.altKey || e.ctrlKey || e.metaKey ? 'copy' : 'move'; $$('td.drop').forEach(function(x){ if(x !== c) x.classList.remove('drop'); }); c.classList.add('drop'); });
+$('#plan').addEventListener('dragleave', function(e){ var c = e.target.closest('td.cell'); if(c && !c.contains(e.relatedTarget)) c.classList.remove('drop'); });
+$('#plan').addEventListener('dragend', function(){ dragId = null; $$('td.drop').forEach(function(x){ x.classList.remove('drop'); }); });
+$('#plan').addEventListener('drop', function(e){
+  var c = e.target.closest('td.cell'), orig = dragId && rec(dragId); dragId = null; if(!c || !orig) return;
+  e.preventDefault();
+  var p = c.dataset.new.split('|'), emp = p[0] && rec(p[0]) ? p[0] : '', d = p[1], cp = e.altKey || e.ctrlKey || e.metaKey;
+  if(!cp && orig.emp === emp && orig.d === d) return;
+  var g = copy(orig); g.emp = emp; g.d = d; g.by = cfg.name;
+  if(cp){ g.id = uid(); touchMany([g]); toast(t('dcopied'), t('undo'), function(){ var x = copy(g); x.del = true; touchMany([x]); }); }
+  else { touchMany([g]); toast(t('moved'), t('undo'), function(){ touchMany([copy(orig)]); }); }
+});
+/* swipe left / right on a phone: next / previous week (in the timeline: day) */
+(function(){
+  var sx = 0, sy = 0, on = false;
+  $('#planView').addEventListener('touchstart', function(e){ on = !e.target.closest('.tblwrap,.track,select'); if(!on) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  $('#planView').addEventListener('touchend', function(e){
+    if(!on) return; var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if(Math.abs(dx) < 70 || Math.abs(dy) > 50) return;
+    var step = dx < 0 ? 1 : -1;
+    if(ui.mode === 'line'){ lineOff += step; if(lineOff > 6){ lineOff = 0; goWeek(1); } else if(lineOff < 0){ lineOff = 6; goWeek(-1); } else render(); }
+    else goWeek(step);
+  }, { passive: true });
+})();
 $('#bottom').addEventListener('click', function(e){
   if(e.target.closest('#copyWeek')) copyWeek();
+  if(e.target.closest('#waWeek')) window.open('https://wa.me/?text=' + encodeURIComponent(weekText()), '_blank', 'noopener');
   if(e.target.closest('#printWeek')){ var m = ui.mode; ui.mode = 'table'; render(); setTimeout(function(){ window.print(); ui.mode = m; render(); }, 50); }
 });
-$('#add').onclick = function(){ if(ui.view === 'people') editEmp(null); else editShift(null, { emp: ui.who && ui.who !== '-' ? ui.who : '' }); };
+$('#add').onclick = function(){ if(ui.view === 'people') editEmp(null); else editShift(null, { emp: ui.who && ui.who !== '-' ? ui.who : '', d: ui.mode === 'line' ? numIso(curWeek + lineOff) : '' }); };
 $('#addEmp').onclick = function(){ editEmp(null); };
 
 function copyWeek(){
@@ -697,11 +1011,24 @@ function copyWeek(){
   touchMany(made);
   toast(t('copied', made.length) + (skip ? ' · ' + t('copy_skip', skip) : ''), made.length ? t('undo') : '', function(){ touchMany(made.map(function(x){ var g = copy(data[x.id]); g.del = true; return g; })); });
 }
+/* the whole week as one message for the team group */
+function weekText(){
+  var n0 = curWeek, list = sortShifts(weekShifts(n0, n0 + 6));
+  var out = [t('wa_all_hi', settings().biz || 'Ausblick', fmtDay(n0, { day: 'numeric', month: 'short' }) + ' – ' + fmtDay(n0 + 6, { day: 'numeric', month: 'short' }))];
+  for(var i = 0; i < 7; i++){
+    var d = numIso(n0 + i), day = list.filter(function(x){ return x.d === d; });
+    if(!day.length) continue;
+    out.push('', '*' + fmtDay(n0 + i, { weekday: 'long', day: 'numeric', month: 'short' }) + '*');
+    day.forEach(function(x){ var p = posOf(x.pos); out.push(x.a + '–' + x.b + '  ' + (x.emp ? empName(x.emp) : '❓ ' + t('open')) + (p ? ' (' + p.n + ')' : '')); });
+  }
+  return out.join('\n');
+}
 
 /* ---------- a shift ---------- */
 function editShift(orig, pre){
   pre = pre || {};
-  var x = orig ? copy(orig) : { id: uid(), k: 'sh', d: pre.d || (curWeek <= dayNum(todayIso()) && dayNum(todayIso()) <= curWeek + 6 ? todayIso() : numIso(curWeek)), a: '', b: '', pos: '', emp: pre.emp || '', note: '' };
+  var tdy = dayNum(todayIso());
+  var x = orig ? copy(orig) : { id: uid(), k: 'sh', d: pre.d || (curWeek <= tdy && tdy <= curWeek + 6 ? todayIso() : numIso(curWeek)), a: pre.a || '', b: pre.b || '', pos: '', emp: pre.emp || '', note: '' };
   var rep = {};
   var html = '<h3>' + esc(t(orig ? 'f_date' : 'new_shift')) + (orig ? ': ' + esc(fmtDay(dayNum(x.d), { weekday: 'long', day: 'numeric', month: 'long' })) : '') + '</h3>' +
     (tpls().length ? '<span class="lbl">' + esc(t('tpls')) + '</span><div class="quick" id="sTpl">' + tpls().map(function(p){ var po = posOf(p.pos); return '<button type="button" data-tpl="' + esc(p.id) + '" style="--c:' + esc(po ? po.col : 'var(--line)') + '">' + esc(p.n) + '<small>' + esc(p.a + '–' + p.b) + '</small></button>'; }).join('') + '</div>' : '') +
@@ -719,12 +1046,12 @@ function editShift(orig, pre){
     var drawPos = function(){
       $('#sPos', el).innerHTML = '<button type="button" data-p=""' + (!x.pos ? ' class="on"' : '') + '>' + esc(t('no_pos')) + '</button>' + poses().map(function(p){ return '<button type="button" data-p="' + esc(p.id) + '" style="--c:' + esc(p.col) + '"' + (x.pos === p.id ? ' class="on"' : '') + '><i></i>' + esc(p.n) + '</button>'; }).join('');
     };
-    /* people list: whoever has the role first; busy or absent people are marked */
+    /* people list: whoever has the role first; busy, absent or asking for the day off is marked */
     var drawEmp = function(){
       var n = dayNum(x.d), pool = weekShifts(n - 1, n + 1), ok = x.a && x.b && x.a !== x.b, sp = ok ? span(x) : null;
       var opt = function(e){
         var note = [];
-        if(absentOn(e.id, x.d)) note.push(t('absent_s'));
+        if(absentOn(e.id, x.d)) note.push(t('absent_s')); else if(wishOn(e.id, x.d)) note.push(t('wish_s'));
         if(sp){ var o = pool.filter(function(s){ if(s.id === x.id || s.emp !== e.id) return false; var op = span(s); return op[0] < sp[1] && sp[0] < op[1]; })[0]; if(o) note.push(t('busy', o.a + '–' + o.b)); }
         return '<option value="' + esc(e.id) + '"' + (x.emp === e.id ? ' selected' : '') + '>' + esc(e.n) + (note.length ? ' (' + esc(note.join(', ')) + ')' : '') + '</option>';
       };
@@ -764,30 +1091,26 @@ function editShift(orig, pre){
     };
     if(orig){
       $('#sDel', el).onclick = function(){ var g = copy(orig); g.del = true; close(el); touchMany([g]); toast(t('shift_deleted'), t('undo'), function(){ var b = copy(orig); delete b.del; touchMany([b]); }); };
-      $('#sDup', el).onclick = function(){ if(!valid()) return; close(el); var c = copy(x); c.id = uid(); delete c.del; editShift(null, {}); var m = $('#layer .ov:last-child'); fillShift(m, c); };
+      $('#sDup', el).onclick = function(){ if(!valid()) return; close(el); var c = copy(x); editShift(null, { d: c.d, a: c.a, b: c.b, emp: c.emp }); var m = $('#layer .ov:last-child'); if(m){ $('#sN', m).value = c.note || ''; var pb = m.querySelector('#sPos [data-p="' + (c.pos || '') + '"]'); if(pb) pb.click(); $('#sE', m).value = c.emp || ''; $('#sE', m).dispatchEvent(new Event('change')); } };
     }
   });
-}
-/* duplicate: the new-shift window, already filled with the copied values */
-function fillShift(el, c){
-  if(!el) return;
-  $('#sD', el).value = c.d; $('#sA', el).value = c.a; $('#sB', el).value = c.b; $('#sN', el).value = c.note || '';
-  var pb = el.querySelector('#sPos [data-p="' + (c.pos || '') + '"]'); if(pb) pb.click();
-  $('#sD', el).dispatchEvent(new Event('change'));
-  $('#sE', el).value = c.emp || ''; $('#sE', el).dispatchEvent(new Event('change'));
 }
 
 /* ---------- people ---------- */
 function renderPeople(){
-  var people = emps(), n0 = curWeek, week = weekShifts(n0, n0 + 6), today = todayIso();
+  var people = emps(), n0 = curWeek, week = weekShifts(n0, n0 + 6), today = todayIso(), now = new Date(), mr = monthRange(now.getFullYear(), now.getMonth());
   if(!people.length){ $('#people').innerHTML = '<li class="empty">' + esc(t('no_people')) + '</li>'; return; }
   $('#people').innerHTML = people.map(function(e){
-    var m = empMinutes(e.id, week), over = e.h && m > e.h * 60;
+    var m = empMinutes(e.id, week), over = e.h && m > e.h * 60, b = e.h ? balance(e, mr[0], mr[1]) : null;
     var ab = live('off').filter(function(o){ return o.emp === e.id && o.to >= today; }).sort(function(a, b){ return a.from.localeCompare(b.from); })[0];
-    return '<li class="item" data-emp="' + esc(e.id) + '"><div class="ih"><div class="iname">' + esc(e.n) +
+    var ws = pendingWishes().filter(function(w){ return w.emp === e.id; }).length;
+    return '<li class="item" data-emp="' + esc(e.id) + '"><div class="ih">' + avatar(e.id, e.n) + '<div class="iname">' + esc(e.n) +
       ((e.pos || []).length ? '<div class="tags">' + e.pos.map(function(id){ var p = posOf(id); return p ? '<span class="tag" style="--c:' + esc(p.col) + '">' + esc(p.n) + '</span>' : ''; }).join('') + '</div>' : '') + '</div>' +
       '<div class="hrs' + (over ? ' over' : '') + '">' + esc(hrs(m)) + ' ' + esc(t('h')) + '<small>' + esc(e.h ? t('of_h', e.h) : t('this_week')) + '</small></div></div>' +
-      '<div class="meta">' + (e.tel ? '<a href="' + esc(telHref(e.tel)) + '" data-stop>' + esc(e.tel) + '</a>' : '') + (ab ? '<span>' + esc(abName(ab.kind)) + ': ' + esc(fmtDay(dayNum(ab.from), { day: 'numeric', month: 'short' })) + ' – ' + esc(fmtDay(dayNum(ab.to), { day: 'numeric', month: 'short' })) + '</span>' : '') + '</div></li>';
+      '<div class="meta">' + (e.tel ? '<a href="' + esc(telHref(e.tel)) + '" data-stop>' + esc(e.tel) + '</a>' : '') +
+      (b ? '<span class="' + (b.bal >= 0 ? 'plus' : 'minus') + '">' + esc(numDate(mr[0]).toLocaleDateString(t('locale'), { month: 'short' }).replace('.', '') + ' ' + signed(b.bal) + ' ' + t('h')) + '</span>' : '') +
+      (ab ? '<span>' + esc(abName(ab.kind)) + ': ' + esc(fmtDay(dayNum(ab.from), { day: 'numeric', month: 'short' })) + ' – ' + esc(fmtDay(dayNum(ab.to), { day: 'numeric', month: 'short' })) + '</span>' : '') +
+      (ws ? '<span style="color:var(--vio);font-weight:650">' + esc(t('st_wishes', ws)) + '</span>' : '') + '</div></li>';
   }).join('');
 }
 $('#people').addEventListener('click', function(e){ if(e.target.closest('[data-stop]')) return; var li = e.target.closest('[data-emp]'); if(li) editEmp(data[li.dataset.emp]); });
@@ -796,12 +1119,15 @@ function editEmp(orig){
   var x = orig ? copy(orig) : { id: uid(), k: 'emp', n: '', tel: '', pos: [], h: '', notas: '' };
   x.pos = (x.pos || []).slice();
   var offs = orig ? live('off').filter(function(o){ return o.emp === x.id; }) : [], newOffs = [], gone = {};
-  var html = '<h3>' + esc(orig ? orig.n : t('new_emp')) + '</h3>' +
+  var now = new Date(), my = { y: now.getFullYear(), m: now.getMonth() };
+  var html = '<h3 style="display:flex;align-items:center;gap:10px">' + (orig ? avatar(x.id, x.n) : '') + esc(orig ? orig.n : t('new_emp')) + '</h3>' +
     '<div class="field"><label for="eN">' + esc(t('e_name')) + ' <span class="req">*</span></label><input id="eN" value="' + esc(x.n) + '" autocomplete="off" autocapitalize="words"></div>' +
     '<div class="grid2 wrap"><div class="field"><label for="eT">' + esc(t('e_tel')) + '</label><input id="eT" type="tel" inputmode="tel" value="' + esc(x.tel) + '" placeholder="+54 9 11 2345-6789"></div>' +
     '<div class="field"><label for="eH">' + esc(t('e_hours')) + '</label><input id="eH" type="number" inputmode="decimal" min="0" max="80" step="0.5" value="' + esc(x.h) + '" placeholder="' + esc(t('ph_hours')) + '"></div></div>' +
     '<div class="field"><span class="lbl">' + esc(t('e_pos')) + '</span><div class="chips" id="ePos"></div><p class="hint">' + esc(t('e_pos_hint')) + '</p></div>' +
     '<div class="field"><label for="eNo">' + esc(t('e_notes')) + '</label><textarea id="eNo" placeholder="' + esc(t('ph_enotes')) + '">' + esc(x.notas) + '</textarea></div>' +
+    (orig && x.h ? '<hr><span class="lbl">' + esc(t('acct')) + '</span><div class="acct"><button type="button" data-mo="-1" aria-label="‹">‹</button><b id="eMo"></b><button type="button" data-mo="1" aria-label="›">›</button></div><div class="acctv" id="eAcct"></div><p class="hint">' + esc(t('acct_hint')) + '</p>' : '') +
+    (orig ? '<div id="eWish"></div>' : '') +
     '<hr><span class="lbl">' + esc(t('absences')) + '</span><ul class="rows" id="eAb"></ul>' +
     '<div class="addrow"><select class="inp" id="eAk">' + ['vac', 'sick', 'off'].map(function(k){ return '<option value="' + k + '">' + esc(abName(k)) + '</option>'; }).join('') + '</select><input class="inp" id="eAf" type="date" aria-label="' + esc(t('ex_from')) + '"><input class="inp" id="eAt" type="date" aria-label="' + esc(t('ex_to')) + '"></div>' +
     '<button class="btn wide small" id="eAa" type="button" style="margin-top:8px">' + esc(t('ab_add')) + '</button>' +
@@ -813,9 +1139,24 @@ function editEmp(orig){
     var drawPos = function(){ $('#ePos', el).innerHTML = poses().map(function(p){ return '<button type="button" data-p="' + esc(p.id) + '" style="--c:' + esc(p.col) + '"' + (x.pos.indexOf(p.id) >= 0 ? ' class="on"' : '') + '><i></i>' + esc(p.n) + '</button>'; }).join('') || '<span class="hint">—</span>'; };
     var drawAb = function(){
       var all = offs.filter(function(o){ return !gone[o.id]; }).concat(newOffs).sort(function(a, b){ return b.from.localeCompare(a.from); });
-      $('#eAb', el).innerHTML = all.length ? all.map(function(o){ return '<li><span class="grow"><b>' + esc(abName(o.kind)) + '</b> <small>' + esc(fmtDay(dayNum(o.from), { day: 'numeric', month: 'short', year: 'numeric' })) + ' – ' + esc(fmtDay(dayNum(o.to), { day: 'numeric', month: 'short', year: 'numeric' })) + '</small></span><button class="x" type="button" data-rm="' + esc(o.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') : '<li style="border-style:dashed"><small>' + esc(t('no_abs')) + '</small></li>';
+      $('#eAb', el).innerHTML = all.length ? all.map(function(o){ return '<li><span class="grow"><b>' + esc(abName(o.kind)) + '</b> <small>' + esc(fmtDay(dayNum(o.from), { day: 'numeric', month: 'short', year: 'numeric' })) + ' – ' + esc(fmtDay(dayNum(o.to), { day: 'numeric', month: 'short', year: 'numeric' })) + (o.note ? ' · ' + esc(o.note) : '') + '</small></span><button class="x" type="button" data-rm="' + esc(o.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') : '<li style="border-style:dashed"><small>' + esc(t('no_abs')) + '</small></li>';
     };
-    drawPos(); drawAb();
+    var drawAcct = function(){
+      if(!$('#eAcct', el)) return;
+      var r = monthRange(my.y, my.m), b = balance(orig, r[0], r[1]);
+      $('#eMo', el).textContent = new Date(my.y, my.m, 15).toLocaleDateString(t('locale'), { month: 'long', year: 'numeric' });
+      $('#eAcct', el).innerHTML = '<div><b>' + esc(hrs(b.worked)) + '</b>' + esc(t('a_plan')) + '</div><div><b>' + esc(hrs(b.goal)) + '</b>' + esc(t('a_goal')) + '</div><div class="' + (b.bal >= 0 ? 'plus' : 'minus') + '"><b>' + esc(signed(b.bal)) + '</b>' + esc(t('a_bal')) + '</div>';
+    };
+    var drawWish = function(){
+      if(!$('#eWish', el)) return;
+      var ws = Object.keys(wish).map(function(k){ return wish[k]; }).filter(function(w){ return w && !w.del && w.emp === x.id && w.to >= todayIso(); });
+      $('#eWish', el).innerHTML = ws.length ? '<hr><span class="lbl">' + esc(t('wishes')) + '</span><ul class="rows">' + ws.map(wishRow).join('') + '</ul>' : '';
+    };
+    drawPos(); drawAb(); drawAcct(); drawWish();
+    el.addEventListener('click', function(e){
+      var mo = e.target.closest('[data-mo]'); if(mo){ my.m += +mo.dataset.mo; if(my.m < 0){ my.m = 11; my.y--; } if(my.m > 11){ my.m = 0; my.y++; } drawAcct(); }
+      var w = e.target.closest('[data-wok],[data-wno]'); if(w){ decideWish(w.dataset.wok || w.dataset.wno, !!w.dataset.wok); offs = live('off').filter(function(o){ return o.emp === x.id; }); drawAb(); drawWish(); }
+    });
     $('#eAf', el).value = todayIso();
     $('#eAf', el).addEventListener('change', function(){ if(!$('#eAt', el).value || $('#eAt', el).value < this.value) $('#eAt', el).value = this.value; });
     $('#ePos', el).onclick = function(e){ var b = e.target.closest('[data-p]'); if(!b) return; var i = x.pos.indexOf(b.dataset.p); if(i >= 0) x.pos.splice(i, 1); else x.pos.push(b.dataset.p); drawPos(); };
@@ -860,36 +1201,74 @@ function scheduleText(e){
   return t('wa_hi', first, wk) + '\n' + list.map(function(s){ var p = posOf(s.pos); return '• ' + fmtDay(dayNum(s.d)) + ': ' + s.a + '–' + s.b + (p ? ' (' + p.n + ')' : '') + (s.note ? ' – ' + s.note : ''); }).join('\n') + '\n' + t('total') + ': ' + hrs(empMinutes(e.id, list)) + ' ' + t('h');
 }
 
-/* ---------- roles and typical shifts ---------- */
+/* ---------- day-off requests (manager side) ---------- */
+var wishDates = function(w){ return fmtDay(dayNum(w.from), { day: 'numeric', month: 'short' }) + (w.to !== w.from ? ' – ' + fmtDay(dayNum(w.to), { day: 'numeric', month: 'short' }) : ''); };
+function wishRow(w){
+  return '<li><span class="grow"><b>' + esc(empName(w.emp)) + '</b> <small>' + esc(wishDates(w)) + (w.note ? ' · ' + esc(w.note) : '') + '</small></span>' +
+    (w.st ? '<span class="badge ' + (w.st === 'ok' ? 'b-ok' : 'b-no') + '">' + esc(t(w.st === 'ok' ? 'w_ok' : 'w_no')) + '</span>' :
+      '<button class="btn small go" type="button" data-wok="' + esc(w.id) + '">' + esc(t('accept')) + '</button><button class="btn small danger" type="button" data-wno="' + esc(w.id) + '">' + esc(t('decline')) + '</button>') + '</li>';
+}
+function decideWish(id, ok){
+  var w = wish[id]; if(!w) return;
+  var g = copy(w); g.st = ok ? 'ok' : 'no'; g.dec = cfg.name;
+  if(ok) touchMany([{ id: uid(), k: 'off', emp: w.emp, kind: 'off', from: w.from, to: w.to, note: t('wish_from', empName(w.emp)) + (w.note ? ': ' + w.note : '') }]);
+  touchWishes([g]);
+}
+function wishesWin(){
+  modal('<h3>' + esc(t('wishes')) + '</h3><ul class="rows" id="wList"></ul><button class="btn primary wide" data-close type="button">' + esc(t('close')) + '</button>', function(el){
+    var draw = function(){
+      var all = Object.keys(wish).map(function(k){ return wish[k]; }).filter(function(w){ return w && !w.del && rec(w.emp) && w.to >= numIso(dayNum(todayIso()) - 30); }).sort(function(a, b){ return (!!a.st - !!b.st) || a.from.localeCompare(b.from); });
+      $('#wList', el).innerHTML = all.length ? all.map(wishRow).join('') : '<li style="border-style:dashed"><small>' + esc(t('no_wishes')) + '</small></li>';
+    };
+    draw();
+    el.addEventListener('click', function(e){ var w = e.target.closest('[data-wok],[data-wno]'); if(w){ decideWish(w.dataset.wok || w.dataset.wno, !!w.dataset.wok); draw(); } });
+  });
+}
+
+/* ---------- roles, typical shifts, minimum staffing ---------- */
 function editRoles(){
   modal('<h3>' + esc(t('s_pos')) + '</h3><p class="hint" style="margin-top:-6px">' + esc(t('s_pos_hint')) + '</p>' +
     '<span class="lbl" style="margin-top:12px">' + esc(t('pos_list')) + '</span><ul class="rows" id="rPos"></ul>' +
     '<div class="addrow"><input class="inp" id="rPn" placeholder="' + esc(t('ph_pos')) + '" autocomplete="off"><button class="btn small" id="rPa" type="button">' + esc(t('add_btn')) + '</button></div>' +
     '<hr><span class="lbl">' + esc(t('tpl_list')) + '</span><ul class="rows" id="rTpl"></ul>' +
     '<div class="addrow"><input class="inp" id="rTn" placeholder="' + esc(t('ph_tpl')) + '" autocomplete="off"><input class="inp" id="rTa" type="time" step="300" aria-label="' + esc(t('f_from')) + '"><input class="inp" id="rTb" type="time" step="300" aria-label="' + esc(t('f_to')) + '"><select class="inp" id="rTp" aria-label="' + esc(t('f_pos')) + '"></select><button class="btn small" id="rTadd" type="button">' + esc(t('add_btn')) + '</button></div>' +
+    '<hr><span class="lbl">' + esc(t('needs')) + '</span><p class="hint" style="margin:-2px 0 8px">' + esc(t('needs_hint')) + '</p><ul class="rows" id="rNeed"></ul>' +
+    '<div class="wd" id="rNd" style="margin-bottom:8px"></div>' +
+    '<div class="addrow"><select class="inp" id="rNp" aria-label="' + esc(t('f_pos')) + '"></select><input class="inp" id="rNa" type="time" step="300" aria-label="' + esc(t('f_from')) + '"><input class="inp" id="rNb" type="time" step="300" aria-label="' + esc(t('f_to')) + '"><input class="inp" id="rNn" type="number" min="1" max="50" value="1" aria-label="' + esc(t('ph_count')) + '"><button class="btn small" id="rNadd" type="button">' + esc(t('add_btn')) + '</button></div>' +
     '<div id="rMsg"></div><hr><span class="lbl">' + esc(t('preset_apply')) + '</span>' + presetButtons() +
     '<button class="btn primary wide" data-close type="button" style="margin-top:6px">' + esc(t('done')) + '</button>', function(el){
+    var wdOrder = settings().ws === 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0], nd = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1 };
+    var wdName = function(i){ return fmtDay(3 + i, { weekday: 'short' }).replace('.', ''); };   /* day 3 = Sunday 4 Jan 1970, so 3 + getDay() */
     var draw = function(){
       $('#rPos', el).innerHTML = poses().map(function(p){ return '<li><button type="button" class="sw" style="--c:' + esc(p.col) + '" data-col="' + esc(p.id) + '" aria-label="color"></button><input class="inp grow" data-ren="' + esc(p.id) + '" value="' + esc(p.n) + '" style="padding:6px 10px;font-size:16px"><button class="x" type="button" data-rmp="' + esc(p.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
       $('#rTpl', el).innerHTML = tpls().map(function(p){ var po = posOf(p.pos); return '<li><span class="grow"><b>' + esc(p.n) + '</b> <small>' + esc(p.a + '–' + p.b) + (po ? ' · ' + esc(po.n) : '') + '</small></span><button class="x" type="button" data-rmt="' + esc(p.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
-      $('#rTp', el).innerHTML = '<option value="">' + esc(t('no_pos')) + '</option>' + poses().map(function(p){ return '<option value="' + esc(p.id) + '">' + esc(p.n) + '</option>'; }).join('');
+      var opts = poses().map(function(p){ return '<option value="' + esc(p.id) + '">' + esc(p.n) + '</option>'; }).join('');
+      $('#rTp', el).innerHTML = '<option value="">' + esc(t('no_pos')) + '</option>' + opts;
+      var keep = $('#rNp', el).value; $('#rNp', el).innerHTML = '<option value="">' + esc(t('need_any')) + '</option>' + opts; $('#rNp', el).value = keep && rec(keep) ? keep : '';
+      $('#rNeed', el).innerHTML = live('need').map(function(x){ var po = posOf(x.pos); return '<li><span class="grow"><b>' + esc(x.n) + '× ' + esc(po ? po.n : t('need_any')) + '</b> <small>' + esc(wdOrder.filter(function(i){ return (x.days || []).indexOf(i) >= 0; }).map(wdName).join(' ') + ' · ' + x.a + '–' + x.b) + '</small></span><button class="x" type="button" data-rmn="' + esc(x.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
+      $('#rNd', el).innerHTML = wdOrder.map(function(i){ return '<button type="button" data-nd="' + i + '"' + (nd[i] ? ' class="on"' : '') + '>' + esc(wdName(i)) + '</button>'; }).join('');
     };
     draw();
-    var addPos = function(){ var n = $('#rPn', el).value.trim().replace(/\s+/g, ' '); if(!n) return; var ps = poses(); if(ps.some(function(p){ return norm(p.n) === norm(n); })) { $('#rPn', el).value = ''; return; } touchMany([{ id: uid(), k: 'pos', n: n, col: COLORS[ps.length % COLORS.length], o: ps.length }]); $('#rPn', el).value = ''; draw(); };
+    var err = function(k){ $('#rMsg', el).innerHTML = k ? '<div class="msg err">' + esc(t(k)) + '</div>' : ''; };
+    var addPos = function(){ var n = $('#rPn', el).value.trim().replace(/\s+/g, ' '); if(!n) return; var ps = poses(); if(ps.some(function(p){ return norm(p.n) === norm(n); })){ $('#rPn', el).value = ''; return; } touchMany([{ id: uid(), k: 'pos', n: n, col: COLORS[ps.length % COLORS.length], o: ps.length }]); $('#rPn', el).value = ''; draw(); };
     $('#rPa', el).onclick = addPos; $('#rPn', el).onkeydown = function(e){ if(e.key === 'Enter') addPos(); };
     $('#rTadd', el).onclick = function(){
       var n = $('#rTn', el).value.trim(), a = $('#rTa', el).value, b = $('#rTb', el).value;
-      if(!n || !a || !b || a === b){ $('#rMsg', el).innerHTML = '<div class="msg err">' + esc(t('err_time')) + '</div>'; return; }
-      $('#rMsg', el).innerHTML = '';
-      touchMany([{ id: uid(), k: 'tpl', n: n, a: a, b: b, pos: $('#rTp', el).value }]); $('#rTn', el).value = ''; draw();
+      if(!n || !a || !b || a === b) return err('err_time');
+      err(''); touchMany([{ id: uid(), k: 'tpl', n: n, a: a, b: b, pos: $('#rTp', el).value }]); $('#rTn', el).value = ''; draw();
+    };
+    $('#rNadd', el).onclick = function(){
+      var a = $('#rNa', el).value, b = $('#rNb', el).value, n = parseInt($('#rNn', el).value, 10), days = Object.keys(nd).filter(function(k){ return nd[k]; }).map(Number);
+      if(!a || !b || a === b || !(n > 0) || !days.length) return err('err_need');
+      err(''); touchMany([{ id: uid(), k: 'need', pos: $('#rNp', el).value, days: days, a: a, b: b, n: n }]); draw();
     };
     el.addEventListener('change', function(e){ var i = e.target.closest('[data-ren]'); if(!i) return; var p = rec(i.dataset.ren), n = i.value.trim(); if(p && n && n !== p.n){ var g = copy(p); g.n = n; touchMany([g]); } });
     el.addEventListener('click', function(e){
-      var c = e.target.closest('[data-col]'), rp = e.target.closest('[data-rmp]'), rt = e.target.closest('[data-rmt]'), pr = e.target.closest('[data-preset]');
+      var c = e.target.closest('[data-col]'), rp = e.target.closest('[data-rmp]'), rt = e.target.closest('[data-rmt]'), rn = e.target.closest('[data-rmn]'), pr = e.target.closest('[data-preset]'), d = e.target.closest('[data-nd]');
       if(c){ var p = copy(rec(c.dataset.col)); p.col = COLORS[(COLORS.indexOf(p.col) + 1) % COLORS.length]; touchMany([p]); draw(); }
-      if(rp){ var g = copy(rec(rp.dataset.rmp)); g.del = true; touchMany([g]); draw(); }
-      if(rt){ var h = copy(rec(rt.dataset.rmt)); h.del = true; touchMany([h]); draw(); }
+      [rp && rp.dataset.rmp, rt && rt.dataset.rmt, rn && rn.dataset.rmn].forEach(function(id){ if(id && rec(id)){ var g = copy(rec(id)); g.del = true; touchMany([g]); draw(); } });
       if(pr){ applyPreset(pr.dataset.preset); draw(); }
+      if(d){ nd[d.dataset.nd] = !nd[d.dataset.nd]; draw(); }
     });
   });
 }
@@ -897,24 +1276,30 @@ function editRoles(){
 /* ---------- settings and export ---------- */
 $('#gear').onclick = function(){
   var s = settings();
-  modal('<h3>' + esc(t('settings')) + '</h3><p>' + th('dev_of', cfg.name) + '<br><span class="hint">' + esc(t('data_in', cfg.repo)) + '</span></p>' +
+  modal('<h3>' + esc(t('settings')) + '</h3><p>' + th('dev_of', cfg.name) + '<br><span class="hint">' + esc(t('data_in', cfg.repo + (cfg.team ? ' · ' + cfg.team : ''))) + '</span></p>' +
     '<span class="lbl">' + esc(t('language')) + '</span><div class="lang big">' + langButtons.call({ big: true }, lang) + '</div>' +
     '<div class="field" style="margin-top:12px"><label for="gBiz">' + esc(t('s_biz')) + '</label><input id="gBiz" value="' + esc(s.biz) + '" placeholder="' + esc(t('ph_biz')) + '" autocomplete="off"></div>' +
-    '<div class="field"><span class="lbl">' + esc(t('s_ws')) + '</span><div class="seg" id="gWs"><button type="button" data-ws="1"' + (s.ws === 1 ? ' class="on"' : '') + '>' + esc(t('mon')) + '</button><button type="button" data-ws="0"' + (s.ws === 0 ? ' class="on"' : '') + '>' + esc(t('sun')) + '</button></div></div>' +
-    '<div style="display:grid;gap:8px;margin-top:6px"><button class="btn" id="gRoles" type="button">' + esc(t('s_pos')) + '</button><button class="btn" id="gExp" type="button">' + esc(t('g_export')) + '</button><button class="btn" id="gShare" type="button">' + esc(t('g_share')) + '</button><button class="btn" id="gSync" type="button">' + esc(t('g_sync')) + '</button><button class="btn" id="gSetup" type="button">' + esc(t('g_setup')) + '</button><button class="btn primary" id="gClose" type="button">' + esc(t('close')) + '</button></div>', function(el){
+    '<div class="grid2 wrap"><div class="field"><span class="lbl">' + esc(t('s_ws')) + '</span><div class="seg" id="gWs"><button type="button" data-ws="1"' + (s.ws === 1 ? ' class="on"' : '') + '>' + esc(t('mon')) + '</button><button type="button" data-ws="0"' + (s.ws === 0 ? ' class="on"' : '') + '>' + esc(t('sun')) + '</button></div></div>' +
+    '<div class="field"><label for="gRest">' + esc(t('s_rest')) + '</label><input id="gRest" type="number" min="0" max="24" step="1" value="' + esc(s.rest) + '"><p class="hint">' + esc(t('s_rest_hint')) + '</p></div></div>' +
+    '<div style="display:grid;gap:8px;margin-top:6px"><button class="btn" id="gRoles" type="button">' + esc(t('s_pos')) + '</button><button class="btn" id="gExp" type="button">' + esc(t('g_export')) + '</button><button class="btn" id="gShare" type="button">' + esc(t('g_share')) + '</button><button class="btn" id="gStaff" type="button">' + esc(t('g_staff')) + '</button><button class="btn" id="gSync" type="button">' + esc(t('g_sync')) + '</button><button class="btn" id="gSetup" type="button">' + esc(t('g_setup')) + '</button><button class="btn primary" id="gClose" type="button">' + esc(t('close')) + '</button></div>', function(el){
     var ws = s.ws;
-    var keep = function(){ var biz = $('#gBiz', el).value.trim(), cur = settings(); if(biz !== cur.biz || ws !== cur.ws){ var keepWeek = numIso(curWeek + 3); touchMany([Object.assign({ id: 'set', k: 'set' }, cur, { biz: biz, ws: ws })]); curWeek = week0(dayNum(keepWeek)); render(); } };
-    $('#gWs', el).onclick = function(e){ var b = e.target.closest('[data-ws]'); if(!b) return; ws = +b.dataset.ws; [].forEach.call(el.querySelectorAll('#gWs button'), function(o){ o.classList.toggle('on', o === b); }); };
+    var keep = function(){
+      var biz = $('#gBiz', el).value.trim(), rest = Math.max(0, Math.min(24, parseInt($('#gRest', el).value, 10) || 0)), cur = settings();
+      if(biz !== cur.biz || ws !== cur.ws || rest !== cur.rest){ var mid = curWeek + 3; touchMany([Object.assign({ id: 'set', k: 'set' }, cur, { biz: biz, ws: ws, rest: rest })]); curWeek = week0(mid); render(); }
+    };
+    $('#gWs', el).onclick = function(e){ var b = e.target.closest('[data-ws]'); if(!b) return; ws = +b.dataset.ws; $$('#gWs button', el).forEach(function(o){ o.classList.toggle('on', o === b); }); };
     $('.lang', el).addEventListener('click', function(e){ if(e.target.closest('[data-lang]')){ setTimeout(function(){ keep(); close(el); $('#gear').click(); }); } });
     var go = function(fn){ return function(){ keep(); close(el); fn(); }; };
     $('#gRoles', el).onclick = go(editRoles);
     $('#gExp', el).onclick = go(exportWin);
     $('#gShare', el).onclick = go(function(){ shareAccess(false); });
+    $('#gStaff', el).onclick = go(staffAccess);
     $('#gSync', el).onclick = go(syncNow);
-    $('#gSetup', el).onclick = go(function(){ $('#setup').hidden = false; $('#app').hidden = true; $('#sName').value = cfg.name; drawSetup(); setMode('code'); $('#sCode').value = showCode(cfg.code); });
+    $('#gSetup', el).onclick = go(openSetup);
     $('#gClose', el).onclick = go(function(){});
   });
 };
+function openSetup(){ $('#setup').hidden = false; $('#app').hidden = true; $('#staff').hidden = true; $('#sName').value = cfg.name; drawSetup(); setMode('code'); $('#sCode').value = showCode(cfg.code); }
 var csvLine = function(r){ return r.map(function(v){ v = String(v == null ? '' : v); return /[",;\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';'); };
 var csvFile = function(rows){ return '﻿' + rows.map(csvLine).join('\r\n') + '\r\n'; };
 function exportWin(){
@@ -928,18 +1313,86 @@ function exportWin(){
       download('turnos-' + r[0] + '_' + r[1] + '.csv', csvFile(rows), 'text/csv');
     };
     $('#xH', el).onclick = function(){
-      var r = range(), list = live('sh').filter(function(s){ return s.d >= r[0] && s.d <= r[1] && s.emp; }), ids = {};
-      emps().forEach(function(e){ ids[e.id] = 1; }); list.forEach(function(s){ ids[s.emp] = 1; });
-      var n0 = dayNum(r[0]), n1 = dayNum(r[1]);
+      var r = range(), n0 = dayNum(r[0]), n1 = dayNum(r[1]), ids = {};
+      emps().forEach(function(e){ ids[e.id] = 1; }); live('sh').forEach(function(s){ if(s.emp && s.d >= r[0] && s.d <= r[1]) ids[s.emp] = 1; });
       var rows = [TX[lang].csv_h].concat(Object.keys(ids).map(function(id){
-        var mine = list.filter(function(s){ return s.emp === id; }), days = 0;
-        live('off').filter(function(o){ return o.emp === id; }).forEach(function(o){ var a = Math.max(n0, dayNum(o.from)), b = Math.min(n1, dayNum(o.to)); if(b >= a) days += b - a + 1; });
-        return [empName(id), mine.length, hrs(empMinutes(id, mine)), days];
+        var e = data[id] || { id: id }, b = balance(e, n0, n1);
+        return [empName(id), b.shifts, hrs(b.worked), e.h ? hrs(b.goal) : '', e.h ? signed(b.bal) : '', b.abs];
       }).sort(function(a, b){ return norm(a[0]).localeCompare(norm(b[0])); }));
       download('horas-' + r[0] + '_' + r[1] + '.csv', csvFile(rows), 'text/csv');
     };
   });
 }
+
+/* ---------- my shifts (staff) ----------
+   Staff only see plan.json, the copy the manager's devices publish to the team repository,
+   and can add day-off requests to wishes.json there. */
+function renderStaff(){
+  $('#stTitle').textContent = (plan && plan.biz ? plan.biz + ' – ' : '') + t('my_title');
+  document.title = t('my_title');
+  if(!plan){ $('#stWk').innerHTML = ''; $('#stBody').innerHTML = '<div class="empty">' + esc(t(sync.loadedPlan ? 'plan_none' : 'plan_wait')) + '</div>'; return; }
+  var people = Object.keys(plan.emp || {}).map(function(id){ return { id: id, n: plan.emp[id].n }; }).sort(byName);
+  if(!cfg.emp || !plan.emp[cfg.emp]){
+    var guess = people.filter(function(p){ return norm(p.n).split(' ')[0] === norm(cfg.name).split(' ')[0]; });
+    $('#stWk').innerHTML = '';
+    $('#stBody').innerHTML = '<div class="card"><h3 style="margin:0 0 4px">' + esc(t('who_am_i')) + '</h3><p class="hint" style="margin:0 0 12px">' + esc(t('pick_hint')) + '</p><ul class="list">' +
+      (guess.length === 1 ? [guess[0]].concat(people.filter(function(p){ return p.id !== guess[0].id; })) : people).map(function(p){ return '<li class="item" data-me="' + esc(p.id) + '"><div class="ih">' + avatar(p.id, p.n) + '<div class="iname">' + esc(p.n) + '</div></div></li>'; }).join('') + '</ul></div>';
+    return;
+  }
+  curWeek = week0(curWeek + 3);
+  var n0 = curWeek, today = dayNum(todayIso()), me = cfg.emp, sh = plan.sh || [], pos = plan.pos || {};
+  $('#stWk').innerHTML = esc(fmtDay(n0, { day: 'numeric', month: 'short' }) + ' – ' + fmtDay(n0 + 6, { day: 'numeric', month: 'short', year: 'numeric' })) + '<small>' + esc(t('week_n', isoWeek(n0 + 3))) + '</small>';
+  var mine = sh.filter(function(s){ var d = dayNum(s.d); return s.emp === me && d >= n0 && d <= n0 + 6; }).sort(function(a, b){ return a.d.localeCompare(b.d) || mins(a.a) - mins(b.a); });
+  var total = mine.reduce(function(m, s){ return m + dur(s); }, 0);
+  var days = [0, 1, 2, 3, 4, 5, 6].map(function(i){
+    var n = n0 + i, d = numIso(n), list = mine.filter(function(s){ return s.d === d; });
+    var off = (plan.off || []).filter(function(o){ return o.emp === me && o.from <= d && d <= o.to; })[0];
+    if(!list.length && !off) return '';
+    return '<section class="day' + (n === today ? ' today' : '') + (n < today ? ' past' : '') + '"><div class="dh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'short' })) + '</b></div>' +
+      (off ? '<p class="none">' + esc(t('you_off')) + '</p>' : '') +
+      (list.length ? '<ul class="shl">' + list.map(function(s){
+        var p = pos[s.pos], sp = span(s);
+        var others = sh.filter(function(o){ if(o.emp === me || !o.emp) return false; var op = span(o); return op[0] < sp[1] && sp[0] < op[1]; }).map(function(o){ return plan.emp[o.emp] ? String(plan.emp[o.emp].n).split(' ')[0] : ''; }).filter(Boolean);
+        return '<li class="sh" style="cursor:default"><div class="who">' + esc(s.a + '–' + s.b) + '<small>' + esc(hrs(dur(s)) + ' ' + t('h')) + (overnight(s) ? ' ☾' : '') + (s.note ? ' · ' + esc(s.note) : '') + (others.length ? '<br>' + esc(t('with', others.join(', '))) : '') + '</small></div>' + (p ? '<span class="tag" style="--c:' + esc(p.col) + '">' + esc(p.n) + '</span>' : '') + '</li>';
+      }).join('') + '</ul>' : '') + '</section>';
+  }).join('');
+  var my = Object.keys(wish).map(function(k){ return wish[k]; }).filter(function(w){ return w && !w.del && w.emp === me && w.to >= numIso(today - 30); }).sort(function(a, b){ return b.from.localeCompare(a.from); });
+  $('#stBody').innerHTML = '<div class="stats"><span class="stat">' + esc(t('my_total', hrs(total))) + '</span></div>' +
+    '<div class="days">' + (days || '<div class="empty">' + esc(t('my_none')) + '</div>') + '</div>' +
+    '<button class="btn primary wide" id="stWish" type="button" style="margin-top:14px">' + esc(t('wish_btn')) + '</button>' +
+    (my.length ? '<h3 style="margin:18px 0 8px;font-size:17px">' + esc(t('my_wishes')) + '</h3><ul class="rows">' + my.map(function(w){
+      return '<li><span class="grow"><b>' + esc(wishDates(w)) + '</b>' + (w.note ? ' <small>' + esc(w.note) + '</small>' : '') + '</span><span class="badge ' + (w.st === 'ok' ? 'b-ok' : w.st === 'no' ? 'b-no' : 'b-p') + '">' + esc(t(w.st === 'ok' ? 'w_ok' : w.st === 'no' ? 'w_no' : 'w_p')) + '</span>' +
+        (!w.st ? '<button class="btn small" type="button" data-wdel="' + esc(w.id) + '">' + esc(t('wish_cancel')) + '</button>' : '') + '</li>';
+    }).join('') + '</ul>' : '');
+}
+$('#stBody').addEventListener('click', function(e){
+  var me = e.target.closest('[data-me]'); if(me){ cfg.emp = me.dataset.me; store.set(KEY.cfg, cfg); window.scrollTo(0, 0); render(); return; }
+  var del = e.target.closest('[data-wdel]'); if(del){ var g = copy(wish[del.dataset.wdel]); g.del = true; touchWishes([g]); return; }
+  if(e.target.closest('#stWish')){
+    modal('<h3>' + esc(t('wish_btn')) + '</h3><div class="grid2"><div class="field"><label for="wF">' + esc(t('ex_from')) + '</label><input id="wF" type="date" value="' + todayIso() + '" min="' + todayIso() + '"></div><div class="field"><label for="wT">' + esc(t('ex_to')) + '</label><input id="wT" type="date" value="' + todayIso() + '" min="' + todayIso() + '"></div></div>' +
+      '<div class="field"><label for="wN">' + esc(t('wish_note')) + '</label><input id="wN" autocomplete="off"></div><div id="wMsg"></div>' +
+      '<div class="row2"><button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="wOk" type="button">' + esc(t('wish_btn')) + '</button></div>', function(el){
+      $('#wF', el).addEventListener('change', function(){ if($('#wT', el).value < this.value) $('#wT', el).value = this.value; });
+      $('#wOk', el).onclick = function(){
+        var f = $('#wF', el).value, to = $('#wT', el).value || f;
+        if(!f){ $('#wMsg', el).innerHTML = '<div class="msg err">' + esc(t('ab_err')) + '</div>'; return; }
+        if(to < f){ var s = f; f = to; to = s; }
+        close(el); touchWishes([{ id: uid(), emp: cfg.emp, from: f, to: to, note: $('#wN', el).value.trim(), st: '', by: cfg.name }]); toast(t('wish_sent'));
+      };
+    });
+  }
+});
+$('#stPrev').onclick = function(){ goWeek(-1); };
+$('#stNext').onclick = function(){ goWeek(1); };
+$('#stGear').onclick = function(){
+  modal('<h3>' + esc(t('settings')) + '</h3><p>' + th('dev_of', cfg.name) + '</p><span class="lbl">' + esc(t('language')) + '</span><div class="lang big">' + langButtons.call({ big: true }, lang) + '</div>' +
+    '<div style="display:grid;gap:8px;margin-top:14px"><button class="btn" id="gWho" type="button">' + esc(t('g_who')) + '</button><button class="btn" id="gSync2" type="button">' + esc(t('g_sync')) + '</button><button class="btn" id="gSetup2" type="button">' + esc(t('g_setup')) + '</button><button class="btn primary" data-close type="button">' + esc(t('close')) + '</button></div>', function(el){
+    $('.lang', el).addEventListener('click', function(e){ if(e.target.closest('[data-lang]')) setTimeout(function(){ close(el); $('#stGear').click(); }); });
+    $('#gWho', el).onclick = function(){ close(el); cfg.emp = ''; store.set(KEY.cfg, cfg); render(); };
+    $('#gSync2', el).onclick = function(){ close(el); syncNow(); };
+    $('#gSetup2', el).onclick = function(){ close(el); openSetup(); };
+  });
+};
 
 /* ---------- small windows ---------- */
 function modal(html, init){
@@ -957,30 +1410,36 @@ function toast(text, act, fn){
   document.body.appendChild(el); clearTimeout(toastT); toastT = setTimeout(function(){ close(el); }, 6000);
 }
 
-/* ---------- saving to GitHub ---------- */
+/* ---------- saving to GitHub ----------
+   Each file is {v:1, c:{id → record}}; saving re-reads the file, merges (newer change wins per record) and writes. */
 function touchMany(list){
   if(!list.length) return;
   var now = Date.now();
   list.forEach(function(x){ x.t = now; data[x.id] = x; });
   dirty = true; store.set(KEY.data, data); store.set(KEY.dirty, dirty); render(); syncSoon();
 }
-function setSync(st, k, arg){ sync.label = [st, k, arg]; var p = $('#sync'); p.className = 'pill ' + st; p.lastChild.textContent = k === '…' ? '…' : t(k, arg); }
-$('#sync').addEventListener('click', function(){
-  if(!sync.err || !/err|wait/.test(this.className)) return;
-  modal('<h3>' + esc(t('err_title')) + '</h3><p style="overflow-wrap:anywhere;font-family:ui-monospace,Menlo,monospace;font-size:14px">' + esc(sync.err.detail) + '</p>' + (/^PUT 403/.test(sync.err.detail) ? '<div class="msg warn">' + esc(t('err_write')) + '</div>' : '') + '<p class="hint">' + esc(new Date(sync.err.at).toLocaleString(t('locale'))) + ' · navigator.onLine=' + sync.err.online + ' · ' + esc(cfg.repo) + '</p><div class="row2"><button class="btn" data-close type="button">' + esc(t('close')) + '</button><button class="btn primary" id="errRetry" type="button">' + esc(t('err_retry')) + '</button></div>', function(el){ $('#errRetry', el).onclick = function(){ close(el); syncNow(); }; });
+function touchWishes(list){
+  var now = Date.now();
+  list.forEach(function(x){ x.t = now; wish[x.id] = x; });
+  dirtyW = true; store.set(KEY.wish, wish); store.set(KEY.dirtyW, dirtyW); render(); syncSoon();
+}
+function setSync(st, k, arg){ sync.label = [st, k, arg]; $$('[data-sync]').forEach(function(p){ p.className = 'pill ' + st; p.lastChild.textContent = k === '…' ? '…' : t(k, arg); }); }
+document.addEventListener('click', function(e){
+  var p = e.target.closest('[data-sync]'); if(!p) return;
+  if(!sync.err || !/err|wait/.test(p.className)) return;
+  modal('<h3>' + esc(t('err_title')) + '</h3><p style="overflow-wrap:anywhere;font-family:ui-monospace,Menlo,monospace;font-size:14px">' + esc(sync.err.detail) + '</p>' + (/^PUT 403/.test(sync.err.detail) ? '<div class="msg warn">' + esc(t('err_write')) + '</div>' : '') + '<p class="hint">' + esc(new Date(sync.err.at).toLocaleString(t('locale'))) + ' · navigator.onLine=' + sync.err.online + '</p><div class="row2"><button class="btn" data-close type="button">' + esc(t('close')) + '</button><button class="btn primary" id="errRetry" type="button">' + esc(t('err_retry')) + '</button></div>', function(el){ $('#errRetry', el).onclick = function(){ close(el); syncNow(); }; });
 });
 function syncSoon(){ clearTimeout(sync.timer); setSync('wait', 's_saving'); sync.timer = setTimeout(syncNow, 1200); }
-function api(opt){
+function api(repo, file, opt){
   opt = opt || {}; opt.headers = Object.assign({ Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json' }, opt.headers || {}); opt.cache = 'no-store';
-  return fetch('https://api.github.com/repos/' + cfg.repo + '/contents/' + APP.file, opt);
+  return fetch('https://api.github.com/repos/' + repo + '/contents/' + file, opt);
 }
-/* newer change wins per record */
-function merge(remote){
+function merge(map, remote){
   var changed = false;
   Object.keys(remote || {}).forEach(function(id){
-    var r = remote[id], l = data[id];
+    var r = remote[id], l = map[id];
     if(!r) return;
-    if(!l || (r.t || 0) > (l.t || 0)){ data[id] = r; changed = true; }
+    if(!l || (r.t || 0) > (l.t || 0)){ map[id] = r; changed = true; }
   });
   return changed;
 }
@@ -988,47 +1447,85 @@ async function httpErr(r, what){
   var m = ''; try{ var j = await r.clone().json(); m = j.message || ''; if(j.errors) m += ' ' + JSON.stringify(j.errors); }catch(e){ try{ m = (await r.text()).slice(0, 200); }catch(x){} }
   var e = new Error('http ' + r.status); e.status = r.status; e.detail = what + ' ' + r.status + (m ? ': ' + m : ''); return e;
 }
-async function load(){
-  var r = await api();
-  if(r.status === 404) return { sha: null, c: {} };
-  if(!r.ok) throw await httpErr(r, 'GET');
+async function load(repo, file){
+  var r = await api(repo, file);
+  if(r.status === 404) return { sha: null, o: null };
+  if(!r.ok) throw await httpErr(r, 'GET ' + file);
   var j = await r.json(), txt = j.content ? b64d(j.content) : '';
-  if(!txt && j.size){ var rr = await api({ headers: { Accept: 'application/vnd.github.raw' } }); if(!rr.ok) throw await httpErr(rr, 'GET raw'); txt = await rr.text(); }
-  var o = JSON.parse(txt || '{}');
-  return { sha: j.sha, c: o.c || {} };
+  if(!txt && j.size){ var rr = await api(repo, file, { headers: { Accept: 'application/vnd.github.raw' } }); if(!rr.ok) throw await httpErr(rr, 'GET raw ' + file); txt = await rr.text(); }
+  return { sha: j.sha, o: JSON.parse(txt || '{}') };
 }
-async function save(){
+async function put(repo, file, obj, sha){
+  var body = { message: cfg.name + ' ' + new Date().toISOString(), content: b64e(JSON.stringify(obj) + '\n') };
+  if(sha) body.sha = sha;
+  return api(repo, file, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+}
+/* read, merge, write; on a clash with another device, again */
+async function saveMap(repo, file, map){
+  var last;
   for(var tries = 0; tries < 3; tries++){
-    var cur = await load(); merge(cur.c);
-    var body = { message: cfg.name + ' ' + new Date().toISOString(), content: b64e(JSON.stringify({ v: 1, c: data }) + '\n') };
-    if(cur.sha) body.sha = cur.sha;
-    var r = await api({ method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    var cur = await load(repo, file); merge(map, cur.o && cur.o.c);
+    var r = await put(repo, file, { v: 1, c: map }, cur.sha);
     if(r.ok) return;
-    if(r.status !== 409 && r.status !== 422) throw await httpErr(r, 'PUT');
-    sync.lastConflict = await httpErr(r, 'PUT');
+    last = await httpErr(r, 'PUT ' + file);
+    if(r.status !== 409 && r.status !== 422) throw last;
   }
-  throw sync.lastConflict;
+  throw last;
+}
+async function pullMap(repo, file, map){ var cur = await load(repo, file); merge(map, cur.o && cur.o.c); }
+/* the copy for the staff: names, roles and shifts from a week back to three months ahead; no phones, notes about people or absence reasons */
+function publicPlan(){
+  var from = numIso(dayNum(todayIso()) - 7), to = numIso(dayNum(todayIso()) + 92), s = settings(), out = { v: 1, biz: s.biz, ws: s.ws, emp: {}, pos: {}, sh: [], off: [] };
+  emps().forEach(function(e){ out.emp[e.id] = { n: e.n }; });
+  poses().forEach(function(p){ out.pos[p.id] = { n: p.n, col: p.col }; });
+  sortShifts(live('sh').filter(function(x){ return x.d >= from && x.d <= to; })).forEach(function(x){ out.sh.push({ d: x.d, a: x.a, b: x.b, pos: x.pos || '', emp: x.emp && rec(x.emp) ? x.emp : '', note: x.note || '' }); });
+  live('off').filter(function(o){ return o.to >= from && rec(o.emp); }).forEach(function(o){ out.off.push({ emp: o.emp, from: o.from, to: o.to }); });
+  return out;
+}
+async function publish(){
+  var obj = publicPlan(), h = JSON.stringify(obj);
+  if(h === store.get(KEY.pub, '')) return;
+  for(var tries = 0; tries < 3; tries++){
+    var r0 = await api(cfg.team, 'plan.json'), sha = null;
+    if(r0.ok) sha = (await r0.json()).sha; else if(r0.status !== 404) throw await httpErr(r0, 'GET plan.json');
+    var r = await put(cfg.team, 'plan.json', obj, sha);
+    if(r.ok){ store.set(KEY.pub, h); return; }
+    if(r.status !== 409 && r.status !== 422) throw await httpErr(r, 'PUT plan.json');
+  }
+}
+async function syncWishes(){
+  if(dirtyW){ dirtyW = false; store.set(KEY.dirtyW, false); try{ await saveMap(cfg.team, 'wishes.json', wish); }catch(e){ dirtyW = true; store.set(KEY.dirtyW, true); throw e; } }
+  else await pullMap(cfg.team, 'wishes.json', wish);
+  store.set(KEY.wish, wish);
 }
 async function syncNow(){
   if(!cfg) return;
   if(sync.busy){ sync.again = true; return; }
   sync.busy = true; clearTimeout(sync.timer);
   try{
-    if(dirty){ dirty = false; store.set(KEY.dirty, dirty); try{ await save(); }catch(e){ dirty = true; store.set(KEY.dirty, dirty); throw e; } }
-    else { var cur = await load(); merge(cur.c); }
-    store.set(KEY.data, data);
+    if(isStaff()){
+      var p = await load(cfg.team, 'plan.json'); sync.loadedPlan = true;
+      if(p.o){ plan = p.o; store.set(KEY.plan, plan); }
+      await syncWishes();
+    } else {
+      if(dirty){ dirty = false; store.set(KEY.dirty, dirty); try{ await saveMap(cfg.repo, APP.file, data); }catch(e){ dirty = true; store.set(KEY.dirty, dirty); throw e; } }
+      else await pullMap(cfg.repo, APP.file, data);
+      store.set(KEY.data, data);
+      if(cfg.team){ await syncWishes(); await publish(); }
+    }
     sync.err = null; setSync('ok', 's_saved', hm(Date.now()));
   }catch(e){
     if(/http 401/.test(e.message)){
-      var fresh = null; try{ fresh = await openAccess(cfg.code); }catch(x){}
-      if(fresh && fresh.token !== cfg.token){ cfg.token = fresh.token; cfg.repo = fresh.repo; store.set(KEY.cfg, cfg); sync.busy = false; return syncNow(); }
+      var fresh = null; try{ fresh = await openAccess(cfg.code, isStaff() ? STAFF_URL : ACCESS_URL); }catch(x){}
+      if(fresh && fresh.token !== cfg.token){ cfg.token = fresh.token; if(fresh.repo) cfg.repo = fresh.repo; if(fresh.team != null) cfg.team = fresh.team; store.set(KEY.cfg, cfg); sync.busy = false; return syncNow(); }
       setSync('err', 's_expired');
     }
     else {
+      var pend = dirty || dirtyW;
       sync.err = { at: Date.now(), detail: e.detail || (e.name + ': ' + e.message), online: navigator.onLine };
       try{ console.error('[ausblick sync]', sync.err.detail, e); }catch(x){}
-      if(e.status) setSync(dirty ? 'wait' : 'err', dirty ? 's_later_err' : 's_error', e.status);
-      else setSync(dirty ? 'wait' : 'err', dirty ? 's_later' : 's_offline');
+      if(e.status) setSync(pend ? 'wait' : 'err', pend ? 's_later_err' : 's_error', e.status);
+      else setSync(pend ? 'wait' : 'err', pend ? 's_later' : 's_offline');
     }
   }
   sync.busy = false;
@@ -1043,8 +1540,8 @@ document.addEventListener('visibilitychange', function(){ if(document.visibility
 curWeek = week0(dayNum(todayIso()));
 applyLang();
 show();
-if(cfg){ setSync(dirty ? 'wait' : 'ok', '…'); syncNow(); }
-window.__as = { get data(){ return data; }, get cfg(){ return cfg; }, syncNow: syncNow, sealAccess: sealAccess, setLang: setLang, problems: problems };
+if(cfg){ setSync(dirty || dirtyW ? 'wait' : 'ok', '…'); syncNow(); }
+window.__as = { get data(){ return data; }, get wish(){ return wish; }, get cfg(){ return cfg; }, get plan(){ return plan; }, syncNow: syncNow, sealAccess: sealAccess, setLang: setLang, problems: problems, coverage: coverage };
 })();
 </script>
 </body>
