@@ -126,6 +126,7 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .lgroup.dropin::before{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .lgroup .glabel{position:absolute;top:-9px;left:-2px;z-index:3;background:var(--card);padding:0 5px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);max-width:calc(var(--nw) - 6px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:18px}
 .lgroup.dropin .glabel{color:var(--accent)}
+.lgroup .glabel i{font-style:normal;font-weight:600;letter-spacing:0;color:var(--in)}
 .gempty{height:34px;display:flex;align-items:center;font-size:12px;color:var(--muted);margin-top:6px;width:var(--nw);padding-right:6px;line-height:1.2}
 .lgroup.nogrp.empty,.pgroup.nogrp.empty{display:none} .dragging .lgroup.nogrp.empty,.dragging .pgroup.nogrp.empty{display:block}
 [data-dragemp]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -440,7 +441,7 @@ es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo'
   this_week:'esta semana', of_h:'de {0} h', send_wa:'Enviar horario por WhatsApp', wa_hi:'Hola {0}, tus turnos de la semana {1}:', wa_none:'Hola {0}, no tenés turnos en la semana {1}.',
   emp_shifts_left:'{0} tiene turnos cargados. Quedan como «sin asignar».', no_people:'Todavía no hay personal. Tocá «Nuevo empleado».',
   acct:'Cuenta de horas', a_plan:'Trabajadas', a_goal:'Objetivo', a_bal:'Saldo', acct_hint:'Objetivo = horas por semana ÷ 7 por día; vacaciones y enfermedad no cuentan.',
-  s_biz:'Nombre del negocio', ph_biz:'Ej. Cochera Centro', s_ws:'La semana empieza', mon:'Lunes', sun:'Domingo', s_rest:'Descanso mínimo entre turnos (horas)', s_rest_hint:'0 = no controlar.', g_hours:'Horario de apertura', h_title:'Horario de apertura y de funcionamiento', h_hint:'Apertura = horario de atención al público. Funcionamiento = apertura más la preparación antes y el trabajo después del cierre; la línea de tiempo muestra ese rango. Misma hora de apertura y cierre = 24 h; si cierra antes de la hora de apertura, cierra al día siguiente.', h_closed:'Cerrado', h_pre:'Preparación antes de abrir', h_post:'Trabajo después de cerrar', h_none:'Ninguna', h_copy:'Copiar el primer día abierto a todos', h_clear:'Sin horario', h_err:'Poné desde y hasta en cada día abierto.', h_next:'cierra al día siguiente', h_open_at:'Abierto {0}', h_ops_at:'funcionamiento {0}', h_band:'Horario', h_leg_op:'Abierto', h_leg_pp:'Preparación / cierre', h_saved:'Horario guardado.',
+  s_biz:'Nombre del negocio', ph_biz:'Ej. Cochera Centro', s_ws:'La semana empieza', mon:'Lunes', sun:'Domingo', s_rest:'Descanso mínimo entre turnos (horas)', s_rest_hint:'0 = no controlar.', g_hours:'Horario de apertura', h_title:'Horario de apertura y de funcionamiento', h_hint:'Apertura = horario de atención al público. Funcionamiento = apertura más la preparación antes y el trabajo después del cierre; la línea de tiempo muestra ese rango. Misma hora de apertura y cierre = 24 h; si cierra antes de la hora de apertura, cierra al día siguiente.', h_closed:'Cerrado', h_pre:'Preparación antes de abrir', h_post:'Trabajo después de cerrar', h_none:'Ninguna', h_copy:'Copiar el primer día abierto a todos', h_clear:'Sin horario', h_err:'Poné desde y hasta en cada día abierto.', h_next:'cierra al día siguiente', h_open_at:'Abierto {0}', h_ops_at:'funcionamiento {0}', h_band:'Horario', h_leg_op:'Abierto', h_leg_pp:'Preparación / cierre', h_saved:'Horario guardado.', h_same:'Horario del negocio', h_own:'Horario propio', h_inherit:'Usar el del negocio', h_for:'Horario de {0}',
   s_pos:'Puestos, turnos típicos y mínimos', s_pos_hint:'Puestos = áreas o tareas (caja, cocina…). Turnos típicos = horarios que se repiten, para cargar con un toque.',
   pos_list:'Puestos', ph_pos:'Nuevo puesto', tpl_list:'Turnos típicos', ph_tpl:'Nombre (ej. Mañana)', add_btn:'Agregar', preset_apply:'Cargar modelo de rubro', preset_done:'Modelo «{0}» cargado.',
   needs:'Mínimo de personal', needs_hint:'Cuántas personas tienen que estar como mínimo. La app marca lo que falta.', need_any:'Cualquier puesto', ph_count:'Cant.', err_need:'Elegí días, horario y cantidad.',
@@ -489,7 +490,7 @@ en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have
   this_week:'this week', of_h:'of {0} h', send_wa:'Send schedule via WhatsApp', wa_hi:'Hi {0}, your shifts for the week {1}:', wa_none:'Hi {0}, you have no shifts in the week {1}.',
   emp_shifts_left:'{0} has shifts planned. They stay as “unassigned”.', no_people:'No staff yet. Tap “New employee”.',
   acct:'Hours balance', a_plan:'Worked', a_goal:'Target', a_bal:'Balance', acct_hint:'Target = hours per week ÷ 7 per day; vacation and sick days don’t count.',
-  s_biz:'Business name', ph_biz:'E.g. Downtown Parking', s_ws:'Week starts on', mon:'Monday', sun:'Sunday', s_rest:'Minimum rest between shifts (hours)', s_rest_hint:'0 = don’t check.', g_hours:'Opening hours', h_title:'Opening and operating hours', h_hint:'Opening = when customers are served. Operating = opening plus preparation before and closing work after; the timeline shows that range. Same opening and closing time = 24 h; closing earlier than opening means it closes the next day.', h_closed:'Closed', h_pre:'Preparation before opening', h_post:'Work after closing', h_none:'None', h_copy:'Copy the first open day to all', h_clear:'No hours', h_err:'Enter from and to for every open day.', h_next:'closes the next day', h_open_at:'Open {0}', h_ops_at:'operating {0}', h_band:'Hours', h_leg_op:'Open', h_leg_pp:'Preparation / closing', h_saved:'Hours saved.',
+  s_biz:'Business name', ph_biz:'E.g. Downtown Parking', s_ws:'Week starts on', mon:'Monday', sun:'Sunday', s_rest:'Minimum rest between shifts (hours)', s_rest_hint:'0 = don’t check.', g_hours:'Opening hours', h_title:'Opening and operating hours', h_hint:'Opening = when customers are served. Operating = opening plus preparation before and closing work after; the timeline shows that range. Same opening and closing time = 24 h; closing earlier than opening means it closes the next day.', h_closed:'Closed', h_pre:'Preparation before opening', h_post:'Work after closing', h_none:'None', h_copy:'Copy the first open day to all', h_clear:'No hours', h_err:'Enter from and to for every open day.', h_next:'closes the next day', h_open_at:'Open {0}', h_ops_at:'operating {0}', h_band:'Hours', h_leg_op:'Open', h_leg_pp:'Preparation / closing', h_saved:'Hours saved.', h_same:'Business hours', h_own:'Own hours', h_inherit:'Use business hours', h_for:'Hours for {0}',
   s_pos:'Roles, typical shifts and minimums', s_pos_hint:'Roles = areas or tasks (cashier, kitchen…). Typical shifts = recurring times, to add with one tap.',
   pos_list:'Roles', ph_pos:'New role', tpl_list:'Typical shifts', ph_tpl:'Name (e.g. Morning)', add_btn:'Add', preset_apply:'Load business type', preset_done:'Type “{0}” loaded.',
   needs:'Minimum staffing', needs_hint:'How many people must be there at least. The app marks what’s missing.', need_any:'Any role', ph_count:'No.', err_need:'Choose days, times and a number.',
@@ -538,7 +539,7 @@ de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_
   this_week:'diese Woche', of_h:'von {0} h', send_wa:'Plan per WhatsApp senden', wa_hi:'Hallo {0}, deine Schichten in der Woche {1}:', wa_none:'Hallo {0}, du hast keine Schichten in der Woche {1}.',
   emp_shifts_left:'{0} hat geplante Schichten. Sie bleiben als „unbesetzt“.', no_people:'Noch kein Personal. Tippe auf „Neuer Mitarbeiter“.',
   acct:'Stundenkonto', a_plan:'Gearbeitet', a_goal:'Soll', a_bal:'Saldo', acct_hint:'Soll = Wochenstunden ÷ 7 pro Tag; Urlaub und Krankheit zählen nicht.',
-  s_biz:'Name des Betriebs', ph_biz:'Z. B. Parkhaus Zentrum', s_ws:'Woche beginnt am', mon:'Montag', sun:'Sonntag', s_rest:'Mindestruhezeit zwischen Schichten (Stunden)', s_rest_hint:'0 = nicht prüfen.', g_hours:'Öffnungszeiten', h_title:'Öffnungs- und Betriebszeiten', h_hint:'Öffnungszeit = wann Kunden bedient werden. Betriebszeit = Öffnungszeit plus Vorbereitung davor und Nachbereitung danach; der Zeitstrahl zeigt diesen Bereich. Gleiche Öffnungs- und Schließzeit = 24 h; schließt es früher als es öffnet, schließt es am nächsten Tag.', h_closed:'Geschlossen', h_pre:'Vorbereitung vor Öffnung', h_post:'Nachbereitung nach Schließung', h_none:'Keine', h_copy:'Ersten offenen Tag auf alle übertragen', h_clear:'Keine Öffnungszeiten', h_err:'Gib für jeden offenen Tag von und bis ein.', h_next:'schließt am nächsten Tag', h_open_at:'Geöffnet {0}', h_ops_at:'Betrieb {0}', h_band:'Zeiten', h_leg_op:'Geöffnet', h_leg_pp:'Vor-/Nachbereitung', h_saved:'Öffnungszeiten gespeichert.',
+  s_biz:'Name des Betriebs', ph_biz:'Z. B. Parkhaus Zentrum', s_ws:'Woche beginnt am', mon:'Montag', sun:'Sonntag', s_rest:'Mindestruhezeit zwischen Schichten (Stunden)', s_rest_hint:'0 = nicht prüfen.', g_hours:'Öffnungszeiten', h_title:'Öffnungs- und Betriebszeiten', h_hint:'Öffnungszeit = wann Kunden bedient werden. Betriebszeit = Öffnungszeit plus Vorbereitung davor und Nachbereitung danach; der Zeitstrahl zeigt diesen Bereich. Gleiche Öffnungs- und Schließzeit = 24 h; schließt es früher als es öffnet, schließt es am nächsten Tag.', h_closed:'Geschlossen', h_pre:'Vorbereitung vor Öffnung', h_post:'Nachbereitung nach Schließung', h_none:'Keine', h_copy:'Ersten offenen Tag auf alle übertragen', h_clear:'Keine Öffnungszeiten', h_err:'Gib für jeden offenen Tag von und bis ein.', h_next:'schließt am nächsten Tag', h_open_at:'Geöffnet {0}', h_ops_at:'Betrieb {0}', h_band:'Zeiten', h_leg_op:'Geöffnet', h_leg_pp:'Vor-/Nachbereitung', h_saved:'Öffnungszeiten gespeichert.', h_same:'Zeiten des Betriebs', h_own:'Eigene Zeiten', h_inherit:'Zeiten des Betriebs nehmen', h_for:'Zeiten für {0}',
   s_pos:'Rollen, typische Schichten und Mindestbesetzung', s_pos_hint:'Rollen = Bereiche oder Aufgaben (Kasse, Küche…). Typische Schichten = wiederkehrende Zeiten, mit einem Tipp eingetragen.',
   pos_list:'Rollen', ph_pos:'Neue Rolle', tpl_list:'Typische Schichten', ph_tpl:'Name (z. B. Früh)', add_btn:'Hinzufügen', preset_apply:'Branchen-Modell laden', preset_done:'Modell „{0}“ geladen.',
   needs:'Mindestbesetzung', needs_hint:'Wie viele Personen mindestens da sein müssen. Die App markiert, was fehlt.', need_any:'Beliebige Rolle', ph_count:'Anz.', err_need:'Wähle Tage, Zeiten und eine Anzahl.',
@@ -721,11 +722,13 @@ function coverage(n, pool){
 var gapText = function(g){ var p = posOf(g.need.pos); return t('w_need', g.miss, p ? p.n : t('anyone'), hhmm(g.from) + '–' + hhmm(g.to)); };
 
 /* ---------- opening hours ----------
+   g = a staff group with its own hours (grp.hours/pre/post), otherwise the business hours (set).
    hoursOn(n): undefined = no opening hours set, null = closed that day, else {o, c}.
    windowOn(n): opening o–c and operating so–sc (minus preparation, plus closing work) in minutes since 1970. */
-var hoursOn = function(n){ var h = settings().hours; if(!h) return undefined; var x = h[dow(n)]; return x && x.o && x.c ? x : null; };
-function windowOn(n){ var h = hoursOn(n); if(!h) return h; var s = settings(), o = n * 1440 + mins(h.o), c = o + dur({ a: h.o, b: h.c }); return { o: o, c: c, so: o - (+s.pre || 0), sc: c + (+s.post || 0) }; }
-var hoursText = function(n){ var h = hoursOn(n); return h === undefined ? '' : h === null ? t('h_closed') : h.o === h.c ? '24 h' : h.o + '–' + h.c; };
+var hoursSrc = function(g){ return g && g.hours ? g : settings(); };
+var hoursOn = function(n, g){ var h = hoursSrc(g).hours; if(!h) return undefined; var x = h[dow(n)]; return x && x.o && x.c ? x : null; };
+function windowOn(n, g){ var h = hoursOn(n, g); if(!h) return h; var s = hoursSrc(g), o = n * 1440 + mins(h.o), c = o + dur({ a: h.o, b: h.c }); return { o: o, c: c, so: o - (+s.pre || 0), sc: c + (+s.post || 0) }; }
+var hoursText = function(n, g){ var h = hoursOn(n, g); return h === undefined ? '' : h === null ? t('h_closed') : h.o === h.c ? '24 h' : h.o + '–' + h.c; };
 var wdName = function(i){ return fmtDay(3 + i, { weekday: 'short' }).replace('.', ''); };   /* day 3 = Sunday 4 Jan 1970, so 3 + getDay() */
 
 /* ---------- hours balance ----------
@@ -984,15 +987,17 @@ function lineRange(n){
 }
 /* one day as a timeline, one row per person; below it the opening hours and the coverage (green = minimum met, red = missing, blue = someone there) */
 /* the name column of the timeline, framed per group */
+var lineDay = 0;   /* the day the timeline shows, for the group labels */
 function lineGroups(list, fn){
   if(!grps().length) return '<div class="lgroup plain" data-dropg="">' + list.map(fn).join('') + '</div>';
   return grouped(list).map(function(b){
     if(ui.who && !b.list.length) return '';
-    return '<div class="lgroup' + (b.g ? '' : ' nogrp') + (b.list.length ? '' : ' empty') + '" data-dropg="' + (b.g ? esc(b.g.id) : '') + '"><span class="glabel">' + esc(b.g ? b.g.n : t('no_grp')) + '</span>' +
+    return '<div class="lgroup' + (b.g ? '' : ' nogrp') + (b.list.length ? '' : ' empty') + '" data-dropg="' + (b.g ? esc(b.g.id) : '') + '"><span class="glabel"' + (b.g && b.g.hours ? ' title="' + esc(b.g.n + ' · ' + hoursText(lineDay, b.g)) + '"' : '') + '>' + esc(b.g ? b.g.n : t('no_grp')) + (b.g && b.g.hours && innerWidth >= 700 ? ' <i>' + esc(hoursText(lineDay, b.g).replace(/:00/g, '')) + '</i>' : '') + '</span>' +
       (b.list.length ? b.list.map(fn).join('') : '<div class="gempty">' + esc(t('grp_empty')) + '</div>') + '</div>';
   }).join('');
 }
 function lineHtml(W, n, today){
+  lineDay = n;
   var d = numIso(n), pool = W.pool, offs = live('off'), R = lineRange(n), from = R.from, to = R.to, len = to - from;
   var pct = function(m){ return Math.max(0, Math.min(100, (m - from) * 100 / len)); };
   var inRange = function(x){ var sp = span(x); return sp[1] > from && sp[0] < to; };
@@ -1000,19 +1005,19 @@ function lineHtml(W, n, today){
   pool.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && inRange(x) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
   if(ui.who === '-' || (!ui.who && pool.some(function(x){ return !x.emp && inRange(x); }))) rows.push({ id: '', n: t('open_row'), open: true });
   /* opening hours of this day and its neighbours (a night past midnight) as zones behind the shifts */
-  var wins = [n - 1, n, n + 1].map(windowOn).filter(Boolean);
+  var winsOf = function(g){ return [n - 1, n, n + 1].map(function(k){ return windowOn(k, g); }).filter(Boolean); }, wins = winsOf(null), winCache = {};
   var zone = function(a, b, c){ var l = pct(a), w = pct(b) - l; return w > 0 ? '<i class="' + c + '" style="left:' + l + '%;width:' + w + '%"></i>' : ''; };
-  var zones = function(pre){ return wins.map(function(w){ return zone(w.so, w.sc, pre + 'pp') + zone(w.o, w.c, pre + 'op'); }).join(''); };
+  var zones = function(pre, g){ var ws = g && g.hours ? (winCache[g.id] = winCache[g.id] || winsOf(g)) : wins; return ws.map(function(w){ return zone(w.so, w.sc, pre + 'pp') + zone(w.o, w.c, pre + 'op'); }).join(''); };
   var gs = R.step * 6000 / len, ticks = [];
   for(var m = from; m <= to; m += R.step * 60){ var hv = Math.floor(m / 60) % 24; ticks.push('<span>' + (hv === 0 && m === to ? 24 : hv) + '</span>'); }
   var rowHtml = function(r){
     var mine = pool.filter(function(x){ return (x.emp || '') === r.id && inRange(x); });
     var ab = r.id ? offs.filter(function(o){ return o.emp === r.id && o.from <= d && d <= o.to; })[0] : null, ws = r.id ? wishOn(r.id, d) : null;
-    return '<div class="lrow' + (r.open ? ' openrow' : '') + '"' + (r.drag ? ' data-dragemp="' + esc(r.id) + '"' : '') + '><div class="lname" title="' + esc(r.n) + '">' + avatar(r.id, r.n, 'sm') + '<span>' + esc(r.open || innerWidth >= 700 ? r.n : String(r.n).split(' ')[0]) + '</span></div><div class="track' + (ab ? ' off' : '') + (ws ? ' wish' : '') + '" style="--gs:' + gs + '%" data-track="' + esc(r.id) + '" data-r="' + from + '|' + to + '">' + (ab ? '' : zones('zone ')) +
+    return '<div class="lrow' + (r.open ? ' openrow' : '') + '"' + (r.drag ? ' data-dragemp="' + esc(r.id) + '"' : '') + '><div class="lname" title="' + esc(r.n) + '">' + avatar(r.id, r.n, 'sm') + '<span>' + esc(r.open || innerWidth >= 700 ? r.n : String(r.n).split(' ')[0]) + '</span></div><div class="track' + (ab ? ' off' : '') + (ws ? ' wish' : '') + '" style="--gs:' + gs + '%" data-track="' + esc(r.id) + '" data-r="' + from + '|' + to + '">' + (ab ? '' : zones('zone ', r.g)) +
       (ab ? '<span class="offt">' + esc(abName(ab.kind)) + '</span>' : ws ? '<span class="offt" style="color:var(--vio)">' + esc(t('wish_s')) + '</span>' : '') +
       mine.map(function(x){ var sp = span(x), l = pct(sp[0]), w = pct(sp[1]) - l; return '<span class="bar' + (W.bad[x.id] ? ' bad' : '') + (sp[0] < from ? ' cl' : '') + (sp[1] > to ? ' cr' : '') + '" data-sh="' + esc(x.id) + '" style="left:' + l + '%;width:' + w + '%;--c:' + esc(colOf(x)) + '" title="' + esc(x.a + '–' + x.b + (W.bad[x.id] ? ' · ' + W.bad[x.id].join(' · ') : '')) + '">' + (w > 14 ? esc(x.a + '–' + x.b) : '') + '</span>'; }).join('') + '</div></div>';
   };
-  var body = lineGroups(people, function(e){ return rowHtml({ id: e.id, n: e.n, drag: !ui.who }); }) + rows.map(rowHtml).join('');
+  var body = lineGroups(people, function(e){ return rowHtml({ id: e.id, n: e.n, drag: !ui.who, g: grpOf(e) }); }) + rows.map(rowHtml).join('');
   /* coverage in 15-minute steps; the shown stretch may reach into the neighbouring days */
   var dayGaps = W.gaps[n] || [], gaps = [].concat(W.gaps[n - 1] || [], dayGaps, W.gaps[n + 1] || []), spans = pool.filter(function(x){ return x.emp; }).map(span), segs = [], needW = [];
   [n - 1, n, n + 1].forEach(function(k){ needsOn(k).forEach(function(nd){ var a = k * 1440 + mins(nd.a); needW.push([a, a + dur(nd)]); }); });
@@ -1434,6 +1439,7 @@ function groupsWin(){
       $('#gList', el).innerHTML = gs.map(function(g, i){
         var n = live('emp').filter(function(e){ return e.g === g.id; }).length;
         return '<li><input class="inp grow" data-gren="' + esc(g.id) + '" value="' + esc(g.n) + '" style="padding:6px 10px;font-size:16px"><small>' + n + '</small>' +
+          '<button class="btn small" type="button" data-ghr="' + esc(g.id) + '" style="min-height:34px">' + esc(t(g.hours ? 'h_own' : 'h_same')) + '</button>' +
           '<button class="x mv" type="button" data-gmv="' + esc(g.id) + '|-1"' + (i ? '' : ' disabled') + ' aria-label="↑">↑</button><button class="x mv" type="button" data-gmv="' + esc(g.id) + '|1"' + (i < gs.length - 1 ? '' : ' disabled') + ' aria-label="↓">↓</button>' +
           '<button class="x" type="button" data-grm="' + esc(g.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>';
       }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
@@ -1443,7 +1449,8 @@ function groupsWin(){
     $('#gA', el).onclick = add; $('#gN', el).onkeydown = function(e){ if(e.key === 'Enter') add(); };
     el.addEventListener('change', function(e){ var i = e.target.closest('[data-gren]'); if(!i) return; var g = rec(i.dataset.gren), n = i.value.trim(); if(g && n && n !== g.n){ var c = copy(g); c.n = n; touchMany([c]); } });
     el.addEventListener('click', function(e){
-      var mv = e.target.closest('[data-gmv]'), rm = e.target.closest('[data-grm]');
+      var mv = e.target.closest('[data-gmv]'), rm = e.target.closest('[data-grm]'), hr = e.target.closest('[data-ghr]');
+      if(hr){ hoursWin(hr.dataset.ghr, draw); return; }
       if(mv){ var p = mv.dataset.gmv.split('|'), gs = grps(), i = gs.map(function(g){ return g.id; }).indexOf(p[0]), j = i + +p[1]; if(i < 0 || j < 0 || j >= gs.length) return; var tmp = gs[i]; gs[i] = gs[j]; gs[j] = tmp; touchMany(gs.map(function(g, k){ var c = copy(g); c.o = k * 10; return c; })); draw(); }
       if(rm){ var g = copy(rec(rm.dataset.grm)); g.del = true; touchMany([g]); draw(); }   /* its people end up without a group */
     });
@@ -1534,13 +1541,13 @@ function minuteOptions(cur){
   if(list.indexOf(cur) < 0){ list.push(cur); list.sort(function(a, b){ return a - b; }); }
   return list.map(function(m){ return '<option value="' + m + '"' + (m === cur ? ' selected' : '') + '>' + esc(minLabel(m)) + '</option>'; }).join('');
 }
-function hoursWin(){
-  var s = settings(), order = s.ws === 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0], cur = {};
+function hoursWin(gid, after){
+  var g = gid ? rec(gid) : null, base = settings(), src = hoursSrc(g), s = { ws: base.ws, hours: src.hours, pre: src.pre, post: src.post }, order = s.ws === 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0], cur = {};
   order.forEach(function(i){ var x = s.hours ? s.hours[i] : { o: '09:00', c: '18:00' }; cur[i] = { on: !!x, o: x ? x.o : '09:00', c: x ? x.c : '18:00' }; });
-  modal('<h3>' + esc(t('h_title')) + '</h3><p class="hint" style="margin-top:-6px">' + esc(t('h_hint')) + '</p><ul class="rows" id="hRows" style="margin-top:12px"></ul>' +
+  modal('<h3>' + esc(g ? t('h_for', g.n) : t('h_title')) + '</h3><p class="hint" style="margin-top:-6px">' + esc(t('h_hint')) + '</p><ul class="rows" id="hRows" style="margin-top:12px"></ul>' +
     '<button class="btn small wide" id="hCopy" type="button">' + esc(t('h_copy')) + '</button>' +
     '<div class="grid2 wrap" style="margin-top:14px"><div class="field"><label for="hPre">' + esc(t('h_pre')) + '</label><select id="hPre">' + minuteOptions(s.pre) + '</select></div><div class="field"><label for="hPost">' + esc(t('h_post')) + '</label><select id="hPost">' + minuteOptions(s.post) + '</select></div></div>' +
-    '<div id="hMsg"></div><div class="row2">' + (s.hours ? '<button class="btn danger" id="hClear" type="button">' + esc(t('h_clear')) + '</button>' : '') + '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="hOk" type="button">' + esc(t('save')) + '</button></div>', function(el){
+    '<div id="hMsg"></div><div class="row2">' + ((g ? g.hours : s.hours) ? '<button class="btn danger" id="hClear" type="button">' + esc(t(g ? 'h_inherit' : 'h_clear')) + '</button>' : '') + '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="hOk" type="button">' + esc(t('save')) + '</button></div>', function(el){
     var note = function(x){ return !x.o || !x.c ? '' : x.o === x.c ? '24 h' : mins(x.c) < mins(x.o) ? '☾ ' + t('h_next') : hrs(dur({ a: x.o, b: x.c })) + ' ' + t('h'); };
     var draw = function(){
       $('#hRows', el).innerHTML = order.map(function(i){
@@ -1559,14 +1566,14 @@ function hoursWin(){
     el.addEventListener('input', onEdit); el.addEventListener('change', onEdit);
     $('#hCopy', el).onclick = function(){ var f = order.filter(function(i){ return cur[i].on; })[0]; if(f == null) return; order.forEach(function(i){ if(cur[i].on){ cur[i].o = cur[f].o; cur[i].c = cur[f].c; } }); draw(); };
     var minutes = function(v){ return Math.max(0, Math.min(240, parseInt(v, 10) || 0)); };
-    var store1 = function(change){ var prev = Object.assign({ id: 'set', k: 'set' }, settings()); close(el); touchMany([Object.assign({ id: 'set', k: 'set' }, settings(), change)]); toast(t('h_saved'), t('undo'), function(){ touchMany([prev]); }); };
+    var store1 = function(change){ var cur0 = g ? copy(rec(gid)) : Object.assign({ id: 'set', k: 'set' }, settings()), prev = copy(cur0); close(el); touchMany([Object.assign(cur0, change)]); toast(t('h_saved'), t('undo'), function(){ touchMany([prev]); if(after) after(); }); if(after) after(); };
     $('#hOk', el).onclick = function(){
       var hh = {}, bad = false;
       order.forEach(function(i){ var x = cur[i]; if(!x.on) return; if(!x.o || !x.c) bad = true; else hh[i] = { o: x.o, c: x.c }; });
       if(bad){ $('#hMsg', el).innerHTML = '<div class="msg err">' + esc(t('h_err')) + '</div>'; return; }
       store1({ hours: hh, pre: minutes($('#hPre', el).value), post: minutes($('#hPost', el).value) });
     };
-    if($('#hClear', el)) $('#hClear', el).onclick = function(){ store1({ hours: null }); };
+    if($('#hClear', el)) $('#hClear', el).onclick = function(){ store1(g ? { hours: null, pre: null, post: null } : { hours: null }); };
   });
 }
 
@@ -1587,7 +1594,7 @@ $('#gear').onclick = function(){
     $('#gWs', el).onclick = function(e){ var b = e.target.closest('[data-ws]'); if(!b) return; ws = +b.dataset.ws; $$('#gWs button', el).forEach(function(o){ o.classList.toggle('on', o === b); }); };
     $('.lang', el).addEventListener('click', function(e){ if(e.target.closest('[data-lang]')){ setTimeout(function(){ keep(); close(el); $('#gear').click(); }); } });
     var go = function(fn){ return function(){ keep(); close(el); fn(); }; };
-    $('#gHours', el).onclick = go(hoursWin);
+    $('#gHours', el).onclick = go(function(){ hoursWin(); });
     $('#gRoles', el).onclick = go(editRoles);
     $('#gGrps', el).onclick = go(groupsWin);
     $('#gExp', el).onclick = go(exportWin);
