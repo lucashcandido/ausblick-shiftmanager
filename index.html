@@ -351,7 +351,7 @@ es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo'
   v_plan:'Plan', v_people:'Personal', prev_week:'Semana anterior', next_week:'Semana siguiente', week_n:'Semana {0}', today_btn:'Hoy', show:'Mostrar',
   m_days:'Días', m_line:'Línea', m_table:'Tabla', all_people:'Todo el personal', only_open:'Sin asignar', new_shift:'Nuevo turno', new_emp:'Nuevo empleado',
   st_shifts:'{0} turnos', st_hours:'{0} h', st_open:'{0} sin asignar', st_issues:'{0} conflictos', st_gaps:'{0} faltantes', st_wishes:'{0} pedidos',
-  no_shifts:'Sin turnos.', open:'Sin asignar', removed:'(eliminado)', h:'h', total:'Total', cover:'Cobertura', anyone:'personal',
+  no_shifts:'Sin turnos.', open:'Sin asignar', open_row:'Turnos abiertos', removed:'(eliminado)', h:'h', total:'Total', cover:'Cobertura', anyone:'personal',
   w_overlap:'Se superpone con otro turno de {0}', w_absent:'{0} está ausente ({1})', w_role:'{0} no tiene el puesto {1}', w_rest:'{0}: solo {1} h de descanso',
   w_wish:'{0} pidió franco ese día', w_need:'Falta {0} {1} ({2})',
   copy_week:'Copiar semana anterior', copy_none:'La semana anterior no tiene turnos.', copied:'{0} turnos copiados', copy_skip:'{0} ya existían',
@@ -400,7 +400,7 @@ en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have
   v_plan:'Plan', v_people:'Staff', prev_week:'Previous week', next_week:'Next week', week_n:'Week {0}', today_btn:'Today', show:'Show',
   m_days:'Days', m_line:'Timeline', m_table:'Table', all_people:'All staff', only_open:'Unassigned', new_shift:'New shift', new_emp:'New employee',
   st_shifts:'{0} shifts', st_hours:'{0} h', st_open:'{0} unassigned', st_issues:'{0} conflicts', st_gaps:'{0} gaps', st_wishes:'{0} requests',
-  no_shifts:'No shifts.', open:'Unassigned', removed:'(removed)', h:'h', total:'Total', cover:'Coverage', anyone:'staff',
+  no_shifts:'No shifts.', open:'Unassigned', open_row:'Open shifts', removed:'(removed)', h:'h', total:'Total', cover:'Coverage', anyone:'staff',
   w_overlap:'Overlaps another shift of {0}', w_absent:'{0} is absent ({1})', w_role:'{0} doesn’t have the role {1}', w_rest:'{0}: only {1} h rest',
   w_wish:'{0} asked for that day off', w_need:'Missing {0} {1} ({2})',
   copy_week:'Copy previous week', copy_none:'The previous week has no shifts.', copied:'{0} shifts copied', copy_skip:'{0} already existed',
@@ -449,7 +449,7 @@ de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_
   v_plan:'Plan', v_people:'Personal', prev_week:'Vorige Woche', next_week:'Nächste Woche', week_n:'KW {0}', today_btn:'Heute', show:'Anzeigen',
   m_days:'Tage', m_line:'Zeitstrahl', m_table:'Tabelle', all_people:'Alle Mitarbeiter', only_open:'Unbesetzt', new_shift:'Neue Schicht', new_emp:'Neuer Mitarbeiter',
   st_shifts:'{0} Schichten', st_hours:'{0} h', st_open:'{0} unbesetzt', st_issues:'{0} Konflikte', st_gaps:'{0} Lücken', st_wishes:'{0} Wünsche',
-  no_shifts:'Keine Schichten.', open:'Unbesetzt', removed:'(gelöscht)', h:'h', total:'Summe', cover:'Abdeckung', anyone:'Personal',
+  no_shifts:'Keine Schichten.', open:'Unbesetzt', open_row:'Offene Schichten', removed:'(gelöscht)', h:'h', total:'Summe', cover:'Abdeckung', anyone:'Personal',
   w_overlap:'Überschneidet sich mit einer anderen Schicht von {0}', w_absent:'{0} ist abwesend ({1})', w_role:'{0} hat die Rolle {1} nicht', w_rest:'{0}: nur {1} h Ruhezeit',
   w_wish:'{0} hat sich den Tag frei gewünscht', w_need:'Es fehlt {0}× {1} ({2})',
   copy_week:'Vorwoche kopieren', copy_none:'Die Vorwoche hat keine Schichten.', copied:'{0} Schichten kopiert', copy_skip:'{0} gab es schon',
@@ -909,7 +909,7 @@ function lineHtml(W, n, today){
   var inRange = function(x){ var sp = span(x); return sp[1] > from && sp[0] < to; };
   var rows = (ui.who === '-' ? [] : emps().filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n }; });
   pool.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && inRange(x) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
-  if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
+  if(ui.who === '-' || (!ui.who && pool.some(function(x){ return !x.emp && inRange(x); }))) rows.push({ id: '', n: t('open_row'), open: true });
   /* opening hours of this day and its neighbours (a night past midnight) as zones behind the shifts */
   var wins = [n - 1, n, n + 1].map(windowOn).filter(Boolean);
   var zone = function(a, b, c){ var l = pct(a), w = pct(b) - l; return w > 0 ? '<i class="' + c + '" style="left:' + l + '%;width:' + w + '%"></i>' : ''; };
@@ -945,7 +945,7 @@ function tableHtml(W, shown, today){
   var people = emps(), offs = live('off'), n0 = W.n0;
   var rows = (ui.who === '-' ? [] : people.filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n, h: e.h }; });
   W.week.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
-  if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
+  if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open_row'), open: true });
   var head = '<tr><th></th>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){ var n = n0 + i; return '<th class="' + (n === today ? 'today' : '') + (n < today ? ' past' : '') + '">' + esc(fmtDay(n)) + (W.gaps[n] ? ' <span style="color:var(--out)">⚠</span>' : '') + (hoursText(n) ? '<small>' + esc(hoursText(n)) + '</small>' : '') + '</th>'; }).join('') + '<th>' + esc(t('total')) + '</th></tr>';
   var body = rows.map(function(r){
     var mine = shown.filter(function(x){ return (x.emp || '') === r.id; }), tot = mine.reduce(function(m, x){ return m + dur(x); }, 0);
