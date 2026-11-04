@@ -888,23 +888,13 @@ function daysHtml(W, shown, today){
       (away.length || wants.length ? '<div class="offl">' + away.map(function(o){ return '<b>' + esc(empName(o.emp)) + '</b> – ' + esc(abName(o.kind)); }).concat(wants.map(function(w){ return '<span class="wsh" data-wish="1">' + esc(t('wants_off', empName(w.emp))) + '</span>'; })).join(' · ') + '</div>' : '') + '</section>';
   }).join('') + '</div>';
 }
-/* the stretch of a day the timeline shows: with opening hours the operating time (opening minus preparation up to closing
-   plus closing work) and every shift that starts that day, rounded to the grid; without opening hours 0–24 h */
-function lineRange(n, pool){
-  var d = numIso(n), d0 = n * 1440, win = windowOn(n), from = d0, to = d0 + 1440;
-  if(win !== undefined){
-    var lo = win ? win.so : Infinity, hi = win ? win.sc : -Infinity;
-    pool.forEach(function(x){ if(x.d === d){ var sp = span(x); if(sp[0] < lo) lo = sp[0]; if(sp[1] > hi) hi = sp[1]; } });
-    if(lo < hi){ from = lo; to = hi; }
-  }
-  var step = [1, 2, 3, 4, 6].filter(function(st){ return (to - from) / 60 / st <= 8; })[0] || 6, u = step * 60;
-  from = Math.floor(from / u) * u; to = Math.ceil(to / u) * u;
-  while(to - from < 240) to += u;
-  return { from: from, to: to, step: step, win: win };
+/* the timeline always shows the whole day, 0–24 h; opening and operating hours are shaded in it */
+function lineRange(n){
+  return { from: n * 1440, to: n * 1440 + 1440, step: innerWidth >= 700 ? 3 : 6, win: windowOn(n) };
 }
 /* one day as a timeline, one row per person; below it the opening hours and the coverage (green = minimum met, red = missing, blue = someone there) */
 function lineHtml(W, n, today){
-  var d = numIso(n), pool = W.pool, offs = live('off'), R = lineRange(n, pool), from = R.from, to = R.to, len = to - from;
+  var d = numIso(n), pool = W.pool, offs = live('off'), R = lineRange(n), from = R.from, to = R.to, len = to - from;
   var pct = function(m){ return Math.max(0, Math.min(100, (m - from) * 100 / len)); };
   var inRange = function(x){ var sp = span(x); return sp[1] > from && sp[0] < to; };
   var rows = (ui.who === '-' ? [] : emps().filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n }; });

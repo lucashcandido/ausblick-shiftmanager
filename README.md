@@ -7,7 +7,7 @@ Einfacher Schichtplaner und **Basis für die Schichtplanung aller Ausblick-Kunde
 - **Wochenleiste:** oben 7 Tageskacheln mit Ampel (grün ok · gelb unbesetzt · rot Konflikt oder Lücke). Bleibt beim Scrollen stehen. Antippen springt zum Tag. Am Handy wechselt Wischen die Woche (im Zeitstrahl: den Tag).
 - **Drei Ansichten:**
   - **Días** – pro Tag, mit Avatar, Zeit und Rollen-Etikett. Vergangene Tage sind ausgegraut.
-  - **Línea** – ein Tag als Zeitstrahl, eine Zeile pro Person, darunter Öffnungszeiten und Abdeckung (grün = Mindestbesetzung erfüllt, rot = fehlt, blau = jemand da). Mit Öffnungszeiten zeigt er nur die Betriebszeit des Tages (plus Schichten, die darüber hinausgehen), sonst 0–24 Uhr. In eine leere Zeile tippen legt dort eine Schicht an.
+  - **Línea** – ein Tag als Zeitstrahl, eine Zeile pro Person, darunter Öffnungszeiten und Abdeckung (grün = Mindestbesetzung erfüllt, rot = fehlt, blau = jemand da). Er zeigt immer 0–24 Uhr; Öffnungs- und Betriebszeit sind darin farbig hinterlegt. In eine leere Zeile tippen legt dort eine Schicht an.
   - **Tabla** – Person × Tag mit Stundensumme. Am PC Schichten per **Drag & Drop** verschieben, mit Alt/Strg kopieren. Druckt im Querformat.
 - **Schicht anlegen:** Datum, Von/Bis (Nachtschicht automatisch ☾), Rolle, Mitarbeiter, Notiz. „Turnos típicos“ füllen mit einem Tipp. „Repetir también en“ für weitere Tage. Bestehende Schicht: Löschen oder Duplizieren.
 - **Öffnungs- und Betriebszeiten** (Configuración → Horario de apertura):
