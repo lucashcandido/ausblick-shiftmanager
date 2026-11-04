@@ -78,6 +78,7 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .strip button.today{border-color:var(--accent)} .strip button.today b{color:var(--accent)}
 .strip button.sel{background:var(--accent-soft);border-color:var(--accent)}
 .strip button.past{opacity:.55}
+.strip button.closed{border-style:dashed;background:var(--bg)}
 .tools{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .tools select{flex:1 1 160px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-size:15px;min-width:0}
 .seg{display:flex;gap:4px;flex:none} .seg button{padding:8px 12px}
@@ -93,6 +94,7 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .day.past{opacity:.62}
 .dh{display:flex;align-items:center;gap:8px}
 .dh b{flex:1;font-size:16px} .dh span{color:var(--muted);font-size:13px}
+.dh b small{font-weight:500;color:var(--muted);font-size:13px;margin-left:6px;white-space:nowrap}
 .dh button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:20px;line-height:1;flex:none}
 .shl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
 .sh{border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;display:flex;gap:10px;align-items:center}
@@ -113,15 +115,21 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .line{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
 .lh{display:flex;align-items:center;gap:8px;margin-bottom:10px} .lh b{flex:1} .lh span{color:var(--muted);font-size:13px}
 .axis,.lrow,.cov{display:grid;grid-template-columns:76px 1fr;gap:8px;align-items:center}
-@media (min-width:700px){.axis,.lrow,.cov{grid-template-columns:150px 1fr}.gaps{margin-left:158px!important}}
+@media (min-width:700px){.axis,.lrow,.cov{grid-template-columns:150px 1fr}.gaps{margin-left:158px!important}.hleg{margin-left:158px}}
 .axis div:last-child{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
 .lrow{margin-top:6px}
 .lname{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:650;min-width:0} .lname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.track{position:relative;height:34px;border-radius:8px;background:var(--bg);cursor:pointer;background-image:linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:25% 100%}
+.track{position:relative;height:34px;border-radius:8px;background:var(--bg);cursor:pointer;isolation:isolate;overflow:hidden}
+.track::after{content:"";position:absolute;inset:0;background-image:linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:var(--gs,25%) 100%;pointer-events:none;z-index:1}
+.track .zone{position:absolute;top:0;bottom:0;pointer-events:none;z-index:0}
+.zone.pp,.hband .pp,.hleg .pp{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn) 18%,var(--card)) 0 5px,var(--card) 5px 10px)}
+.zone.op,.hband .op,.hleg .op{background:color-mix(in srgb,var(--in) 11%,var(--card))}
+.hband{position:relative;height:10px;border-radius:5px;background:var(--bg);overflow:hidden} .hband i{position:absolute;top:0;bottom:0}
+.hleg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0 0 84px} .hleg i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
 .track.off{background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,var(--line) 6px,var(--line) 8px)}
 .track.wish{outline:1.5px dashed var(--vio)}
-.track .offt{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);pointer-events:none}
-.bar{position:absolute;top:4px;bottom:4px;border-radius:6px;background:color-mix(in srgb,var(--c,var(--accent)) 30%,var(--card));border:1.5px solid var(--c,var(--accent));font-size:12px;font-weight:700;padding:0 4px;overflow:hidden;white-space:nowrap;display:flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums}
+.track .offt{position:absolute;z-index:2;inset:0;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);pointer-events:none}
+.bar{position:absolute;z-index:2;top:4px;bottom:4px;border-radius:6px;background:color-mix(in srgb,var(--c,var(--accent)) 30%,var(--card));border:1.5px solid var(--c,var(--accent));font-size:12px;font-weight:700;padding:0 4px;overflow:hidden;white-space:nowrap;display:flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums}
 .bar.bad{outline:2px solid var(--out);outline-offset:1px}
 .bar.cl{border-left-style:dashed;border-top-left-radius:0;border-bottom-left-radius:0}
 .bar.cr{border-right-style:dashed;border-top-right-radius:0;border-bottom-right-radius:0}
@@ -137,6 +145,7 @@ table.grid{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
 .grid th,.grid td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px;vertical-align:top;text-align:left}
 .grid th{font-size:13px;color:var(--muted);font-weight:700;background:var(--bg);white-space:nowrap}
 .grid th.today{color:var(--accent)}
+.grid th small{display:block;font-weight:500;font-size:12px}
 .grid th.past,.grid td.past{background:color-mix(in srgb,var(--bg) 60%,transparent)}
 .grid td:first-child,.grid th:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:130px;font-weight:700}
 .grid td:first-child .nm{display:flex;align-items:center;gap:6px}
@@ -184,6 +193,9 @@ table.grid{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
 .x{border:0;background:none;color:var(--out);font-size:20px;cursor:pointer;width:34px;height:34px;border-radius:8px;flex:none}
 .sw{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);background:var(--c);cursor:pointer;flex:none}
 .addrow{display:flex;gap:8px;flex-wrap:wrap} .addrow .inp{flex:1 1 140px;min-width:0;width:auto} .addrow input[type=time]{flex:0 0 110px}
+.hday{display:flex;align-items:center;gap:8px;min-width:76px;cursor:pointer;font-size:15px} .hday input{width:20px;height:20px;margin:0;accent-color:var(--accent)}
+.rows li input[type=time].inp{flex:1 1 112px;min-width:0;max-width:160px;width:auto;padding:8px 10px;font-size:16px}
+.rows li small[data-hn]{flex-basis:100%;padding-left:84px;margin-top:-2px} @media (min-width:600px){.rows li small[data-hn]{flex-basis:auto;padding-left:0;margin-top:0}}
 .addrow select.inp{flex:0 1 150px} .addrow input[type=number]{flex:0 0 80px}
 .acct{display:flex;align-items:center;gap:8px;margin-bottom:6px} .acct b{flex:1;text-align:center}
 .acct button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer}
@@ -355,7 +367,7 @@ es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo'
   this_week:'esta semana', of_h:'de {0} h', send_wa:'Enviar horario por WhatsApp', wa_hi:'Hola {0}, tus turnos de la semana {1}:', wa_none:'Hola {0}, no tenés turnos en la semana {1}.',
   emp_shifts_left:'{0} tiene turnos cargados. Quedan como «sin asignar».', no_people:'Todavía no hay personal. Tocá «Nuevo empleado».',
   acct:'Cuenta de horas', a_plan:'Trabajadas', a_goal:'Objetivo', a_bal:'Saldo', acct_hint:'Objetivo = horas por semana ÷ 7 por día; vacaciones y enfermedad no cuentan.',
-  s_biz:'Nombre del negocio', ph_biz:'Ej. Cochera Centro', s_ws:'La semana empieza', mon:'Lunes', sun:'Domingo', s_rest:'Descanso mínimo entre turnos (horas)', s_rest_hint:'0 = no controlar.',
+  s_biz:'Nombre del negocio', ph_biz:'Ej. Cochera Centro', s_ws:'La semana empieza', mon:'Lunes', sun:'Domingo', s_rest:'Descanso mínimo entre turnos (horas)', s_rest_hint:'0 = no controlar.', g_hours:'Horario de apertura', h_title:'Horario de apertura y de funcionamiento', h_hint:'Apertura = horario de atención al público. Funcionamiento = apertura más la preparación antes y el trabajo después del cierre; la línea de tiempo muestra ese rango. Misma hora de apertura y cierre = 24 h; si cierra antes de la hora de apertura, cierra al día siguiente.', h_closed:'Cerrado', h_pre:'Preparación antes de abrir (min)', h_post:'Trabajo después de cerrar (min)', h_copy:'Copiar el primer día abierto a todos', h_clear:'Sin horario', h_err:'Poné desde y hasta en cada día abierto.', h_next:'cierra al día siguiente', h_open_at:'Abierto {0}', h_ops_at:'funcionamiento {0}', h_band:'Horario', h_leg_op:'Abierto', h_leg_pp:'Preparación / cierre', h_saved:'Horario guardado.',
   s_pos:'Puestos, turnos típicos y mínimos', s_pos_hint:'Puestos = áreas o tareas (caja, cocina…). Turnos típicos = horarios que se repiten, para cargar con un toque.',
   pos_list:'Puestos', ph_pos:'Nuevo puesto', tpl_list:'Turnos típicos', ph_tpl:'Nombre (ej. Mañana)', add_btn:'Agregar', preset_apply:'Cargar modelo de rubro', preset_done:'Modelo «{0}» cargado.',
   needs:'Mínimo de personal', needs_hint:'Cuántas personas tienen que estar como mínimo. La app marca lo que falta.', need_any:'Cualquier puesto', ph_count:'Cant.', err_need:'Elegí días, horario y cantidad.',
@@ -404,7 +416,7 @@ en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have
   this_week:'this week', of_h:'of {0} h', send_wa:'Send schedule via WhatsApp', wa_hi:'Hi {0}, your shifts for the week {1}:', wa_none:'Hi {0}, you have no shifts in the week {1}.',
   emp_shifts_left:'{0} has shifts planned. They stay as “unassigned”.', no_people:'No staff yet. Tap “New employee”.',
   acct:'Hours balance', a_plan:'Worked', a_goal:'Target', a_bal:'Balance', acct_hint:'Target = hours per week ÷ 7 per day; vacation and sick days don’t count.',
-  s_biz:'Business name', ph_biz:'E.g. Downtown Parking', s_ws:'Week starts on', mon:'Monday', sun:'Sunday', s_rest:'Minimum rest between shifts (hours)', s_rest_hint:'0 = don’t check.',
+  s_biz:'Business name', ph_biz:'E.g. Downtown Parking', s_ws:'Week starts on', mon:'Monday', sun:'Sunday', s_rest:'Minimum rest between shifts (hours)', s_rest_hint:'0 = don’t check.', g_hours:'Opening hours', h_title:'Opening and operating hours', h_hint:'Opening = when customers are served. Operating = opening plus preparation before and closing work after; the timeline shows that range. Same opening and closing time = 24 h; closing earlier than opening means it closes the next day.', h_closed:'Closed', h_pre:'Preparation before opening (min)', h_post:'Work after closing (min)', h_copy:'Copy the first open day to all', h_clear:'No hours', h_err:'Enter from and to for every open day.', h_next:'closes the next day', h_open_at:'Open {0}', h_ops_at:'operating {0}', h_band:'Hours', h_leg_op:'Open', h_leg_pp:'Preparation / closing', h_saved:'Hours saved.',
   s_pos:'Roles, typical shifts and minimums', s_pos_hint:'Roles = areas or tasks (cashier, kitchen…). Typical shifts = recurring times, to add with one tap.',
   pos_list:'Roles', ph_pos:'New role', tpl_list:'Typical shifts', ph_tpl:'Name (e.g. Morning)', add_btn:'Add', preset_apply:'Load business type', preset_done:'Type “{0}” loaded.',
   needs:'Minimum staffing', needs_hint:'How many people must be there at least. The app marks what’s missing.', need_any:'Any role', ph_count:'No.', err_need:'Choose days, times and a number.',
@@ -453,7 +465,7 @@ de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_
   this_week:'diese Woche', of_h:'von {0} h', send_wa:'Plan per WhatsApp senden', wa_hi:'Hallo {0}, deine Schichten in der Woche {1}:', wa_none:'Hallo {0}, du hast keine Schichten in der Woche {1}.',
   emp_shifts_left:'{0} hat geplante Schichten. Sie bleiben als „unbesetzt“.', no_people:'Noch kein Personal. Tippe auf „Neuer Mitarbeiter“.',
   acct:'Stundenkonto', a_plan:'Gearbeitet', a_goal:'Soll', a_bal:'Saldo', acct_hint:'Soll = Wochenstunden ÷ 7 pro Tag; Urlaub und Krankheit zählen nicht.',
-  s_biz:'Name des Betriebs', ph_biz:'Z. B. Parkhaus Zentrum', s_ws:'Woche beginnt am', mon:'Montag', sun:'Sonntag', s_rest:'Mindestruhezeit zwischen Schichten (Stunden)', s_rest_hint:'0 = nicht prüfen.',
+  s_biz:'Name des Betriebs', ph_biz:'Z. B. Parkhaus Zentrum', s_ws:'Woche beginnt am', mon:'Montag', sun:'Sonntag', s_rest:'Mindestruhezeit zwischen Schichten (Stunden)', s_rest_hint:'0 = nicht prüfen.', g_hours:'Öffnungszeiten', h_title:'Öffnungs- und Betriebszeiten', h_hint:'Öffnungszeit = wann Kunden bedient werden. Betriebszeit = Öffnungszeit plus Vorbereitung davor und Nachbereitung danach; der Zeitstrahl zeigt diesen Bereich. Gleiche Öffnungs- und Schließzeit = 24 h; schließt es früher als es öffnet, schließt es am nächsten Tag.', h_closed:'Geschlossen', h_pre:'Vorbereitung vor Öffnung (Min.)', h_post:'Nachbereitung nach Schließung (Min.)', h_copy:'Ersten offenen Tag auf alle übertragen', h_clear:'Keine Öffnungszeiten', h_err:'Gib für jeden offenen Tag von und bis ein.', h_next:'schließt am nächsten Tag', h_open_at:'Geöffnet {0}', h_ops_at:'Betrieb {0}', h_band:'Zeiten', h_leg_op:'Geöffnet', h_leg_pp:'Vor-/Nachbereitung', h_saved:'Öffnungszeiten gespeichert.',
   s_pos:'Rollen, typische Schichten und Mindestbesetzung', s_pos_hint:'Rollen = Bereiche oder Aufgaben (Kasse, Küche…). Typische Schichten = wiederkehrende Zeiten, mit einem Tipp eingetragen.',
   pos_list:'Rollen', ph_pos:'Neue Rolle', tpl_list:'Typische Schichten', ph_tpl:'Name (z. B. Früh)', add_btn:'Hinzufügen', preset_apply:'Branchen-Modell laden', preset_done:'Modell „{0}“ geladen.',
   needs:'Mindestbesetzung', needs_hint:'Wie viele Personen mindestens da sein müssen. Die App markiert, was fehlt.', need_any:'Beliebige Rolle', ph_count:'Anz.', err_need:'Wähle Tage, Zeiten und eine Anzahl.',
@@ -485,6 +497,8 @@ var PRESETS = [
 ];
 var COLORS = ['#0d9488', '#d97706', '#9333ea', '#16a34a', '#dc2626', '#2563eb', '#db2777', '#65a30d'];
 /* avatar colours: pale background, dark text; readable in light and dark mode */
+/* typical opening hours per model: [weekdays (0 = Sunday), open, close, minutes before, minutes after]; same open and close = 24 h */
+var PRESET_HOURS = { parking: [[0, 1, 2, 3, 4, 5, 6], '00:00', '00:00', 0, 0], hair: [[2, 3, 4, 5, 6], '09:00', '20:00', 15, 15], food: [[0, 2, 3, 4, 5, 6], '12:00', '00:00', 60, 45], retail: [[1, 2, 3, 4, 5, 6], '09:00', '20:00', 15, 15], general: [[1, 2, 3, 4, 5], '09:00', '18:00', 0, 0] };
 var AVC = [['#dbeafe', '#1e3a8a'], ['#dcfce7', '#14532d'], ['#fef3c7', '#78350f'], ['#f3e8ff', '#581c87'], ['#ffe4e6', '#881337'], ['#cffafe', '#164e63'], ['#fce7f3', '#831843'], ['#ecfccb', '#365314'], ['#e0e7ff', '#312e81'], ['#ffedd5', '#7c2d12']];
 
 var lang = store.get(KEY.lang, null);
@@ -546,7 +560,7 @@ var avatar = function(id, name, cls){ if(!id) return '<span class="av open ' + (
    need {pos, days:[0–6], a, b, n}           minimum staffing (0 = Sunday, like getDay)
    sh   {d, a, b, pos, emp, note, by}        shifts (emp '' = unassigned)
    off  {emp, from, to, kind, note}          absences (vac, sick, off)
-   set  {biz, ws, rest}                      settings (one record, id 'set')
+   set  {biz, ws, rest, hours, pre, post}    settings (one record, id 'set'); hours = {0–6: {o, c}}, missing day = closed
    Every record has t (last change) and del (deleted); the newer change wins when two devices meet.
    Day-off requests live in the team repository (wishes.json): {emp, from, to, note, st:''|'ok'|'no', by}. */
 var cfg = store.get(KEY.cfg, null);              /* {role:'mgr'|'staff', repo, token, code, name, team, emp} */
@@ -561,7 +575,7 @@ var onlyBad = false, lineOff = null;
 var sync = { busy: false, timer: 0, again: false, label: null };
 var isStaff = function(){ return cfg && cfg.role === 'staff'; };
 var live = function(k){ return Object.keys(data).map(function(id){ return data[id]; }).filter(function(x){ return x && !x.del && x.k === k; }); };
-var settings = function(){ var s = data.set; return Object.assign({ biz: '', ws: 1, rest: 12 }, s && !s.del ? s : {}); };
+var settings = function(){ var s = data.set; return Object.assign({ biz: '', ws: 1, rest: 12, hours: null, pre: 0, post: 0 }, s && !s.del ? s : {}); };
 var byName = function(a, b){ return norm(a.n).localeCompare(norm(b.n)); };
 var emps = function(){ return live('emp').sort(byName); };
 var poses = function(){ return live('pos').sort(function(a, b){ return (a.o || 0) - (b.o || 0) || byName(a, b); }); };
@@ -618,6 +632,14 @@ function coverage(n, pool){
   return gaps;
 }
 var gapText = function(g){ var p = posOf(g.need.pos); return t('w_need', g.miss, p ? p.n : t('anyone'), hhmm(g.from) + '–' + hhmm(g.to)); };
+
+/* ---------- opening hours ----------
+   hoursOn(n): undefined = no opening hours set, null = closed that day, else {o, c}.
+   windowOn(n): opening o–c and operating so–sc (minus preparation, plus closing work) in minutes since 1970. */
+var hoursOn = function(n){ var h = settings().hours; if(!h) return undefined; var x = h[dow(n)]; return x && x.o && x.c ? x : null; };
+function windowOn(n){ var h = hoursOn(n); if(!h) return h; var s = settings(), o = n * 1440 + mins(h.o), c = o + dur({ a: h.o, b: h.c }); return { o: o, c: c, so: o - (+s.pre || 0), sc: c + (+s.post || 0) }; }
+var hoursText = function(n){ var h = hoursOn(n); return h === undefined ? '' : h === null ? t('h_closed') : h.o === h.c ? '24 h' : h.o + '–' + h.c; };
+var wdName = function(i){ return fmtDay(3 + i, { weekday: 'short' }).replace('.', ''); };   /* day 3 = Sunday 4 Jan 1970, so 3 + getDay() */
 
 /* ---------- hours balance ----------
    Target per calendar day = weekly hours ÷ 7; vacation and sick days have no target. */
@@ -827,7 +849,7 @@ function renderPlan(){
     var n = n0 + i, d = numIso(n), list = W.week.filter(function(x){ return x.d === d; });
     var red = W.gaps[n] || list.some(function(x){ return W.bad[x.id]; }), yellow = list.some(function(x){ return !x.emp; });
     var st = red ? 'e' : yellow ? 'w' : list.length ? 'ok' : '';
-    return '<button type="button" data-day="' + i + '" class="' + st + (n === today ? ' today' : '') + (n < today ? ' past' : '') + (ui.mode === 'line' && lineOff === i ? ' sel' : '') + '"><small>' + esc(fmtDay(n, { weekday: 'short' }).replace('.', '')) + '</small><b>' + numDate(n).getDate() + '</b><i></i></button>';
+    return '<button type="button" data-day="' + i + '" class="' + st + (hoursOn(n) === null ? ' closed' : '') + (n === today ? ' today' : '') + (n < today ? ' past' : '') + (ui.mode === 'line' && lineOff === i ? ' sel' : '') + '"><small>' + esc(fmtDay(n, { weekday: 'short' }).replace('.', '')) + '</small><b>' + numDate(n).getDate() + '</b><i></i></button>';
   }).join('');
   var shown = W.week.filter(function(x){ return (!ui.who || (ui.who === '-' ? !x.emp : x.emp === ui.who)) && (!onlyBad || W.bad[x.id]); });
   var open = W.week.filter(function(x){ return !x.emp; }).length, nbad = Object.keys(W.bad).length;
@@ -860,46 +882,71 @@ function daysHtml(W, shown, today){
     var away = offs.filter(function(o){ return o.from <= d && d <= o.to && rec(o.emp) && (!ui.who || ui.who === o.emp); });
     var wants = wl.filter(function(w){ return w.from <= d && d <= w.to && (!ui.who || ui.who === w.emp); });
     var gaps = onlyBad ? [] : (W.gaps[n] || []);
-    return '<section class="day' + (n === today ? ' today' : '') + (n < today ? ' past' : '') + '" id="day' + i + '"><div class="dh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'short' })) + '</b><span>' + (list.length ? esc(t('st_hours', hrs(list.reduce(function(m, x){ return m + dur(x); }, 0)))) : '') + '</span><button type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '">+</button></div>' +
-      (list.length ? '<ul class="shl">' + list.map(function(x){ return shiftLi(x, W.bad[x.id]); }).join('') + '</ul>' : '<p class="none">' + esc(t('no_shifts')) + '</p>') +
+    return '<section class="day' + (n === today ? ' today' : '') + (n < today ? ' past' : '') + '" id="day' + i + '"><div class="dh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'short' })) + (hoursText(n) ? ' <small>' + esc(hoursText(n)) + '</small>' : '') + '</b><span>' + (list.length ? esc(t('st_hours', hrs(list.reduce(function(m, x){ return m + dur(x); }, 0)))) : '') + '</span><button type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '">+</button></div>' +
+      (list.length ? '<ul class="shl">' + list.map(function(x){ return shiftLi(x, W.bad[x.id]); }).join('') + '</ul>' : '<p class="none">' + esc(t(hoursOn(n) === null ? 'h_closed' : 'no_shifts')) + '</p>') +
       gaps.map(function(g){ return '<span class="wn" style="margin-top:6px">⚠ ' + esc(gapText(g)) + '</span>'; }).join('') +
       (away.length || wants.length ? '<div class="offl">' + away.map(function(o){ return '<b>' + esc(empName(o.emp)) + '</b> – ' + esc(abName(o.kind)); }).concat(wants.map(function(w){ return '<span class="wsh" data-wish="1">' + esc(t('wants_off', empName(w.emp))) + '</span>'; })).join(' · ') + '</div>' : '') + '</section>';
   }).join('') + '</div>';
 }
-/* one day, 0–24 h, one row per person; below it the coverage (green = minimum met, red = missing, blue = someone there) */
+/* the stretch of a day the timeline shows: with opening hours the operating time (opening minus preparation up to closing
+   plus closing work) and every shift that starts that day, rounded to the grid; without opening hours 0–24 h */
+function lineRange(n, pool){
+  var d = numIso(n), d0 = n * 1440, win = windowOn(n), from = d0, to = d0 + 1440;
+  if(win !== undefined){
+    var lo = win ? win.so : Infinity, hi = win ? win.sc : -Infinity;
+    pool.forEach(function(x){ if(x.d === d){ var sp = span(x); if(sp[0] < lo) lo = sp[0]; if(sp[1] > hi) hi = sp[1]; } });
+    if(lo < hi){ from = lo; to = hi; }
+  }
+  var step = [1, 2, 3, 4, 6].filter(function(st){ return (to - from) / 60 / st <= 8; })[0] || 6, u = step * 60;
+  from = Math.floor(from / u) * u; to = Math.ceil(to / u) * u;
+  while(to - from < 240) to += u;
+  return { from: from, to: to, step: step, win: win };
+}
+/* one day as a timeline, one row per person; below it the opening hours and the coverage (green = minimum met, red = missing, blue = someone there) */
 function lineHtml(W, n, today){
-  var d = numIso(n), d0 = n * 1440, pool = W.pool, offs = live('off');
+  var d = numIso(n), pool = W.pool, offs = live('off'), R = lineRange(n, pool), from = R.from, to = R.to, len = to - from;
+  var pct = function(m){ return Math.max(0, Math.min(100, (m - from) * 100 / len)); };
+  var inRange = function(x){ var sp = span(x); return sp[1] > from && sp[0] < to; };
   var rows = (ui.who === '-' ? [] : emps().filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n }; });
-  pool.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && !rows.some(function(r){ return r.id === x.emp; })){ var sp = span(x); if(sp[1] > d0 && sp[0] < d0 + 1440) rows.push({ id: x.emp, n: empName(x.emp) }); } });
+  pool.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && inRange(x) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
   if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
-  var pct = function(m){ return Math.max(0, Math.min(100, (m - d0) / 14.4)); };
+  /* opening hours of this day and its neighbours (a night past midnight) as zones behind the shifts */
+  var wins = [n - 1, n, n + 1].map(windowOn).filter(Boolean);
+  var zone = function(a, b, c){ var l = pct(a), w = pct(b) - l; return w > 0 ? '<i class="' + c + '" style="left:' + l + '%;width:' + w + '%"></i>' : ''; };
+  var zones = function(pre){ return wins.map(function(w){ return zone(w.so, w.sc, pre + 'pp') + zone(w.o, w.c, pre + 'op'); }).join(''); };
+  var gs = R.step * 6000 / len, ticks = [];
+  for(var m = from; m <= to; m += R.step * 60){ var hv = Math.floor(m / 60) % 24; ticks.push('<span>' + (hv === 0 && m === to ? 24 : hv) + '</span>'); }
   var body = rows.map(function(r){
-    var mine = pool.filter(function(x){ var sp = span(x); return (x.emp || '') === r.id && sp[1] > d0 && sp[0] < d0 + 1440; });
+    var mine = pool.filter(function(x){ return (x.emp || '') === r.id && inRange(x); });
     var ab = r.id ? offs.filter(function(o){ return o.emp === r.id && o.from <= d && d <= o.to; })[0] : null, ws = r.id ? wishOn(r.id, d) : null;
-    return '<div class="lrow' + (r.open ? ' openrow' : '') + '"><div class="lname" title="' + esc(r.n) + '">' + avatar(r.id, r.n, 'sm') + '<span>' + esc(r.open || innerWidth >= 700 ? r.n : String(r.n).split(' ')[0]) + '</span></div><div class="track' + (ab ? ' off' : '') + (ws ? ' wish' : '') + '" data-track="' + esc(r.id) + '" data-d="' + d + '">' +
+    return '<div class="lrow' + (r.open ? ' openrow' : '') + '"><div class="lname" title="' + esc(r.n) + '">' + avatar(r.id, r.n, 'sm') + '<span>' + esc(r.open || innerWidth >= 700 ? r.n : String(r.n).split(' ')[0]) + '</span></div><div class="track' + (ab ? ' off' : '') + (ws ? ' wish' : '') + '" style="--gs:' + gs + '%" data-track="' + esc(r.id) + '" data-r="' + from + '|' + to + '">' + (ab ? '' : zones('zone ')) +
       (ab ? '<span class="offt">' + esc(abName(ab.kind)) + '</span>' : ws ? '<span class="offt" style="color:var(--vio)">' + esc(t('wish_s')) + '</span>' : '') +
-      mine.map(function(x){ var sp = span(x), l = pct(sp[0]), w = pct(sp[1]) - l; return '<span class="bar' + (W.bad[x.id] ? ' bad' : '') + (sp[0] < d0 ? ' cl' : '') + (sp[1] > d0 + 1440 ? ' cr' : '') + '" data-sh="' + esc(x.id) + '" style="left:' + l + '%;width:' + w + '%;--c:' + esc(colOf(x)) + '" title="' + esc(x.a + '–' + x.b + (W.bad[x.id] ? ' · ' + W.bad[x.id].join(' · ') : '')) + '">' + (w > 14 ? esc(x.a + '–' + x.b) : '') + '</span>'; }).join('') + '</div></div>';
+      mine.map(function(x){ var sp = span(x), l = pct(sp[0]), w = pct(sp[1]) - l; return '<span class="bar' + (W.bad[x.id] ? ' bad' : '') + (sp[0] < from ? ' cl' : '') + (sp[1] > to ? ' cr' : '') + '" data-sh="' + esc(x.id) + '" style="left:' + l + '%;width:' + w + '%;--c:' + esc(colOf(x)) + '" title="' + esc(x.a + '–' + x.b + (W.bad[x.id] ? ' · ' + W.bad[x.id].join(' · ') : '')) + '">' + (w > 14 ? esc(x.a + '–' + x.b) : '') + '</span>'; }).join('') + '</div></div>';
   }).join('');
-  /* coverage in 15-minute steps */
-  var needs = needsOn(n), gaps = W.gaps[n] || [], segs = [], spans = pool.map(span);
-  for(var m = d0; m < d0 + 1440; m += STEP){
-    var miss = gaps.some(function(g){ return g.from <= m && m < g.to; });
-    var needed = needs.some(function(nd){ var a = d0 + mins(nd.a); return a <= m && m < a + dur(nd); });
-    var anyone = spans.some(function(sp){ return sp[0] <= m && m < sp[1]; });
+  /* coverage in 15-minute steps; the shown stretch may reach into the neighbouring days */
+  var dayGaps = W.gaps[n] || [], gaps = [].concat(W.gaps[n - 1] || [], dayGaps, W.gaps[n + 1] || []), spans = pool.filter(function(x){ return x.emp; }).map(span), segs = [], needW = [];
+  [n - 1, n, n + 1].forEach(function(k){ needsOn(k).forEach(function(nd){ var a = k * 1440 + mins(nd.a); needW.push([a, a + dur(nd)]); }); });
+  for(var q = from; q < to; q += STEP){
+    var miss = gaps.some(function(g){ return g.from <= q && q < g.to; });
+    var needed = needW.some(function(w){ return w[0] <= q && q < w[1]; });
+    var anyone = spans.some(function(sp){ return sp[0] <= q && q < sp[1]; });
     var c = miss ? 'r' : needed ? 'g' : anyone ? 'a' : '';
     if(segs.length && segs[segs.length - 1].c === c) segs[segs.length - 1].w++; else segs.push({ c: c, w: 1 });
   }
-  return '<div class="line"><div class="lh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'long' })) + '</b><span>' + esc(t('st_hours', hrs(W.week.filter(function(x){ return x.d === d; }).reduce(function(s, x){ return s + dur(x); }, 0)))) + '</span><button class="icon" type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '" style="width:36px;height:36px;font-size:20px">+</button></div>' +
-    '<div class="axis"><div></div><div><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div></div>' + body +
-    '<div class="cov"><div class="lname">' + esc(t('cover')) + '</div><div class="covbar">' + segs.map(function(s){ return '<i class="' + s.c + '" style="width:' + (s.w * 100 / 96) + '%"></i>'; }).join('') + '</div></div>' +
-    (gaps.length ? '<div class="gaps">' + gaps.map(function(g){ return '⚠ ' + esc(gapText(g)); }).join('<br>') + '</div>' : '') + '</div>';
+  var hl = R.win === undefined ? '' : R.win === null ? t('h_closed') : t('h_open_at', hoursText(n)) + (R.win.sc - R.win.so > R.win.c - R.win.o ? ' · ' + t('h_ops_at', hhmm(R.win.so) + '–' + hhmm(R.win.sc)) : '');
+  return '<div class="line"><div class="lh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'long' })) + (hl ? '<small style="display:block;font-weight:500;color:var(--muted);font-size:13px">' + esc(hl) + '</small>' : '') + '</b><span>' + esc(t('st_hours', hrs(W.week.filter(function(x){ return x.d === d; }).reduce(function(sum, x){ return sum + dur(x); }, 0)))) + '</span><button class="icon" type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '" style="width:36px;height:36px;font-size:20px">+</button></div>' +
+    '<div class="axis"><div></div><div>' + ticks.join('') + '</div></div>' + body +
+    (wins.length ? '<div class="cov"><div class="lname">' + esc(t('h_band')) + '</div><div class="hband">' + zones('') + '</div></div>' : '') +
+    '<div class="cov"><div class="lname">' + esc(t('cover')) + '</div><div class="covbar">' + segs.map(function(sg){ return '<i class="' + sg.c + '" style="width:' + (sg.w * STEP * 100 / len) + '%"></i>'; }).join('') + '</div></div>' +
+    (wins.length ? '<div class="hleg"><span><i class="op"></i>' + esc(t('h_leg_op')) + '</span><span><i class="pp"></i>' + esc(t('h_leg_pp')) + '</span></div>' : '') +
+    (dayGaps.length ? '<div class="gaps">' + dayGaps.map(function(g){ return '⚠ ' + esc(gapText(g)); }).join('<br>') + '</div>' : '') + '</div>';
 }
 function tableHtml(W, shown, today){
   var people = emps(), offs = live('off'), n0 = W.n0;
   var rows = (ui.who === '-' ? [] : people.filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n, h: e.h }; });
   W.week.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
   if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
-  var head = '<tr><th></th>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){ var n = n0 + i; return '<th class="' + (n === today ? 'today' : '') + (n < today ? ' past' : '') + '">' + esc(fmtDay(n)) + (W.gaps[n] ? ' <span style="color:var(--out)">⚠</span>' : '') + '</th>'; }).join('') + '<th>' + esc(t('total')) + '</th></tr>';
+  var head = '<tr><th></th>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){ var n = n0 + i; return '<th class="' + (n === today ? 'today' : '') + (n < today ? ' past' : '') + '">' + esc(fmtDay(n)) + (W.gaps[n] ? ' <span style="color:var(--out)">⚠</span>' : '') + (hoursText(n) ? '<small>' + esc(hoursText(n)) + '</small>' : '') + '</th>'; }).join('') + '<th>' + esc(t('total')) + '</th></tr>';
   var body = rows.map(function(r){
     var mine = shown.filter(function(x){ return (x.emp || '') === r.id; }), tot = mine.reduce(function(m, x){ return m + dur(x); }, 0);
     if(r.open && !mine.length && ui.who !== '-') return '';
@@ -930,6 +977,8 @@ function applyPreset(id){
   var firstPos = byN[norm(p.pos[0][lang])], tn = {};
   tpls().forEach(function(x){ tn[norm(x.n) + x.a + x.b] = 1; });
   p.tpl.forEach(function(x){ var n = TN[x[0]][lang]; if(!tn[norm(n) + x[1] + x[2]]) changes.push({ id: uid(), k: 'tpl', n: n, a: x[1], b: x[2], pos: firstPos || '' }); });
+  var ph = PRESET_HOURS[p.id];
+  if(ph && !settings().hours){ var hh = {}; ph[0].forEach(function(i){ hh[i] = { o: ph[1], c: ph[2] }; }); changes.push(Object.assign({ id: 'set', k: 'set' }, settings(), { hours: hh, pre: ph[3], post: ph[4] })); }
   touchMany(changes);
   toast(t('preset_done', p.name[lang]));
 }
@@ -959,7 +1008,7 @@ $('#plan').addEventListener('click', function(e){
   var s = e.target.closest('[data-sh]'); if(s){ editShift(data[s.dataset.sh]); return; }
   var nd = e.target.closest('[data-newday]'); if(nd){ editShift(null, { d: nd.dataset.newday, emp: ui.who && ui.who !== '-' ? ui.who : '' }); return; }
   var tr = e.target.closest('[data-track]');
-  if(tr){ var r = tr.getBoundingClientRect(), h = Math.max(0, Math.min(23, Math.floor((e.clientX - r.left) / r.width * 24))); editShift(null, { emp: tr.dataset.track && rec(tr.dataset.track) ? tr.dataset.track : '', d: tr.dataset.d, a: pad(h) + ':00', b: pad((h + 8) % 24) + ':00' }); return; }
+  if(tr){ var r = tr.getBoundingClientRect(), rg = tr.dataset.r.split('|').map(Number), m = Math.floor((rg[0] + (e.clientX - r.left) / r.width * (rg[1] - rg[0])) / 60) * 60; editShift(null, { emp: tr.dataset.track && rec(tr.dataset.track) ? tr.dataset.track : '', d: numIso(Math.floor(m / 1440)), a: hhmm(m), b: hhmm(m + 480) }); return; }
   var c = e.target.closest('[data-new]'); if(c){ var p = c.dataset.new.split('|'); editShift(null, { emp: p[0] && rec(p[0]) ? p[0] : '', d: p[1] }); }
 });
 /* drag a shift to another cell of the table: move it there (Alt / Ctrl: copy) */
@@ -1238,7 +1287,6 @@ function editRoles(){
     '<div id="rMsg"></div><hr><span class="lbl">' + esc(t('preset_apply')) + '</span>' + presetButtons() +
     '<button class="btn primary wide" data-close type="button" style="margin-top:6px">' + esc(t('done')) + '</button>', function(el){
     var wdOrder = settings().ws === 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0], nd = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1 };
-    var wdName = function(i){ return fmtDay(3 + i, { weekday: 'short' }).replace('.', ''); };   /* day 3 = Sunday 4 Jan 1970, so 3 + getDay() */
     var draw = function(){
       $('#rPos', el).innerHTML = poses().map(function(p){ return '<li><button type="button" class="sw" style="--c:' + esc(p.col) + '" data-col="' + esc(p.id) + '" aria-label="color"></button><input class="inp grow" data-ren="' + esc(p.id) + '" value="' + esc(p.n) + '" style="padding:6px 10px;font-size:16px"><button class="x" type="button" data-rmp="' + esc(p.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
       $('#rTpl', el).innerHTML = tpls().map(function(p){ var po = posOf(p.pos); return '<li><span class="grow"><b>' + esc(p.n) + '</b> <small>' + esc(p.a + '–' + p.b) + (po ? ' · ' + esc(po.n) : '') + '</small></span><button class="x" type="button" data-rmt="' + esc(p.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
@@ -1273,6 +1321,43 @@ function editRoles(){
   });
 }
 
+/* ---------- opening hours window ---------- */
+function hoursWin(){
+  var s = settings(), order = s.ws === 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0], cur = {};
+  order.forEach(function(i){ var x = s.hours ? s.hours[i] : { o: '09:00', c: '18:00' }; cur[i] = { on: !!x, o: x ? x.o : '09:00', c: x ? x.c : '18:00' }; });
+  modal('<h3>' + esc(t('h_title')) + '</h3><p class="hint" style="margin-top:-6px">' + esc(t('h_hint')) + '</p><ul class="rows" id="hRows" style="margin-top:12px"></ul>' +
+    '<button class="btn small wide" id="hCopy" type="button">' + esc(t('h_copy')) + '</button>' +
+    '<div class="grid2 wrap" style="margin-top:14px"><div class="field"><label for="hPre">' + esc(t('h_pre')) + '</label><input id="hPre" type="number" inputmode="numeric" min="0" max="240" step="5" value="' + esc(s.pre || 0) + '"></div><div class="field"><label for="hPost">' + esc(t('h_post')) + '</label><input id="hPost" type="number" inputmode="numeric" min="0" max="240" step="5" value="' + esc(s.post || 0) + '"></div></div>' +
+    '<div id="hMsg"></div><div class="row2">' + (s.hours ? '<button class="btn danger" id="hClear" type="button">' + esc(t('h_clear')) + '</button>' : '') + '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="hOk" type="button">' + esc(t('save')) + '</button></div>', function(el){
+    var note = function(x){ return !x.o || !x.c ? '' : x.o === x.c ? '24 h' : mins(x.c) < mins(x.o) ? '☾ ' + t('h_next') : hrs(dur({ a: x.o, b: x.c })) + ' ' + t('h'); };
+    var draw = function(){
+      $('#hRows', el).innerHTML = order.map(function(i){
+        var x = cur[i];
+        return '<li><label class="hday"><input type="checkbox" data-hon="' + i + '"' + (x.on ? ' checked' : '') + '><b>' + esc(wdName(i)) + '</b></label>' +
+          (x.on ? '<input class="inp" type="time" step="300" data-ho="' + i + '" value="' + esc(x.o) + '" aria-label="' + esc(t('f_from')) + '"><input class="inp" type="time" step="300" data-hc="' + i + '" value="' + esc(x.c) + '" aria-label="' + esc(t('f_to')) + '"><small class="grow" data-hn="' + i + '">' + esc(note(x)) + '</small>' : '<small class="grow">' + esc(t('h_closed')) + '</small>') + '</li>';
+      }).join('');
+    };
+    draw();
+    var onEdit = function(e){
+      var c = e.target.closest('[data-hon]'); if(c){ if(e.type === 'change'){ cur[c.dataset.hon].on = c.checked; draw(); } return; }
+      var o = e.target.closest('[data-ho],[data-hc]'); if(!o) return;
+      var i = o.dataset.ho != null ? o.dataset.ho : o.dataset.hc; cur[i][o.dataset.ho != null ? 'o' : 'c'] = o.value;
+      var nt = $('[data-hn="' + i + '"]', el); if(nt) nt.textContent = note(cur[i]);
+    };
+    el.addEventListener('input', onEdit); el.addEventListener('change', onEdit);
+    $('#hCopy', el).onclick = function(){ var f = order.filter(function(i){ return cur[i].on; })[0]; if(f == null) return; order.forEach(function(i){ if(cur[i].on){ cur[i].o = cur[f].o; cur[i].c = cur[f].c; } }); draw(); };
+    var minutes = function(v){ return Math.max(0, Math.min(240, parseInt(v, 10) || 0)); };
+    var store1 = function(change){ var prev = Object.assign({ id: 'set', k: 'set' }, settings()); close(el); touchMany([Object.assign({ id: 'set', k: 'set' }, settings(), change)]); toast(t('h_saved'), t('undo'), function(){ touchMany([prev]); }); };
+    $('#hOk', el).onclick = function(){
+      var hh = {}, bad = false;
+      order.forEach(function(i){ var x = cur[i]; if(!x.on) return; if(!x.o || !x.c) bad = true; else hh[i] = { o: x.o, c: x.c }; });
+      if(bad){ $('#hMsg', el).innerHTML = '<div class="msg err">' + esc(t('h_err')) + '</div>'; return; }
+      store1({ hours: hh, pre: minutes($('#hPre', el).value), post: minutes($('#hPost', el).value) });
+    };
+    if($('#hClear', el)) $('#hClear', el).onclick = function(){ store1({ hours: null }); };
+  });
+}
+
 /* ---------- settings and export ---------- */
 $('#gear').onclick = function(){
   var s = settings();
@@ -1281,7 +1366,7 @@ $('#gear').onclick = function(){
     '<div class="field" style="margin-top:12px"><label for="gBiz">' + esc(t('s_biz')) + '</label><input id="gBiz" value="' + esc(s.biz) + '" placeholder="' + esc(t('ph_biz')) + '" autocomplete="off"></div>' +
     '<div class="grid2 wrap"><div class="field"><span class="lbl">' + esc(t('s_ws')) + '</span><div class="seg" id="gWs"><button type="button" data-ws="1"' + (s.ws === 1 ? ' class="on"' : '') + '>' + esc(t('mon')) + '</button><button type="button" data-ws="0"' + (s.ws === 0 ? ' class="on"' : '') + '>' + esc(t('sun')) + '</button></div></div>' +
     '<div class="field"><label for="gRest">' + esc(t('s_rest')) + '</label><input id="gRest" type="number" min="0" max="24" step="1" value="' + esc(s.rest) + '"><p class="hint">' + esc(t('s_rest_hint')) + '</p></div></div>' +
-    '<div style="display:grid;gap:8px;margin-top:6px"><button class="btn" id="gRoles" type="button">' + esc(t('s_pos')) + '</button><button class="btn" id="gExp" type="button">' + esc(t('g_export')) + '</button><button class="btn" id="gShare" type="button">' + esc(t('g_share')) + '</button><button class="btn" id="gStaff" type="button">' + esc(t('g_staff')) + '</button><button class="btn" id="gSync" type="button">' + esc(t('g_sync')) + '</button><button class="btn" id="gSetup" type="button">' + esc(t('g_setup')) + '</button><button class="btn primary" id="gClose" type="button">' + esc(t('close')) + '</button></div>', function(el){
+    '<div style="display:grid;gap:8px;margin-top:6px"><button class="btn" id="gHours" type="button">' + esc(t('g_hours')) + '</button><button class="btn" id="gRoles" type="button">' + esc(t('s_pos')) + '</button><button class="btn" id="gExp" type="button">' + esc(t('g_export')) + '</button><button class="btn" id="gShare" type="button">' + esc(t('g_share')) + '</button><button class="btn" id="gStaff" type="button">' + esc(t('g_staff')) + '</button><button class="btn" id="gSync" type="button">' + esc(t('g_sync')) + '</button><button class="btn" id="gSetup" type="button">' + esc(t('g_setup')) + '</button><button class="btn primary" id="gClose" type="button">' + esc(t('close')) + '</button></div>', function(el){
     var ws = s.ws;
     var keep = function(){
       var biz = $('#gBiz', el).value.trim(), rest = Math.max(0, Math.min(24, parseInt($('#gRest', el).value, 10) || 0)), cur = settings();
@@ -1290,6 +1375,7 @@ $('#gear').onclick = function(){
     $('#gWs', el).onclick = function(e){ var b = e.target.closest('[data-ws]'); if(!b) return; ws = +b.dataset.ws; $$('#gWs button', el).forEach(function(o){ o.classList.toggle('on', o === b); }); };
     $('.lang', el).addEventListener('click', function(e){ if(e.target.closest('[data-lang]')){ setTimeout(function(){ keep(); close(el); $('#gear').click(); }); } });
     var go = function(fn){ return function(){ keep(); close(el); fn(); }; };
+    $('#gHours', el).onclick = go(hoursWin);
     $('#gRoles', el).onclick = go(editRoles);
     $('#gExp', el).onclick = go(exportWin);
     $('#gShare', el).onclick = go(function(){ shareAccess(false); });

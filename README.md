@@ -7,9 +7,15 @@ Einfacher Schichtplaner und **Basis für die Schichtplanung aller Ausblick-Kunde
 - **Wochenleiste:** oben 7 Tageskacheln mit Ampel (grün ok · gelb unbesetzt · rot Konflikt oder Lücke). Bleibt beim Scrollen stehen. Antippen springt zum Tag. Am Handy wechselt Wischen die Woche (im Zeitstrahl: den Tag).
 - **Drei Ansichten:**
   - **Días** – pro Tag, mit Avatar, Zeit und Rollen-Etikett. Vergangene Tage sind ausgegraut.
-  - **Línea** – ein Tag als Zeitstrahl 0–24 Uhr, eine Zeile pro Person, darunter die Abdeckung (grün = Mindestbesetzung erfüllt, rot = fehlt, blau = jemand da). In eine leere Zeile tippen legt dort eine Schicht an.
+  - **Línea** – ein Tag als Zeitstrahl, eine Zeile pro Person, darunter Öffnungszeiten und Abdeckung (grün = Mindestbesetzung erfüllt, rot = fehlt, blau = jemand da). Mit Öffnungszeiten zeigt er nur die Betriebszeit des Tages (plus Schichten, die darüber hinausgehen), sonst 0–24 Uhr. In eine leere Zeile tippen legt dort eine Schicht an.
   - **Tabla** – Person × Tag mit Stundensumme. Am PC Schichten per **Drag & Drop** verschieben, mit Alt/Strg kopieren. Druckt im Querformat.
 - **Schicht anlegen:** Datum, Von/Bis (Nachtschicht automatisch ☾), Rolle, Mitarbeiter, Notiz. „Turnos típicos“ füllen mit einem Tipp. „Repetir también en“ für weitere Tage. Bestehende Schicht: Löschen oder Duplizieren.
+- **Öffnungs- und Betriebszeiten** (Configuración → Horario de apertura):
+  - Pro Wochentag geöffnet von–bis oder geschlossen.
+  - Dazu Vorbereitung vor Öffnung und Nachbereitung nach Schließung in Minuten; Betriebszeit = Öffnungszeit plus beides.
+  - Gleiche Zeit für Öffnen und Schließen = 24 h. Schließt es früher als es öffnet (z. B. 18:00–02:00), endet der Tag nach Mitternacht.
+  - Die Zeiten stehen in der Tagesansicht, in der Tabelle und in der Wochenleiste (geschlossene Tage gestrichelt).
+  - Die Rubro-Modelle bringen typische Zeiten mit, wenn noch keine eingetragen sind (Cochera 24 h, Peluquería Di–Sa 9–20 …).
 - **Warnungen:**
   - Doppelbelegung.
   - Zu wenig Ruhezeit (Standard 12 h, einstellbar, 0 = aus).
@@ -57,7 +63,7 @@ Sicherheit:
 | `need` | Mindestbesetzung: `pos` (leer = egal), `days` (0 = So … 6 = Sa), `a`, `b`, `n` |
 | `sh` | Schicht: `d`, `a`/`b` (`b ≤ a` = endet am Folgetag), `pos`, `emp` (leer = unbesetzt), `note`, `by` |
 | `off` | Abwesenheit: `emp`, `from`, `to`, `kind` (`vac`/`sick`/`off`), `note` |
-| `set` | Einstellungen (id `set`): `biz`, `ws` (1 = Mo, 0 = So), `rest` (Std.) |
+| `set` | Einstellungen (id `set`): `biz`, `ws` (1 = Mo, 0 = So), `rest` (Std.), `hours` (`{0–6: {o, c}}`, fehlender Tag = geschlossen, `null` = keine Zeiten), `pre`/`post` (Min.) |
 
 `wishes.json` hat dasselbe Format: `emp`, `from`, `to`, `note`, `st` (`''`/`ok`/`no`), `by`. Alle Einträge haben `t` (letzte Änderung, neuere gewinnt) und ggf. `del: true`.
 
