@@ -14,6 +14,7 @@ Einfacher Schichtplaner und **Basis für die Schichtplanung aller Ausblick-Kunde
   - Jede Person ist in höchstens einer Gruppe. Zeitstrahl und Personalliste zeigen die Namen eingerahmt pro Gruppe, die Tabelle mit einer Kopfzeile je Gruppe. Leere Gruppen bleiben als Ziel sichtbar.
   - **Drag & Drop:** Personen in eine andere Gruppe ziehen oder innerhalb der Gruppe umsortieren – im Zeitstrahl (am Namen), in der Tabelle (erste Spalte) und in der Personalliste. Maus: drücken und ziehen. Handy: kurz gedrückt halten, dann ziehen (normales Wischen scrollt weiter). Mit Rückgängig.
   - **Eigene Öffnungs- und Betriebszeiten pro Gruppe** (Personalgruppen → Button „Zeiten des Betriebs“ / „Eigene Zeiten“): z. B. Küche 10–22 mit 1 h Vor- und Nachbereitung, während der Betrieb 12–24 hat. Im Zeitstrahl bekommen die Zeilen der Gruppe ihre eigenen Zeiten hinterlegt, am PC steht die Zeit neben dem Gruppennamen. „Zeiten des Betriebs nehmen“ setzt eine Gruppe zurück.
+  - **Gruppenname antippen** (im Zeitstrahl, in der Tabelle oder in der Personalliste) öffnet die Einstellungen der Gruppe: Name, Zeiten, wer drin ist, Löschen.
   - Gruppen umbenennen, sortieren (↑ ↓) und löschen; wird eine Gruppe gelöscht, sind ihre Leute „Ohne Gruppe“.
 - **Öffnungs- und Betriebszeiten** (Configuración → Horario de apertura):
   - Pro Wochentag geöffnet von–bis oder geschlossen.
