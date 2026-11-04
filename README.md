@@ -19,6 +19,7 @@ Einfacher Schichtplaner und **Basis für die Schichtplanung aller Ausblick-Kunde
 - **Öffnungs- und Betriebszeiten** (Configuración → Horario de apertura):
   - Pro Wochentag geöffnet von–bis oder geschlossen.
   - Dazu Vorbereitung vor Öffnung und Nachbereitung nach Schließung in Minuten; Betriebszeit = Öffnungszeit plus beides.
+  - **Geteilte Zeiten:** Mit **+** neben einem Tag kommt eine weitere Zeit dazu (z. B. 09–13 und 16–20), mit × wird sie wieder entfernt. Vor- und Nachbereitung gelten für jede Zeit; überschneiden dürfen sie sich nicht.
   - Gleiche Zeit für Öffnen und Schließen = 24 h. Schließt es früher als es öffnet (z. B. 18:00–02:00), endet der Tag nach Mitternacht.
   - Die Zeiten stehen in der Tagesansicht, in der Tabelle und in der Wochenleiste (geschlossene Tage gestrichelt).
   - Die Rubro-Modelle bringen typische Zeiten mit, wenn noch keine eingetragen sind (Cochera 24 h, Peluquería Di–Sa 9–20 …).
@@ -70,7 +71,7 @@ Sicherheit:
 | `need` | Mindestbesetzung: `pos` (leer = egal), `days` (0 = So … 6 = Sa), `a`, `b`, `n` |
 | `sh` | Schicht: `d`, `a`/`b` (`b ≤ a` = endet am Folgetag), `pos`, `emp` (leer = unbesetzt), `note`, `by` |
 | `off` | Abwesenheit: `emp`, `from`, `to`, `kind` (`vac`/`sick`/`off`), `note` |
-| `set` | Einstellungen (id `set`): `biz`, `ws` (1 = Mo, 0 = So), `rest` (Std.), `hours` (`{0–6: {o, c}}`, fehlender Tag = geschlossen, `null` = keine Zeiten), `pre`/`post` (Min.) |
+| `set` | Einstellungen (id `set`): `biz`, `ws` (1 = Mo, 0 = So), `rest` (Std.), `hours` (`{0–6: {o, c, x}}`, weitere Zeiten eines geteilten Tages in `x: [{o, c}]`, fehlender Tag = geschlossen, `null` = keine Zeiten), `pre`/`post` (Min.) |
 
 `wishes.json` hat dasselbe Format: `emp`, `from`, `to`, `note`, `st` (`''`/`ok`/`no`), `by`. Alle Einträge haben `t` (letzte Änderung, neuere gewinnt) und ggf. `del: true`.
 
