@@ -158,6 +158,15 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .track .offt{position:absolute;z-index:2;inset:0;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);pointer-events:none}
 .bar{position:absolute;z-index:2;top:4px;bottom:4px;border-radius:6px;background:color-mix(in srgb,var(--c,var(--accent)) 30%,var(--card));border:1.5px solid var(--c,var(--accent));font-size:12px;font-weight:700;padding:0 4px;overflow:hidden;white-space:nowrap;display:flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums}
 .bar.bad{outline:2px solid var(--out);outline-offset:1px}
+.bar{overflow:visible}   /* the grips may stick out a little; the label clips itself */
+.bar .bt{font-style:normal;pointer-events:none;display:block;overflow:hidden;white-space:nowrap;min-width:0}
+.bar .rh{position:absolute;top:-2px;bottom:-2px;width:12px;cursor:ew-resize;touch-action:none;z-index:3}
+.bar .rh.l{left:-5px} .bar .rh.r{right:-5px}
+.bar .rh::after{content:"";position:absolute;top:50%;left:50%;width:4px;height:14px;margin:-7px 0 0 -2px;border-radius:2px;background:var(--c,var(--accent));opacity:0;transition:opacity .12s}
+.bar:hover .rh::after,.bar.resizing .rh::after{opacity:.9}
+@media (pointer:coarse){.bar .rh{width:20px} .bar .rh.l{left:-9px} .bar .rh.r{right:-9px} .bar .rh::after{opacity:.7}}
+.bar.resizing{z-index:4;box-shadow:0 0 0 2px var(--accent)}
+.rztip{position:fixed;z-index:71;pointer-events:none;background:var(--text);color:var(--card);font-size:13px;font-weight:700;border-radius:6px;padding:3px 8px;font-variant-numeric:tabular-nums;transform:translate(-50%,-130%)}
 .bar.cl{border-left-style:dashed;border-top-left-radius:0;border-bottom-left-radius:0}
 .bar.cr{border-right-style:dashed;border-top-right-radius:0;border-bottom-right-radius:0}
 .lrow.openrow .track{outline:1.5px dashed var(--warn)}
@@ -431,7 +440,7 @@ es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo'
   v_plan:'Plan', v_people:'Personal', prev_week:'Semana anterior', next_week:'Semana siguiente', week_n:'Semana {0}', today_btn:'Hoy', show:'Mostrar',
   m_days:'Días', m_line:'Línea', m_table:'Tabla', all_people:'Todo el personal', only_open:'Sin asignar', new_shift:'Nuevo turno', new_emp:'Nuevo empleado',
   st_shifts:'{0} turnos', st_hours:'{0} h', st_open:'{0} sin asignar', st_issues:'{0} conflictos', st_gaps:'{0} faltantes', st_wishes:'{0} pedidos',
-  no_shifts:'Sin turnos.', open:'Sin asignar', open_row:'Turnos abiertos', grp:'Grupo', grps:'Grupos de personal', grps_hint:'Por ejemplo Cocina, Salón 1, Salón 2. Cada persona está en un grupo; en la línea de tiempo, la tabla y el personal se muestran juntos. Para mover a alguien a otro grupo o cambiar el orden, arrastralo (en el celular: mantené apretado y arrastrá).', ph_grp:'Nombre del grupo (ej. Cocina)', grp_add:'Agregar grupo', grp_name:'Nombre del grupo', h_edit:'Editar horario', no_grp:'Sin grupo', grp_empty:'Arrastrá personal acá', moved_emp:'{0} → {1}', order_saved:'Orden guardado.', removed:'(eliminado)', h:'h', total:'Total', cover:'Cobertura', anyone:'personal',
+  no_shifts:'Sin turnos.', open:'Sin asignar', open_row:'Turnos abiertos', grp:'Grupo', grps:'Grupos de personal', grps_hint:'Por ejemplo Cocina, Salón 1, Salón 2. Cada persona está en un grupo; en la línea de tiempo, la tabla y el personal se muestran juntos. Para mover a alguien a otro grupo o cambiar el orden, arrastralo (en el celular: mantené apretado y arrastrá).', ph_grp:'Nombre del grupo (ej. Cocina)', grp_add:'Agregar grupo', grp_name:'Nombre del grupo', h_edit:'Editar horario', no_grp:'Sin grupo', grp_empty:'Arrastrá personal acá', moved_emp:'{0} → {1}', order_saved:'Orden guardado.', time_changed:'Turno: {0}', removed:'(eliminado)', h:'h', total:'Total', cover:'Cobertura', anyone:'personal',
   w_overlap:'Se superpone con otro turno de {0}', w_absent:'{0} está ausente ({1})', w_role:'{0} no tiene el puesto {1}', w_rest:'{0}: solo {1} h de descanso',
   w_wish:'{0} pidió franco ese día', w_need:'Falta {0} {1} ({2})',
   copy_week:'Copiar semana anterior', copy_none:'La semana anterior no tiene turnos.', copied:'{0} turnos copiados', copy_skip:'{0} ya existían',
@@ -480,7 +489,7 @@ en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have
   v_plan:'Plan', v_people:'Staff', prev_week:'Previous week', next_week:'Next week', week_n:'Week {0}', today_btn:'Today', show:'Show',
   m_days:'Days', m_line:'Timeline', m_table:'Table', all_people:'All staff', only_open:'Unassigned', new_shift:'New shift', new_emp:'New employee',
   st_shifts:'{0} shifts', st_hours:'{0} h', st_open:'{0} unassigned', st_issues:'{0} conflicts', st_gaps:'{0} gaps', st_wishes:'{0} requests',
-  no_shifts:'No shifts.', open:'Unassigned', open_row:'Open shifts', grp:'Group', grps:'Staff groups', grps_hint:'For example Kitchen, Floor 1, Floor 2. Each person is in one group; the timeline, the table and the staff list show them together. To move someone to another group or change the order, drag them (on a phone: press and hold, then drag).', ph_grp:'Group name (e.g. Kitchen)', grp_add:'Add group', grp_name:'Group name', h_edit:'Edit hours', no_grp:'No group', grp_empty:'Drag staff here', moved_emp:'{0} → {1}', order_saved:'Order saved.', removed:'(removed)', h:'h', total:'Total', cover:'Coverage', anyone:'staff',
+  no_shifts:'No shifts.', open:'Unassigned', open_row:'Open shifts', grp:'Group', grps:'Staff groups', grps_hint:'For example Kitchen, Floor 1, Floor 2. Each person is in one group; the timeline, the table and the staff list show them together. To move someone to another group or change the order, drag them (on a phone: press and hold, then drag).', ph_grp:'Group name (e.g. Kitchen)', grp_add:'Add group', grp_name:'Group name', h_edit:'Edit hours', no_grp:'No group', grp_empty:'Drag staff here', moved_emp:'{0} → {1}', order_saved:'Order saved.', time_changed:'Shift: {0}', removed:'(removed)', h:'h', total:'Total', cover:'Coverage', anyone:'staff',
   w_overlap:'Overlaps another shift of {0}', w_absent:'{0} is absent ({1})', w_role:'{0} doesn’t have the role {1}', w_rest:'{0}: only {1} h rest',
   w_wish:'{0} asked for that day off', w_need:'Missing {0} {1} ({2})',
   copy_week:'Copy previous week', copy_none:'The previous week has no shifts.', copied:'{0} shifts copied', copy_skip:'{0} already existed',
@@ -529,7 +538,7 @@ de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_
   v_plan:'Plan', v_people:'Personal', prev_week:'Vorige Woche', next_week:'Nächste Woche', week_n:'KW {0}', today_btn:'Heute', show:'Anzeigen',
   m_days:'Tage', m_line:'Zeitstrahl', m_table:'Tabelle', all_people:'Alle Mitarbeiter', only_open:'Unbesetzt', new_shift:'Neue Schicht', new_emp:'Neuer Mitarbeiter',
   st_shifts:'{0} Schichten', st_hours:'{0} h', st_open:'{0} unbesetzt', st_issues:'{0} Konflikte', st_gaps:'{0} Lücken', st_wishes:'{0} Wünsche',
-  no_shifts:'Keine Schichten.', open:'Unbesetzt', open_row:'Offene Schichten', grp:'Gruppe', grps:'Personalgruppen', grps_hint:'Zum Beispiel Küche, Floor 1, Floor 2. Jede Person ist in einer Gruppe; Zeitstrahl, Tabelle und Personalliste zeigen sie zusammen. Um jemanden in eine andere Gruppe zu schieben oder die Reihenfolge zu ändern, einfach ziehen (am Handy: gedrückt halten, dann ziehen).', ph_grp:'Name der Gruppe (z. B. Küche)', grp_add:'Gruppe hinzufügen', grp_name:'Name der Gruppe', h_edit:'Zeiten bearbeiten', no_grp:'Ohne Gruppe', grp_empty:'Personal hierher ziehen', moved_emp:'{0} → {1}', order_saved:'Reihenfolge gespeichert.', removed:'(gelöscht)', h:'h', total:'Summe', cover:'Abdeckung', anyone:'Personal',
+  no_shifts:'Keine Schichten.', open:'Unbesetzt', open_row:'Offene Schichten', grp:'Gruppe', grps:'Personalgruppen', grps_hint:'Zum Beispiel Küche, Floor 1, Floor 2. Jede Person ist in einer Gruppe; Zeitstrahl, Tabelle und Personalliste zeigen sie zusammen. Um jemanden in eine andere Gruppe zu schieben oder die Reihenfolge zu ändern, einfach ziehen (am Handy: gedrückt halten, dann ziehen).', ph_grp:'Name der Gruppe (z. B. Küche)', grp_add:'Gruppe hinzufügen', grp_name:'Name der Gruppe', h_edit:'Zeiten bearbeiten', no_grp:'Ohne Gruppe', grp_empty:'Personal hierher ziehen', moved_emp:'{0} → {1}', order_saved:'Reihenfolge gespeichert.', time_changed:'Schicht: {0}', removed:'(gelöscht)', h:'h', total:'Summe', cover:'Abdeckung', anyone:'Personal',
   w_overlap:'Überschneidet sich mit einer anderen Schicht von {0}', w_absent:'{0} ist abwesend ({1})', w_role:'{0} hat die Rolle {1} nicht', w_rest:'{0}: nur {1} h Ruhezeit',
   w_wish:'{0} hat sich den Tag frei gewünscht', w_need:'Es fehlt {0}× {1} ({2})',
   copy_week:'Vorwoche kopieren', copy_none:'Die Vorwoche hat keine Schichten.', copied:'{0} Schichten kopiert', copy_skip:'{0} gab es schon',
@@ -1027,7 +1036,7 @@ function lineHtml(W, n, today){
     var ab = r.id ? offs.filter(function(o){ return o.emp === r.id && o.from <= d && d <= o.to; })[0] : null, ws = r.id ? wishOn(r.id, d) : null;
     return '<div class="lrow' + (r.open ? ' openrow' : '') + '"' + (r.drag ? ' data-dragemp="' + esc(r.id) + '"' : '') + '><div class="lname" title="' + esc(r.n) + '">' + avatar(r.id, r.n, 'sm') + '<span>' + esc(r.open || innerWidth >= 700 ? r.n : String(r.n).split(' ')[0]) + '</span></div><div class="track' + (ab ? ' off' : '') + (ws ? ' wish' : '') + '" style="--gs:' + gs + '%" data-track="' + esc(r.id) + '" data-r="' + from + '|' + to + '">' + (ab ? '' : zones('zone ', r.g)) +
       (ab ? '<span class="offt">' + esc(abName(ab.kind)) + '</span>' : ws ? '<span class="offt" style="color:var(--vio)">' + esc(t('wish_s')) + '</span>' : '') +
-      mine.map(function(x){ var sp = span(x), l = pct(sp[0]), w = pct(sp[1]) - l; return '<span class="bar' + (W.bad[x.id] ? ' bad' : '') + (sp[0] < from ? ' cl' : '') + (sp[1] > to ? ' cr' : '') + '" data-sh="' + esc(x.id) + '" style="left:' + l + '%;width:' + w + '%;--c:' + esc(colOf(x)) + '" title="' + esc(x.a + '–' + x.b + (W.bad[x.id] ? ' · ' + W.bad[x.id].join(' · ') : '')) + '">' + (w > 14 ? esc(x.a + '–' + x.b) : '') + '</span>'; }).join('') + '</div></div>';
+      mine.map(function(x){ var sp = span(x), l = pct(sp[0]), w = pct(sp[1]) - l; return '<span class="bar' + (W.bad[x.id] ? ' bad' : '') + (sp[0] < from ? ' cl' : '') + (sp[1] > to ? ' cr' : '') + '" data-sh="' + esc(x.id) + '" style="left:' + l + '%;width:' + w + '%;--c:' + esc(colOf(x)) + '" title="' + esc(x.a + '–' + x.b + (W.bad[x.id] ? ' · ' + W.bad[x.id].join(' · ') : '')) + '"><em class="bt">' + (w > 14 ? esc(x.a + '–' + x.b) : '') + '</em>' + (sp[0] >= from ? '<i class="rh l" data-rs="l"></i>' : '') + (sp[1] <= to ? '<i class="rh r" data-rs="r"></i>' : '') + '</span>'; }).join('') + '</div></div>';
   };
   var body = lineGroups(people, function(e){ return rowHtml({ id: e.id, n: e.n, drag: !ui.who, g: grpOf(e) }); }) + rows.map(rowHtml).join('');
   /* coverage in 15-minute steps; the shown stretch may reach into the neighbouring days */
@@ -1494,6 +1503,57 @@ function groupsWin(){
     });
   });
 }
+
+/* ---------- changing a shift's times in the timeline ----------
+   The grips at both ends of a bar: drag the right one to change the end, the left one to change the start.
+   Times snap to 15 minutes; a shift is at least 15 minutes and at most 24 hours long. */
+var rz = null;
+document.addEventListener('pointerdown', function(e){
+  var h = e.target.closest('[data-rs]'); if(!h || e.button > 0) return;
+  var bar = h.closest('[data-sh]'), track = bar && bar.closest('.track'), x = bar && rec(bar.dataset.sh); if(!x || !track) return;
+  e.preventDefault(); e.stopPropagation();
+  var rg = track.dataset.r.split('|').map(Number);
+  rz = { x: x, side: h.dataset.rs, bar: bar, track: track, from: rg[0], to: rg[1], sp: span(x), pid: e.pointerId, moved: false };
+  rz.cur = rz.sp.slice();
+  /* where on the grip it was taken, so the edge doesn't jump to the finger */
+  var tr0 = track.getBoundingClientRect(); rz.off = rz.sp[rz.side === 'r' ? 1 : 0] - (rz.from + (e.clientX - tr0.left) / tr0.width * (rz.to - rz.from));
+  try{ h.setPointerCapture(e.pointerId); }catch(err){}
+  bar.classList.add('resizing');
+  rz.tip = document.createElement('div'); rz.tip.className = 'rztip'; document.body.appendChild(rz.tip);
+  rzShow(e.clientX, e.clientY);
+}, true);
+function rzShow(cx, cy){
+  var len = rz.to - rz.from, pct = function(m){ return Math.max(0, Math.min(100, (m - rz.from) * 100 / len)); };
+  var l = pct(rz.cur[0]), w = pct(rz.cur[1]) - l, txt = hhmm(rz.cur[0]) + '–' + hhmm(rz.cur[1]);
+  rz.bar.style.left = l + '%'; rz.bar.style.width = w + '%';
+  rz.bar.querySelector('.bt').textContent = w > 14 ? txt : '';
+  rz.tip.textContent = txt + ' · ' + hrs(rz.cur[1] - rz.cur[0]) + ' ' + t('h');
+  var r = rz.bar.getBoundingClientRect(); rz.tip.style.left = (rz.side === 'r' ? r.right : r.left) + 'px'; rz.tip.style.top = r.top + 'px';
+}
+document.addEventListener('pointermove', function(e){
+  if(!rz || e.pointerId !== rz.pid) return;
+  e.preventDefault();
+  var r = rz.track.getBoundingClientRect(), m = rz.from + (e.clientX - r.left) / r.width * (rz.to - rz.from) + rz.off;
+  m = Math.round(m / 15) * 15;
+  if(rz.side === 'r') rz.cur[1] = Math.max(rz.cur[0] + 15, Math.min(rz.cur[0] + 1440, rz.to, m));
+  else rz.cur[0] = Math.min(rz.cur[1] - 15, Math.max(rz.cur[1] - 1440, rz.from, m));
+  rz.moved = rz.moved || rz.cur[0] !== rz.sp[0] || rz.cur[1] !== rz.sp[1];
+  rzShow(e.clientX, e.clientY);
+}, true);
+function rzEnd(e, cancel){
+  if(!rz || (e && e.pointerId !== rz.pid)) return;
+  var z = rz; rz = null; close(z.tip); z.bar.classList.remove('resizing');
+  dragEndedAt = Date.now(); setTimeout(function(){ dragEndedAt = 0; }, 0);   /* no editor from the click after letting go */
+  if(cancel || !z.moved || (z.cur[0] === z.sp[0] && z.cur[1] === z.sp[1])){ render(); return; }
+  var g = copy(z.x), prev = copy(z.x);
+  /* the start may move to another day only if it was dragged across midnight; the date follows the start */
+  g.d = numIso(Math.floor(z.cur[0] / 1440)); g.a = hhmm(z.cur[0]); g.b = hhmm(z.cur[1]); g.by = cfg.name;
+  touchMany([g]);
+  toast(t('time_changed', g.a + '–' + g.b), t('undo'), function(){ touchMany([prev]); });
+}
+document.addEventListener('pointerup', function(e){ rzEnd(e, false); }, true);
+document.addEventListener('pointercancel', function(e){ rzEnd(e, true); }, true);
+document.addEventListener('touchmove', function(e){ if(rz) e.preventDefault(); }, { passive: false });
 
 /* ---------- moving people between groups (drag and drop) ----------
    Mouse: press and move. Touch: hold a moment, then move. Works in the timeline, the table and the staff list:
