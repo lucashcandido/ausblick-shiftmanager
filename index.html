@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ausblick Turnos">
+<title>Ausblick – Turnos</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231d4ed8'/%3E%3Ctext x='32' y='44' font-family='Arial' font-weight='700' font-size='34' fill='%23fff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+/* Ausblick – shift manager. The base for the shift planning of every customer app.
+   Same build as ausblick-clientes: one file, data in a private GitHub repository (turnos.json),
+   token published encrypted (access.json) and opened with a 12-character code. */
+:root{--bg:#f3f4f7;--card:#fff;--text:#171a21;--muted:#667085;--line:#e2e5eb;--accent:#1d4ed8;--accent-soft:#e3ebff;--in:#15803d;--in-soft:#dcf5e4;--out:#c62828;--out-soft:#fde4e4;--warn:#b45309;--warn-soft:#fdeed3;--vio:#7c3aed;--vio-soft:#ede5ff}
+@media (prefers-color-scheme: dark){:root{--bg:#0f1218;--card:#191d26;--text:#eef0f4;--muted:#98a2b3;--line:#2a303c;--accent:#6b93ff;--accent-soft:#1d2a4d;--in:#4ade80;--in-soft:#12301f;--out:#f87171;--out-soft:#3a1a1a;--warn:#fbbf24;--warn-soft:#3a2a0d;--vio:#b79bff;--vio-soft:#2a1f45}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:17px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-inset-bottom))}
+[hidden]{display:none!important}
+.top{display:flex;align-items:center;gap:12px;padding:6px 0 12px}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
+.top h1{font-size:20px;margin:0;line-height:1.15;min-width:0;flex:1}
+.top .sub{display:block;font-size:14px;color:var(--muted);font-weight:500;overflow-wrap:anywhere}
+.icon{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;cursor:pointer;flex:none}
+.icon.add{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.btn{border-radius:14px;padding:0 20px;min-height:52px;font-size:17px;font-weight:700;cursor:pointer;background:var(--card);border:1px solid var(--line)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.go{background:var(--in);color:#fff;border-color:var(--in)}
+.btn.danger{color:var(--out);border-color:var(--out);background:var(--card)}
+.btn.small{min-height:40px;padding:0 14px;font-size:15px;border-radius:11px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.45;cursor:default}
+.msg{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:15px}
+.msg.err{background:var(--out-soft);color:var(--out)} .msg.ok{background:var(--in-soft);color:var(--in)} .msg.warn{background:var(--warn-soft);color:var(--warn)}
+.field{margin-bottom:14px} .field label,.lbl{display:block;font-weight:650;margin-bottom:6px;font-size:15px}
+.field input,.field textarea,.field select,.inp{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-size:17px}
+.field textarea{min-height:64px;resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus,.inp:focus{outline:none;border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media (max-width:520px){.grid2.wrap{grid-template-columns:1fr}}
+.hint{color:var(--muted);font-size:14px;margin:6px 0 0}
+.tabs,.views{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.tabs button,.views button,.seg button,.chips button{border:2px solid var(--line);border-radius:12px;background:var(--card);font-weight:700;cursor:pointer;padding:8px 10px;font-size:15px}
+.views button{padding:10px;font-size:16px}
+.tabs button.on,.views button.on,.seg button.on,.chips button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;font-size:24px;letter-spacing:.06em;text-align:center;padding:12px;border:2px dashed var(--accent);border-radius:12px;margin:8px 0 12px;user-select:all}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chips button{padding:6px 12px;border-radius:999px;font-size:14px}
+.chips button i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c,var(--accent));margin-right:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)} .pill.err,.pill.wait{cursor:pointer;text-decoration:underline dotted}
+.pill i{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.pill.ok i{background:var(--in)} .pill.wait i{background:var(--warn)} .pill.err i{background:var(--out)}
+.empty{color:var(--muted);padding:14px 16px;background:var(--card);border:1px dashed var(--line);border-radius:14px}
+/* week navigation and toolbar */
+.weekbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.weekbar .wk{flex:1;text-align:center;font-weight:750;font-size:17px;min-width:0}
+.weekbar .wk small{display:block;color:var(--muted);font-weight:500;font-size:13px}
+.tools{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tools select{flex:1 1 160px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-size:15px;min-width:0}
+.seg{display:flex;gap:4px;flex:none} .seg button{padding:8px 12px}
+.stats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stat{font-size:14px;font-weight:650;border-radius:999px;padding:4px 12px;background:var(--card);border:1px solid var(--line)}
+.stat.w{background:var(--warn-soft);color:var(--warn);border-color:transparent;cursor:pointer} .stat.e{background:var(--out-soft);color:var(--out);border-color:transparent;cursor:pointer}
+/* day view */
+.days{display:grid;gap:10px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.dh{display:flex;align-items:center;gap:8px}
+.dh b{flex:1;font-size:16px} .dh span{color:var(--muted);font-size:13px}
+.dh button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:20px;line-height:1;flex:none}
+.shl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.sh{border:1px solid var(--line);border-left:5px solid var(--c,var(--accent));border-radius:12px;padding:8px 10px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.sh:hover{border-color:var(--accent);border-left-color:var(--c,var(--accent))}
+.sh .tm{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sh .tm small{display:block;color:var(--muted);font-weight:500;font-size:13px}
+.sh .who{flex:1;min-width:0;overflow-wrap:anywhere}
+.sh .who small{display:block;color:var(--muted);font-size:13px}
+.open{color:var(--warn);font-weight:700}
+.tag{display:inline-block;font-size:12px;font-weight:700;color:var(--c,var(--vio));background:color-mix(in srgb,var(--c,var(--vio)) 14%,transparent);border-radius:6px;padding:1px 7px}
+.wn{display:block;font-size:13px;font-weight:650;color:var(--out)}
+.offl{font-size:14px;color:var(--muted);margin-top:6px} .offl b{font-weight:650}
+.none{color:var(--muted);font-size:14px;margin:6px 0 0}
+/* table view */
+.tblwrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;-webkit-overflow-scrolling:touch}
+table.grid{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+.grid th,.grid td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px;vertical-align:top;text-align:left}
+.grid th{font-size:13px;color:var(--muted);font-weight:700;background:var(--bg);white-space:nowrap}
+.grid th.today{color:var(--accent)}
+.grid td:first-child,.grid th:first-child{position:sticky;left:0;background:var(--card);z-index:1;min-width:120px;font-weight:700}
+.grid th:first-child{background:var(--bg)}
+.grid td.cell{cursor:pointer;min-width:92px;height:52px}
+.grid td.cell:hover{background:var(--accent-soft)}
+.grid td.sum{font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
+.grid td.sum.over{color:var(--out)}
+.cs{display:block;width:100%;text-align:left;border:0;border-left:4px solid var(--c,var(--accent));background:color-mix(in srgb,var(--c,var(--accent)) 12%,transparent);border-radius:6px;padding:3px 6px;margin-bottom:3px;cursor:pointer;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.cs small{display:block;font-weight:500;color:var(--muted)}
+.cs.bad{outline:2px solid var(--out)}
+.offc{display:block;font-size:12px;font-weight:700;color:var(--muted);background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,transparent 6px,transparent 12px);border-radius:6px;padding:3px 6px}
+.grid tr.openrow td:first-child{color:var(--warn)}
+/* people */
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer}
+.item:hover{border-color:var(--accent)}
+.ih{display:flex;align-items:flex-start;gap:10px}
+.iname{flex:1;min-width:0;font-weight:700;font-size:18px;line-height:1.25;overflow-wrap:anywhere}
+.iname .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.hrs{flex:none;font-weight:750;font-variant-numeric:tabular-nums;text-align:right}
+.hrs small{display:block;color:var(--muted);font-weight:500;font-size:13px}
+.hrs.over{color:var(--out)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px;font-size:15px;color:var(--muted)}
+.meta a{text-decoration:none}
+/* windows */
+.ov{position:fixed;inset:0;background:rgba(10,14,22,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.sheet{background:var(--card);border-radius:20px;padding:20px;width:100%;max-width:560px;max-height:calc(100vh - 32px);overflow:auto}
+.sheet h3{margin:0 0 14px;font-size:20px}
+.row2{display:flex;gap:10px;flex-wrap:wrap} .row2 .btn{flex:1}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.quick button{border:1px solid var(--line);border-left:4px solid var(--c,var(--accent));border-radius:10px;background:var(--card);padding:6px 10px;cursor:pointer;font-size:14px;font-weight:700}
+.quick button small{font-weight:500;color:var(--muted);margin-left:4px}
+.wd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wd button{border:2px solid var(--line);border-radius:10px;background:var(--card);padding:8px 0;font-weight:700;cursor:pointer;font-size:14px}
+.wd button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.wd button:disabled{opacity:.35;cursor:default}
+.rows{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
+.rows li{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:6px 8px}
+.rows li .grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.rows li small{color:var(--muted)}
+.x{border:0;background:none;color:var(--out);font-size:20px;cursor:pointer;width:34px;height:34px;border-radius:8px;flex:none}
+.sw{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);background:var(--c);cursor:pointer;flex:none}
+.addrow{display:flex;gap:8px;flex-wrap:wrap} .addrow .inp{flex:1 1 140px;min-width:0;width:auto} .addrow input[type=time]{flex:0 0 110px}
+.addrow select.inp{flex:0 1 150px}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#171a21;color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:14px;align-items:center;z-index:60;width:max-content;max-width:calc(100% - 32px);font-size:16px}
+.toast button{background:none;border:0;color:#9db8ff;font-weight:700;cursor:pointer;font-size:16px}
+.req{color:var(--out)}
+.lang{display:flex;gap:4px;flex:none}
+.lang button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.lang button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.lang.big{margin-bottom:6px} .lang.big button{flex:1;padding:10px;font-size:15px}
+.presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:10px 0}
+.presets button{border:2px solid var(--line);border-radius:12px;background:var(--card);padding:12px;font-weight:700;cursor:pointer;text-align:left}
+.presets button small{display:block;font-weight:500;color:var(--muted);font-size:13px;margin-top:2px}
+.presets button:hover{border-color:var(--accent)}
+.printhead{display:none}
+@media print{
+  @page{size:landscape;margin:10mm}
+  body{background:#fff;color:#000;font-size:12px}
+  main{max-width:none;padding:0}
+  .top,.tools,.weekbar,.stats,#views,#bottom,.toast,#layer{display:none!important}
+  .printhead{display:block;font-size:18px;font-weight:800;margin-bottom:8px}
+  .tblwrap{border:0;overflow:visible}
+  table.grid{min-width:0}
+  .grid td:first-child,.grid th:first-child{position:static}
+  .cs{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<main>
+  <!-- set-up (once per device) -->
+  <section id="setup" hidden>
+    <div class="top"><div class="logo">A</div><h1>Ausblick – <span data-t="title"></span><span class="sub" data-t="setup_sub"></span></h1><div class="lang" id="langTop"></div></div>
+    <div class="card">
+      <div class="tabs"><button type="button" data-mode="code" class="on" data-t="tab_code"></button><button type="button" data-mode="token" data-t="tab_token"></button></div>
+      <div class="field"><label for="sName" data-t="name"></label><input id="sName" autocomplete="given-name" placeholder="Lucas"><p class="hint" data-t="name_hint"></p></div>
+      <div id="mCode">
+        <div class="field"><label for="sCode" data-t="code"></label><input id="sCode" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX"><p class="hint" data-t="code_hint"></p></div>
+      </div>
+      <div id="mToken" hidden>
+        <div class="field"><label for="sToken" data-t="token"></label><input id="sToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"><p class="hint" data-th="token_hint"></p></div>
+        <div class="field"><label for="sRepo" data-t="repo"></label><input id="sRepo" autocomplete="off" spellcheck="false"></div>
+      </div>
+      <button class="btn primary wide" id="sGo" type="button" data-t="go"></button>
+      <button class="btn wide" id="sBack" type="button" hidden style="margin-top:10px" data-t="back"></button>
+      <div id="sMsg"></div>
+    </div>
+  </section>
+
+  <!-- the plan -->
+  <section id="app" hidden>
+    <div class="top">
+      <div class="logo">A</div>
+      <h1><span id="bizName"></span><span class="sub"><span class="pill" id="sync"><i></i><span>—</span></span></span></h1>
+      <button class="icon add" id="add" type="button" data-ta="new_shift"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="icon" id="gear" type="button" data-ta="settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+    <div class="views" id="views"></div>
+    <div id="planView">
+      <div class="weekbar">
+        <button class="icon" id="prev" type="button" data-ta="prev_week">‹</button>
+        <div class="wk" id="wk"></div>
+        <button class="icon" id="next" type="button" data-ta="next_week">›</button>
+      </div>
+      <div class="tools">
+        <select id="who" data-ta="show"></select>
+        <div class="seg" id="mode"></div>
+        <button class="btn small" id="today" type="button" data-t="today_btn"></button>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="printhead" id="printhead"></div>
+      <div id="plan"></div>
+      <div id="bottom" class="row2" style="margin-top:14px"></div>
+    </div>
+    <div id="peopleView" hidden>
+      <button class="btn primary wide" id="addEmp" type="button" style="margin-bottom:12px" data-t="new_emp"></button>
+      <ul class="list" id="people"></ul>
+    </div>
+  </section>
+</main>
+<div id="layer"></div>
+<script>
+(function(){
+'use strict';
+var $ = function(s, el){ return (el || document).querySelector(s); };
+
+/* ---------- per-customer settings ----------
+   To give a customer their own copy: change these lines (repositories, storage prefix, branch model).
+   Everything else in the file stays the same. */
+var APP = {
+  repo: 'lucashcandido/ausblick-shiftmanager',          /* public repository with this file and access.json */
+  data: 'lucashcandido/ausblick-shiftmanager-data',     /* private repository with turnos.json */
+  file: 'turnos.json',
+  prefix: 'as',                                         /* storage prefix on the device, different per app */
+  preset: ''                                            /* branch model offered first: parking, hair, food, retail, general */
+};
+var ACCESS_URL = 'https://api.github.com/repos/' + APP.repo + '/contents/access.json';
+var KEY = { cfg: APP.prefix + '.cfg.v1', data: APP.prefix + '.data.v1', dirty: APP.prefix + '.dirty.v1', lang: APP.prefix + '.lang', ui: APP.prefix + '.ui' };
+var store = {
+  get: function(k, d){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set: function(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+};
+
+/* ---------- languages ---------- */
+var LANGS = [['es', 'Español'], ['en', 'English'], ['de', 'Deutsch']];
+var TX = {
+es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo', tab_code:'Tengo el código', tab_token:'Primera vez (token)',
+  name:'Tu nombre', name_hint:'Se guarda en cada cambio, así sabemos quién armó qué turno.', code:'Código de acceso',
+  code_hint:'Lo tiene quien configuró la app por primera vez (Configuración → Compartir acceso).', token:'Token de GitHub',
+  token_hint:'Fine-grained token con acceso <b>solo</b> al repositorio de datos, permiso «Contents: Read and write».', repo:'Repositorio de datos',
+  go:'Preparar dispositivo', back:'Volver sin cambios', settings:'Configuración',
+  err_name:'Escribí tu nombre.', err_code12:'Escribí el código completo (12 letras y números).', err_token:'Pegá el token de GitHub.',
+  err_repo:'Repositorio: usuario/nombre, por ejemplo {0}.', preparing:'Preparando…', e_code:'Código incorrecto.',
+  e_none:'Todavía no hay access.json en {0}. Quien tenga el token tiene que configurar la app con «Primera vez» y subir el archivo.',
+  e_expired:'El token no es válido o venció.', e_norepo:'El token no tiene acceso a {0} (o el repositorio no existe).',
+  e_readonly:'El token solo puede leer: hace falta «Contents: Read and write».', e_format:'El archivo access.json no es válido.', e_net:'Sin conexión o error. Probá de nuevo.',
+  share_first:'¡Listo! Ahora los demás dispositivos', share:'Compartir acceso', share_code:'Código de acceso para los otros dispositivos del equipo:',
+  share_hint:'Para que el código funcione, el archivo <b>access.json</b> tiene que estar en el repositorio de la app ({0}). Contiene el token cifrado: sin el código no sirve.',
+  dl_access:'Descargar access.json', done:'Listo',
+  v_plan:'Plan', v_people:'Personal', prev_week:'Semana anterior', next_week:'Semana siguiente', week_n:'Semana {0}', today_btn:'Hoy', show:'Mostrar',
+  m_days:'Días', m_table:'Tabla', all_people:'Todo el personal', only_open:'Sin asignar', new_shift:'Nuevo turno', new_emp:'Nuevo empleado',
+  st_shifts:'{0} turnos', st_hours:'{0} h', st_open:'{0} sin asignar', st_issues:'{0} conflictos',
+  no_shifts:'Sin turnos.', open:'Sin asignar', removed:'(eliminado)', h:'h', total:'Total',
+  w_overlap:'Se superpone con otro turno de {0}', w_absent:'{0} está ausente ({1})', w_role:'{0} no tiene el puesto {1}', w_hours:'{0} supera sus horas ({1} de {2})',
+  copy_week:'Copiar semana anterior', copy_none:'La semana anterior no tiene turnos.', copied:'{0} turnos copiados', copy_skip:'{0} ya existían',
+  print:'Imprimir semana',
+  start_title:'Empecemos', start_text:'Elegí el rubro: se cargan puestos y turnos típicos. Después podés cambiar todo.', start_emp:'Después cargá el personal.',
+  f_date:'Fecha', f_from:'Desde', f_to:'Hasta', f_pos:'Puesto', f_emp:'Empleado', f_note:'Nota', ph_note:'Ej. abrir local, cubre a Juan…', no_pos:'Sin puesto',
+  tpls:'Turnos típicos', repeat:'Repetir también en', next_day:'termina al día siguiente', busy:'ocupado {0}', absent_s:'ausente',
+  err_time:'Poné hora de inicio y de fin (distintas).', delete:'Eliminar', cancel:'Cancelar', save:'Guardar', duplicate:'Duplicar',
+  saved:'Guardado.', added:'{0} agregado.', deleted:'{0} eliminado.', undo:'Deshacer', shift_added:'Turno agregado.', shifts_added:'{0} turnos agregados.', shift_deleted:'Turno eliminado.',
+  e_name:'Nombre y apellido', e_tel:'Teléfono', e_pos:'Puestos', e_pos_hint:'Si no marcás ninguno, puede cubrir cualquier puesto.', e_hours:'Horas por semana (objetivo)', ph_hours:'Ej. 40',
+  e_notes:'Notas', ph_enotes:'Disponibilidad, francos fijos, contacto de emergencia…', err_ename:'Escribí el nombre.',
+  absences:'Ausencias', no_abs:'Sin ausencias cargadas.', ab_vac:'Vacaciones', ab_sick:'Enfermedad', ab_off:'Franco / otro', ab_add:'Agregar ausencia', ab_err:'Elegí desde y hasta.',
+  this_week:'esta semana', of_h:'de {0} h', send_wa:'Enviar horario por WhatsApp', wa_hi:'Hola {0}, tus turnos de la semana {1}:', wa_none:'Hola {0}, no tenés turnos en la semana {1}.',
+  emp_shifts_left:'{0} tiene turnos cargados. Quedan como «sin asignar».', no_people:'Todavía no hay personal. Tocá «Nuevo empleado».',
+  s_biz:'Nombre del negocio', ph_biz:'Ej. Cochera Centro', s_ws:'La semana empieza', mon:'Lunes', sun:'Domingo',
+  s_pos:'Puestos y turnos típicos', s_pos_hint:'Puestos = áreas o tareas (caja, cocina…). Turnos típicos = horarios que se repiten, para cargar con un toque.',
+  pos_list:'Puestos', ph_pos:'Nuevo puesto', tpl_list:'Turnos típicos', ph_tpl:'Nombre (ej. Mañana)', add_btn:'Agregar', preset_apply:'Cargar modelo de rubro', preset_done:'Modelo «{0}» cargado.',
+  g_share:'Compartir acceso (código)', g_export:'Exportar (CSV para Excel)', g_sync:'Sincronizar ahora', g_setup:'Cambiar nombre o acceso', close:'Cerrar',
+  dev_of:'Dispositivo de <b>{0}</b>', data_in:'Datos en {0}', language:'Idioma',
+  ex_title:'Exportar', ex_from:'Desde', ex_to:'Hasta', ex_shifts:'Turnos (CSV)', ex_hours:'Horas por persona (CSV)',
+  csv_sh:['Fecha', 'Día', 'Desde', 'Hasta', 'Horas', 'Puesto', 'Empleado', 'Nota'], csv_h:['Empleado', 'Turnos', 'Horas', 'Ausencias (días)'],
+  s_saving:'Guardando…', s_saved:'Guardado {0}', s_expired:'Token vencido: hay que renovarlo', s_later:'Sin conexión – se guarda después', s_offline:'Sin conexión', s_error:'Error {0} – tocá para ver', s_later_err:'Error {0} – no se guardó', err_title:'Problema de sincronización', err_retry:'Reintentar', err_write:'El token puede leer pero no guardar. En GitHub → Settings → Developer settings → Fine-grained tokens → Edit, poné «Contents» en «Read and write» para el repositorio de datos. El token sigue igual; después tocá Reintentar.' },
+en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have the code', tab_token:'First time (token)',
+  name:'Your name', name_hint:'Saved with every change, so we know who planned which shift.', code:'Access code',
+  code_hint:'Whoever set up the app first has it (Settings → Share access).', token:'GitHub token',
+  token_hint:'Fine-grained token with access <b>only</b> to the data repository, permission “Contents: Read and write”.', repo:'Data repository',
+  go:'Set up device', back:'Back without changes', settings:'Settings',
+  err_name:'Enter your name.', err_code12:'Enter the full code (12 letters and numbers).', err_token:'Paste the GitHub token.',
+  err_repo:'Repository: user/name, for example {0}.', preparing:'Setting up…', e_code:'Wrong code.',
+  e_none:'There is no access.json in {0} yet. Whoever has the token must set up the app with “First time” and upload the file.',
+  e_expired:'The token is invalid or expired.', e_norepo:'The token has no access to {0} (or the repository does not exist).',
+  e_readonly:'The token can only read: it needs “Contents: Read and write”.', e_format:'The access.json file is not valid.', e_net:'No connection or error. Try again.',
+  share_first:'Done! Now the other devices', share:'Share access', share_code:'Access code for the team’s other devices:',
+  share_hint:'For the code to work, the file <b>access.json</b> must be in the app repository ({0}). It contains the encrypted token: without the code it is useless.',
+  dl_access:'Download access.json', done:'Done',
+  v_plan:'Plan', v_people:'Staff', prev_week:'Previous week', next_week:'Next week', week_n:'Week {0}', today_btn:'Today', show:'Show',
+  m_days:'Days', m_table:'Table', all_people:'All staff', only_open:'Unassigned', new_shift:'New shift', new_emp:'New employee',
+  st_shifts:'{0} shifts', st_hours:'{0} h', st_open:'{0} unassigned', st_issues:'{0} conflicts',
+  no_shifts:'No shifts.', open:'Unassigned', removed:'(removed)', h:'h', total:'Total',
+  w_overlap:'Overlaps another shift of {0}', w_absent:'{0} is absent ({1})', w_role:'{0} doesn’t have the role {1}', w_hours:'{0} is over their hours ({1} of {2})',
+  copy_week:'Copy previous week', copy_none:'The previous week has no shifts.', copied:'{0} shifts copied', copy_skip:'{0} already existed',
+  print:'Print week',
+  start_title:'Let’s start', start_text:'Pick the business type: typical roles and shifts get added. You can change everything later.', start_emp:'Then add the staff.',
+  f_date:'Date', f_from:'From', f_to:'To', f_pos:'Role', f_emp:'Employee', f_note:'Note', ph_note:'E.g. opens the shop, covers for Juan…', no_pos:'No role',
+  tpls:'Typical shifts', repeat:'Also repeat on', next_day:'ends the next day', busy:'busy {0}', absent_s:'absent',
+  err_time:'Enter a start and an end time (different).', delete:'Delete', cancel:'Cancel', save:'Save', duplicate:'Duplicate',
+  saved:'Saved.', added:'{0} added.', deleted:'{0} deleted.', undo:'Undo', shift_added:'Shift added.', shifts_added:'{0} shifts added.', shift_deleted:'Shift deleted.',
+  e_name:'Full name', e_tel:'Phone', e_pos:'Roles', e_pos_hint:'If none is ticked, they can cover any role.', e_hours:'Hours per week (target)', ph_hours:'E.g. 40',
+  e_notes:'Notes', ph_enotes:'Availability, fixed days off, emergency contact…', err_ename:'Enter the name.',
+  absences:'Absences', no_abs:'No absences entered.', ab_vac:'Vacation', ab_sick:'Sick', ab_off:'Day off / other', ab_add:'Add absence', ab_err:'Choose from and to.',
+  this_week:'this week', of_h:'of {0} h', send_wa:'Send schedule via WhatsApp', wa_hi:'Hi {0}, your shifts for the week {1}:', wa_none:'Hi {0}, you have no shifts in the week {1}.',
+  emp_shifts_left:'{0} has shifts planned. They stay as “unassigned”.', no_people:'No staff yet. Tap “New employee”.',
+  s_biz:'Business name', ph_biz:'E.g. Downtown Parking', s_ws:'Week starts on', mon:'Monday', sun:'Sunday',
+  s_pos:'Roles and typical shifts', s_pos_hint:'Roles = areas or tasks (cashier, kitchen…). Typical shifts = recurring times, to add with one tap.',
+  pos_list:'Roles', ph_pos:'New role', tpl_list:'Typical shifts', ph_tpl:'Name (e.g. Morning)', add_btn:'Add', preset_apply:'Load business type', preset_done:'Type “{0}” loaded.',
+  g_share:'Share access (code)', g_export:'Export (CSV for Excel)', g_sync:'Sync now', g_setup:'Change name or access', close:'Close',
+  dev_of:'Device of <b>{0}</b>', data_in:'Data in {0}', language:'Language',
+  ex_title:'Export', ex_from:'From', ex_to:'To', ex_shifts:'Shifts (CSV)', ex_hours:'Hours per person (CSV)',
+  csv_sh:['Date', 'Day', 'From', 'To', 'Hours', 'Role', 'Employee', 'Note'], csv_h:['Employee', 'Shifts', 'Hours', 'Absence (days)'],
+  s_saving:'Saving…', s_saved:'Saved {0}', s_expired:'Token expired: it needs renewing', s_later:'Offline – will save later', s_offline:'Offline', s_error:'Error {0} – tap for details', s_later_err:'Error {0} – not saved', err_title:'Sync problem', err_retry:'Try again', err_write:'The token can read but not save. On GitHub → Settings → Developer settings → Fine-grained tokens → Edit, set “Contents” to “Read and write” for the data repository. The token stays the same; then tap Try again.' },
+de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_code:'Ich habe den Code', tab_token:'Erstes Mal (Token)',
+  name:'Dein Name', name_hint:'Wird bei jeder Änderung gespeichert, damit wir wissen, wer welche Schicht geplant hat.', code:'Zugangscode',
+  code_hint:'Hat, wer die App zuerst eingerichtet hat (Einstellungen → Zugang teilen).', token:'GitHub-Token',
+  token_hint:'Fine-grained Token mit Zugriff <b>nur</b> auf das Daten-Repository, Berechtigung „Contents: Read and write“.', repo:'Daten-Repository',
+  go:'Gerät einrichten', back:'Zurück ohne Änderungen', settings:'Einstellungen',
+  err_name:'Gib deinen Namen ein.', err_code12:'Gib den ganzen Code ein (12 Buchstaben und Zahlen).', err_token:'Füge den GitHub-Token ein.',
+  err_repo:'Repository: Nutzer/Name, zum Beispiel {0}.', preparing:'Wird eingerichtet…', e_code:'Falscher Code.',
+  e_none:'In {0} gibt es noch keine access.json. Wer den Token hat, muss die App mit „Erstes Mal“ einrichten und die Datei hochladen.',
+  e_expired:'Der Token ist ungültig oder abgelaufen.', e_norepo:'Der Token hat keinen Zugriff auf {0} (oder das Repository existiert nicht).',
+  e_readonly:'Der Token kann nur lesen: nötig ist „Contents: Read and write“.', e_format:'Die Datei access.json ist ungültig.', e_net:'Keine Verbindung oder Fehler. Versuch es nochmal.',
+  share_first:'Fertig! Jetzt die anderen Geräte', share:'Zugang teilen', share_code:'Zugangscode für die anderen Geräte im Team:',
+  share_hint:'Damit der Code funktioniert, muss die Datei <b>access.json</b> im Repository der App liegen ({0}). Sie enthält den verschlüsselten Token: ohne den Code ist sie nutzlos.',
+  dl_access:'access.json herunterladen', done:'Fertig',
+  v_plan:'Plan', v_people:'Personal', prev_week:'Vorige Woche', next_week:'Nächste Woche', week_n:'KW {0}', today_btn:'Heute', show:'Anzeigen',
+  m_days:'Tage', m_table:'Tabelle', all_people:'Alle Mitarbeiter', only_open:'Unbesetzt', new_shift:'Neue Schicht', new_emp:'Neuer Mitarbeiter',
+  st_shifts:'{0} Schichten', st_hours:'{0} h', st_open:'{0} unbesetzt', st_issues:'{0} Konflikte',
+  no_shifts:'Keine Schichten.', open:'Unbesetzt', removed:'(gelöscht)', h:'h', total:'Summe',
+  w_overlap:'Überschneidet sich mit einer anderen Schicht von {0}', w_absent:'{0} ist abwesend ({1})', w_role:'{0} hat die Rolle {1} nicht', w_hours:'{0} über Soll-Stunden ({1} von {2})',
+  copy_week:'Vorwoche kopieren', copy_none:'Die Vorwoche hat keine Schichten.', copied:'{0} Schichten kopiert', copy_skip:'{0} gab es schon',
+  print:'Woche drucken',
+  start_title:'Los geht’s', start_text:'Wähle die Branche: typische Rollen und Schichten werden angelegt. Später lässt sich alles ändern.', start_emp:'Danach das Personal anlegen.',
+  f_date:'Datum', f_from:'Von', f_to:'Bis', f_pos:'Rolle', f_emp:'Mitarbeiter', f_note:'Notiz', ph_note:'Z. B. schließt auf, vertritt Juan…', no_pos:'Ohne Rolle',
+  tpls:'Typische Schichten', repeat:'Auch wiederholen am', next_day:'endet am nächsten Tag', busy:'belegt {0}', absent_s:'abwesend',
+  err_time:'Gib Start- und Endzeit ein (verschieden).', delete:'Löschen', cancel:'Abbrechen', save:'Speichern', duplicate:'Duplizieren',
+  saved:'Gespeichert.', added:'{0} hinzugefügt.', deleted:'{0} gelöscht.', undo:'Rückgängig', shift_added:'Schicht hinzugefügt.', shifts_added:'{0} Schichten hinzugefügt.', shift_deleted:'Schicht gelöscht.',
+  e_name:'Vor- und Nachname', e_tel:'Telefon', e_pos:'Rollen', e_pos_hint:'Ist keine angehakt, kann die Person jede Rolle übernehmen.', e_hours:'Stunden pro Woche (Soll)', ph_hours:'Z. B. 40',
+  e_notes:'Notizen', ph_enotes:'Verfügbarkeit, feste freie Tage, Notfallkontakt…', err_ename:'Gib den Namen ein.',
+  absences:'Abwesenheiten', no_abs:'Keine Abwesenheiten eingetragen.', ab_vac:'Urlaub', ab_sick:'Krank', ab_off:'Frei / Sonstiges', ab_add:'Abwesenheit eintragen', ab_err:'Wähle von und bis.',
+  this_week:'diese Woche', of_h:'von {0} h', send_wa:'Plan per WhatsApp senden', wa_hi:'Hallo {0}, deine Schichten in der Woche {1}:', wa_none:'Hallo {0}, du hast keine Schichten in der Woche {1}.',
+  emp_shifts_left:'{0} hat geplante Schichten. Sie bleiben als „unbesetzt“.', no_people:'Noch kein Personal. Tippe auf „Neuer Mitarbeiter“.',
+  s_biz:'Name des Betriebs', ph_biz:'Z. B. Parkhaus Zentrum', s_ws:'Woche beginnt am', mon:'Montag', sun:'Sonntag',
+  s_pos:'Rollen und typische Schichten', s_pos_hint:'Rollen = Bereiche oder Aufgaben (Kasse, Küche…). Typische Schichten = wiederkehrende Zeiten, mit einem Tipp eingetragen.',
+  pos_list:'Rollen', ph_pos:'Neue Rolle', tpl_list:'Typische Schichten', ph_tpl:'Name (z. B. Früh)', add_btn:'Hinzufügen', preset_apply:'Branchen-Modell laden', preset_done:'Modell „{0}“ geladen.',
+  g_share:'Zugang teilen (Code)', g_export:'Exportieren (CSV für Excel)', g_sync:'Jetzt synchronisieren', g_setup:'Name oder Zugang ändern', close:'Schließen',
+  dev_of:'Gerät von <b>{0}</b>', data_in:'Daten in {0}', language:'Sprache',
+  ex_title:'Exportieren', ex_from:'Von', ex_to:'Bis', ex_shifts:'Schichten (CSV)', ex_hours:'Stunden pro Person (CSV)',
+  csv_sh:['Datum', 'Tag', 'Von', 'Bis', 'Stunden', 'Rolle', 'Mitarbeiter', 'Notiz'], csv_h:['Mitarbeiter', 'Schichten', 'Stunden', 'Abwesenheit (Tage)'],
+  s_saving:'Speichert…', s_saved:'Gespeichert {0}', s_expired:'Token abgelaufen: muss erneuert werden', s_later:'Offline – wird später gespeichert', s_offline:'Offline', s_error:'Fehler {0} – antippen für Details', s_later_err:'Fehler {0} – nicht gespeichert', err_title:'Problem beim Synchronisieren', err_retry:'Nochmal versuchen', err_write:'Der Token darf lesen, aber nicht speichern. Auf GitHub → Settings → Developer settings → Fine-grained tokens → Edit „Contents“ auf „Read and write“ für das Daten-Repository stellen. Der Token bleibt gleich; danach Nochmal versuchen.' }
+};
+
+/* ---------- branch models ----------
+   Roles and typical shifts per business type, in all three languages. Loading one only adds what is missing. */
+var L3 = function(es, en, de){ return { es: es, en: en, de: de }; };
+var TN = { m: L3('Mañana', 'Morning', 'Früh'), a: L3('Tarde', 'Afternoon', 'Spät'), n: L3('Noche', 'Night', 'Nacht'), f: L3('Completo', 'Full day', 'Ganztags'), l: L3('Mediodía', 'Lunch', 'Mittag') };
+var PRESETS = [
+  { id: 'parking', name: L3('Cochera / estacionamiento', 'Parking lot', 'Parkplatz / Garage'), pos: [L3('Playero', 'Attendant', 'Parkwächter'), L3('Caja', 'Cashier', 'Kasse')], tpl: [['m', '06:00', '14:00'], ['a', '14:00', '22:00'], ['n', '22:00', '06:00']] },
+  { id: 'hair', name: L3('Peluquería', 'Hairdresser', 'Friseur'), pos: [L3('Estilista', 'Stylist', 'Friseur/in'), L3('Recepción', 'Reception', 'Empfang')], tpl: [['m', '09:00', '14:00'], ['a', '14:00', '20:00'], ['f', '09:00', '18:00']] },
+  { id: 'food', name: L3('Gastronomía', 'Restaurant', 'Gastronomie'), pos: [L3('Cocina', 'Kitchen', 'Küche'), L3('Salón', 'Floor', 'Service'), L3('Barra', 'Bar', 'Bar')], tpl: [['l', '11:00', '16:00'], ['n', '19:00', '01:00'], ['f', '11:00', '23:00']] },
+  { id: 'retail', name: L3('Comercio', 'Shop', 'Einzelhandel'), pos: [L3('Ventas', 'Sales', 'Verkauf'), L3('Caja', 'Cashier', 'Kasse'), L3('Depósito', 'Stock', 'Lager')], tpl: [['m', '08:00', '14:00'], ['a', '14:00', '20:00']] },
+  { id: 'general', name: L3('Otro / general', 'Other / general', 'Sonstige / allgemein'), pos: [L3('Atención', 'Front desk', 'Kundendienst'), L3('Administración', 'Office', 'Verwaltung')], tpl: [['m', '08:00', '14:00'], ['a', '14:00', '20:00']] }
+];
+var COLORS = ['#2563eb', '#16a34a', '#d97706', '#9333ea', '#dc2626', '#0891b2', '#db2777', '#65a30d'];
+
+var lang = store.get(KEY.lang, null);
+if(!TX[lang]){ var nl = String(navigator.language || '').slice(0, 2).toLowerCase(); lang = TX[nl] ? nl : 'es'; }
+function t(k){ var s = TX[lang][k], a = arguments; if(s == null) s = TX.es[k]; return String(s).replace(/\{(\d)\}/g, function(m, i){ return a[+i + 1] == null ? '' : a[+i + 1]; }); }
+function th(k){ var a = [k]; for(var i = 1; i < arguments.length; i++) a.push(esc(arguments[i])); return t.apply(null, a); }
+function langButtons(cur){ return LANGS.map(function(l){ return '<button type="button" data-lang="' + l[0] + '"' + (l[0] === cur ? ' class="on"' : '') + ' title="' + l[1] + '">' + (this.big ? l[1] : l[0].toUpperCase()) + '</button>'; }, this || {}).join(''); }
+function applyLang(){
+  document.documentElement.lang = lang;
+  [].forEach.call(document.querySelectorAll('[data-t]'), function(el){ el.textContent = t(el.dataset.t); });
+  [].forEach.call(document.querySelectorAll('[data-th]'), function(el){ el.innerHTML = t(el.dataset.th); });
+  [].forEach.call(document.querySelectorAll('[data-tp]'), function(el){ el.placeholder = t(el.dataset.tp); });
+  [].forEach.call(document.querySelectorAll('[data-ta]'), function(el){ el.setAttribute('aria-label', t(el.dataset.ta)); el.title = t(el.dataset.ta); });
+  $('#langTop').innerHTML = langButtons.call({}, lang);
+  if(sync.label) setSync(sync.label[0], sync.label[1], sync.label[2]);
+  render();
+}
+function setLang(l){ if(!TX[l]) return; lang = l; store.set(KEY.lang, l); $('#sMsg').innerHTML = ''; applyLang(); }
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-lang]'); if(b){ setLang(b.dataset.lang); [].forEach.call(document.querySelectorAll('[data-lang]'), function(o){ o.classList.toggle('on', o.dataset.lang === lang); }); } });
+
+var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); };
+var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+var uid = function(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); };
+var iso = function(dt){ return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()); };
+var todayIso = function(){ return iso(new Date()); };
+var hm = function(ts){ var d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+var digits = function(v){ return String(v || '').replace(/\D/g, ''); };
+var telHref = function(v){ var s = String(v || '').trim(); return s ? 'tel:' + (s.charAt(0) === '+' ? '+' : '') + digits(s) : ''; };
+var waNum = function(v){ var d = digits(v); if(d.length < 8) return ''; if(String(v).trim().charAt(0) !== '+' && d.indexOf('54') !== 0) d = '549' + d.replace(/^0/, ''); return d; };
+var norm = function(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); };
+var copy = function(x){ return JSON.parse(JSON.stringify(x)); };
+
+/* ---------- days and times ----------
+   A day is a number (days since 1970, UTC), so weeks and overnight shifts are plain arithmetic.
+   A shift is {d:'2026-11-04', a:'22:00', b:'06:00'}: an end at or before the start means it ends the next day. */
+var dayNum = function(s){ var p = String(s).split('-'); return Math.round(Date.UTC(+p[0], +p[1] - 1, +p[2]) / 864e5); };
+var numIso = function(n){ var d = new Date(n * 864e5); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); };
+var numDate = function(n){ var d = new Date(n * 864e5); return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12); };
+var dow = function(n){ return new Date(n * 864e5).getUTCDay(); };
+var mins = function(s){ var m = /^(\d{1,2}):(\d{2})/.exec(s || ''); return m ? +m[1] * 60 + +m[2] : NaN; };
+var dur = function(x){ var a = mins(x.a), b = mins(x.b); return isNaN(a) || isNaN(b) ? 0 : ((b - a) + 1440) % 1440 || 1440; };
+var overnight = function(x){ return mins(x.b) <= mins(x.a); };
+var span = function(x){ var s = dayNum(x.d) * 1440 + mins(x.a); return [s, s + dur(x)]; };
+var hrs = function(m){ return (m / 60).toLocaleString(t('locale'), { maximumFractionDigits: 2 }); };
+var fmtDay = function(n, o){ return numDate(n).toLocaleDateString(t('locale'), o || { weekday: 'short', day: 'numeric', month: 'short' }); };
+var isoWeek = function(n){ var d = new Date(n * 864e5), wd = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - wd + 3); var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 4)); return 1 + Math.round(((d - y) / 864e5 - 3 + ((y.getUTCDay() + 6) % 7)) / 7); };
+
+/* ---------- data ----------
+   Everything lives in one map, id -> record, each record with a kind:
+   emp {n, tel, pos:[ids], h, notas}      people
+   pos {n, col}                           roles / areas (cashier, kitchen…)
+   tpl {n, a, b, pos}                     typical shifts, to add with one tap
+   sh  {d, a, b, pos, emp, note, by}      shifts (emp '' = unassigned)
+   off {emp, from, to, kind, note}        absences
+   set {biz, ws}                          settings (one record, id 'set')
+   Every record has t (last change) and del (deleted); the newer change wins when two devices meet. */
+var cfg = store.get(KEY.cfg, null);              /* {repo, token, code, name} */
+var data = store.get(KEY.data, {});
+var dirty = store.get(KEY.dirty, false);
+var ui = Object.assign({ view: 'plan', mode: 'days', who: '' }, store.get(KEY.ui, {}));
+var sync = { busy: false, timer: 0, again: false, label: null };
+var live = function(k){ return Object.keys(data).map(function(id){ return data[id]; }).filter(function(x){ return x && !x.del && x.k === k; }); };
+var settings = function(){ var s = data.set; return Object.assign({ biz: '', ws: 1 }, s && !s.del ? s : {}); };
+var byName = function(a, b){ return norm(a.n).localeCompare(norm(b.n)); };
+var emps = function(){ return live('emp').sort(byName); };
+var poses = function(){ return live('pos').sort(function(a, b){ return (a.o || 0) - (b.o || 0) || byName(a, b); }); };
+var tpls = function(){ return live('tpl').sort(function(a, b){ return mins(a.a) - mins(b.a) || byName(a, b); }); };
+var rec = function(id){ var x = data[id]; return x && !x.del ? x : null; };
+var empName = function(id){ var e = id && data[id]; return !id ? t('open') : e && !e.del ? e.n : (e ? e.n + ' ' : '') + t('removed'); };
+var posOf = function(id){ return id ? rec(id) : null; };
+var colOf = function(x){ var p = posOf(x.pos); return p ? p.col : 'var(--accent)'; };
+var abName = function(k){ return t({ vac: 'ab_vac', sick: 'ab_sick', off: 'ab_off' }[k] || 'ab_off'); };
+
+var week0 = function(n){ return n - ((dow(n) - settings().ws + 7) % 7); };
+var curWeek = week0(dayNum(todayIso()));
+var weekShifts = function(n0, n1){ return live('sh').filter(function(s){ var d = dayNum(s.d); return d >= n0 && d <= n1; }); };
+var absentOn = function(emp, d){ return live('off').filter(function(o){ return o.emp === emp && o.from <= d && d <= o.to; })[0] || null; };
+/* problems of one shift: double booked, absent, role the person does not have */
+function problems(s, pool){
+  var out = [];
+  if(!s.emp) return out;
+  var e = rec(s.emp), sp = span(s), name = empName(s.emp);
+  if(pool.some(function(o){ if(o.id === s.id || o.emp !== s.emp) return false; var op = span(o); return op[0] < sp[1] && sp[0] < op[1]; })) out.push(t('w_overlap', name));
+  var ab = absentOn(s.emp, s.d); if(ab) out.push(t('w_absent', name, abName(ab.kind)));
+  if(e && s.pos && (e.pos || []).length && e.pos.indexOf(s.pos) < 0){ var p = posOf(s.pos); if(p) out.push(t('w_role', name, p.n)); }
+  return out;
+}
+var empMinutes = function(emp, list){ return list.reduce(function(m, s){ return m + (s.emp === emp ? dur(s) : 0); }, 0); };
+
+/* ---------- screens ---------- */
+function show(){
+  $('#setup').hidden = !!cfg; $('#app').hidden = !cfg;
+  if(!cfg){ drawSetup(); return; }
+  render();
+}
+var mode = 'code';
+function setMode(m){
+  mode = m;
+  [].forEach.call(document.querySelectorAll('.tabs button'), function(b){ b.classList.toggle('on', b.dataset.mode === m); });
+  $('#mCode').hidden = m !== 'code'; $('#mToken').hidden = m !== 'token'; $('#sMsg').innerHTML = '';
+}
+function drawSetup(){
+  $('#sBack').hidden = !cfg;
+  if(!$('#sName').value && cfg) $('#sName').value = cfg.name || '';
+  if(!$('#sRepo').value) $('#sRepo').value = (cfg && cfg.repo) || APP.data;
+}
+$('.tabs').addEventListener('click', function(e){ var b = e.target.closest('[data-mode]'); if(b) setMode(b.dataset.mode); });
+
+/* ---------- access code ----------
+   access.json (in the public app repository) = AES-GCM(PBKDF2(code)) of {repo, token}.
+   Without the code the file is useless. Whoever sets the app up with the token gets the code and the file. */
+var cleanCode = function(c){ return String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); };
+var showCode = function(c){ return cleanCode(c).slice(0, 12).replace(/(.{4})(?=.)/g, '$1-'); };
+var b64bytes = function(s){ var x = atob(String(s)), b = new Uint8Array(x.length); for(var i = 0; i < x.length; i++) b[i] = x.charCodeAt(i); return b; };
+var bytesb64 = function(b){ var x = ''; b = new Uint8Array(b); for(var i = 0; i < b.length; i++) x += String.fromCharCode(b[i]); return btoa(x); };
+var b64e = function(s){ return bytesb64(new TextEncoder().encode(s)); };
+var b64d = function(s){ return new TextDecoder().decode(b64bytes(String(s).replace(/\s/g, ''))); };
+async function keyFor(code, salt, it, use){
+  var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(cleanCode(code)), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: it, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, [use]);
+}
+async function openAccess(code){
+  var r = await fetch(ACCESS_URL, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+  if(r.status === 404) throw new Error('none');
+  if(!r.ok) throw new Error('net');
+  var j = await r.json(), blob = JSON.parse(b64d(j.content));
+  if(!blob || blob.v !== 1 || !(blob.it >= 100000 && blob.it <= 5000000)) throw new Error('format');
+  var k = await keyFor(code, b64bytes(blob.salt), blob.it, 'decrypt'), plain;
+  try{ plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64bytes(blob.iv) }, k, b64bytes(blob.ct)); }catch(e){ throw new Error('code'); }
+  var conf = JSON.parse(new TextDecoder().decode(plain));
+  if(!conf || typeof conf.token !== 'string' || !/^[\w.-]+\/[\w.-]+$/.test(conf.repo || '')) throw new Error('format');
+  return conf;
+}
+async function sealAccess(code, repo, token){
+  var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), it = 310000;
+  var k = await keyFor(code, salt, it, 'encrypt');
+  var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify({ repo: repo, token: token })));
+  return JSON.stringify({ v: 1, it: it, salt: bytesb64(salt), iv: bytesb64(iv), ct: bytesb64(ct) }, null, 2) + '\n';
+}
+function newCode(){
+  var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = crypto.getRandomValues(new Uint8Array(12)), s = '';
+  for(var i = 0; i < 12; i++) s += abc[r[i] % abc.length];
+  return s;
+}
+async function checkRepo(repo, token){
+  var r = await fetch('https://api.github.com/repos/' + repo, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+  if(r.status === 401) throw new Error('expired');
+  if(r.status === 404 || r.status === 403) throw new Error('norepo');
+  if(!r.ok) throw new Error('net');
+  var j = await r.json();
+  if(j.permissions && !j.permissions.push) throw new Error('readonly');
+}
+function download(name, text, type){
+  var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type || 'application/json' })); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); close(a); }, 1000);
+}
+function shareAccess(firstTime){
+  modal('<h3>' + esc(t(firstTime ? 'share_first' : 'share')) + '</h3>' +
+    '<p>' + esc(t('share_code')) + '</p><div class="code">' + esc(showCode(cfg.code)) + '</div>' +
+    '<p class="hint">' + th('share_hint', APP.repo) + '</p>' +
+    '<div class="row2" style="margin-top:14px"><button class="btn" id="dlAcc" type="button">' + esc(t('dl_access')) + '</button><button class="btn primary" data-close type="button">' + esc(t('done')) + '</button></div>', function(el){
+    $('#dlAcc', el).onclick = async function(){ download('access.json', await sealAccess(cfg.code, cfg.repo, cfg.token)); };
+  });
+}
+$('#sCode').addEventListener('input', function(){ this.value = showCode(this.value); });
+$('#sCode').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('#sGo').click(); });
+$('#sBack').onclick = function(){ show(); };
+$('#sGo').onclick = async function(){
+  var msg = function(s, c){ $('#sMsg').innerHTML = '<div class="msg ' + (c || 'err') + '">' + esc(s) + '</div>'; };
+  var name = $('#sName').value.trim(), conf, code;
+  if(!name) return msg(t('err_name'));
+  if(mode === 'code'){
+    code = cleanCode($('#sCode').value);
+    if(code.length !== 12) return msg(t('err_code12'));
+  } else {
+    conf = { token: $('#sToken').value.trim(), repo: $('#sRepo').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$|\/$/g, '') };
+    if(!conf.token) return msg(t('err_token'));
+    if(!/^[\w.-]+\/[\w.-]+$/.test(conf.repo)) return msg(t('err_repo', APP.data));
+    code = (cfg && cfg.code) || newCode();        /* a new token keeps the code, so the other devices pick it up by themselves */
+  }
+  msg(t('preparing'), 'warn'); $('#sGo').disabled = true;
+  try{
+    if(mode === 'code') conf = await openAccess(code);
+    await checkRepo(conf.repo, conf.token);
+  }catch(e){
+    $('#sGo').disabled = false;
+    var k = { code: 'e_code', none: 'e_none', expired: 'e_expired', norepo: 'e_norepo', readonly: 'e_readonly', format: 'e_format' }[e.message] || 'e_net';
+    return msg(t(k, k === 'e_none' ? APP.repo : (conf ? conf.repo : APP.data)));
+  }
+  $('#sGo').disabled = false;
+  var changedRepo = cfg && cfg.repo !== conf.repo;
+  cfg = { repo: conf.repo, token: conf.token, code: code, name: name };
+  store.set(KEY.cfg, cfg);
+  if(changedRepo){ data = {}; dirty = false; store.set(KEY.data, data); store.set(KEY.dirty, dirty); }
+  $('#sCode').value = ''; $('#sToken').value = ''; $('#sMsg').innerHTML = '';
+  show(); syncNow();
+  if(mode === 'token') shareAccess(true);
+};
+/* a link …/#c=CODE sets a device up after typing the name */
+(function(){
+  var h = new URLSearchParams(location.hash.slice(1)), c = h.get('c');
+  if(!c) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  if(cfg && cfg.code === cleanCode(c)) return;
+  if(cfg && dirty) return;
+  setTimeout(function(){ $('#setup').hidden = false; $('#app').hidden = true; drawSetup(); setMode('code'); $('#sCode').value = showCode(c); $('#sName').focus(); });
+})();
+
+/* ---------- drawing ---------- */
+function saveUi(){ store.set(KEY.ui, ui); }
+function render(){
+  if(!cfg) return;
+  var s = settings();
+  $('#bizName').textContent = s.biz || ('Ausblick – ' + t('title'));
+  document.title = (s.biz ? s.biz + ' – ' : 'Ausblick – ') + t('title');
+  $('#views').innerHTML = [['plan', 'v_plan', ''], ['people', 'v_people', emps().length]].map(function(v){ return '<button type="button" data-v="' + v[0] + '"' + (ui.view === v[0] ? ' class="on"' : '') + '>' + esc(t(v[1])) + (v[2] !== '' ? ' <span style="color:var(--muted);font-weight:600">' + v[2] + '</span>' : '') + '</button>'; }).join('');
+  $('#planView').hidden = ui.view !== 'plan'; $('#peopleView').hidden = ui.view !== 'people';
+  if(ui.view === 'plan') renderPlan(); else renderPeople();
+}
+$('#views').addEventListener('click', function(e){ var b = e.target.closest('[data-v]'); if(b){ ui.view = b.dataset.v; saveUi(); render(); window.scrollTo(0, 0); } });
+
+function renderPlan(){
+  curWeek = week0(curWeek + 3);                   /* stays on the same week if another device changed the first weekday */
+  var n0 = curWeek, n6 = n0 + 6, today = dayNum(todayIso()), people = emps();
+  if(ui.who && ui.who !== '-' && !rec(ui.who)) ui.who = '';
+  $('#wk').innerHTML = esc(fmtDay(n0, { day: 'numeric', month: 'short' }) + ' – ' + fmtDay(n6, { day: 'numeric', month: 'short', year: 'numeric' })) + '<small>' + esc(t('week_n', isoWeek(n0 + 3))) + '</small>';
+  $('#today').hidden = today >= n0 && today <= n6;
+  $('#who').innerHTML = '<option value="">' + esc(t('all_people')) + '</option><option value="-"' + (ui.who === '-' ? ' selected' : '') + '>' + esc(t('only_open')) + '</option>' + people.map(function(e){ return '<option value="' + esc(e.id) + '"' + (ui.who === e.id ? ' selected' : '') + '>' + esc(e.n) + '</option>'; }).join('');
+  $('#mode').innerHTML = [['days', 'm_days'], ['table', 'm_table']].map(function(m){ return '<button type="button" data-m="' + m[0] + '"' + (ui.mode === m[0] ? ' class="on"' : '') + '>' + esc(t(m[1])) + '</button>'; }).join('');
+  /* the pool has one day on each side, so overnight shifts across the week edge are checked too */
+  var pool = weekShifts(n0 - 1, n6 + 1), week = pool.filter(function(x){ var d = dayNum(x.d); return d >= n0 && d <= n6; });
+  var shown = week.filter(function(x){ return !ui.who || (ui.who === '-' ? !x.emp : x.emp === ui.who); });
+  var bad = {}; week.forEach(function(x){ var p = problems(x, pool); if(p.length) bad[x.id] = p; });
+  var open = week.filter(function(x){ return !x.emp; }).length, nbad = Object.keys(bad).length;
+  $('#stats').innerHTML = '<span class="stat">' + esc(t('st_shifts', shown.length)) + '</span><span class="stat">' + esc(t('st_hours', hrs(shown.reduce(function(m, x){ return m + dur(x); }, 0)))) + '</span>' +
+    (open ? '<span class="stat w" data-who="-">' + esc(t('st_open', open)) + '</span>' : '') + (nbad ? '<span class="stat e">' + esc(t('st_issues', nbad)) + '</span>' : '');
+  $('#printhead').textContent = (settings().biz || 'Ausblick') + ' · ' + $('#wk').firstChild.textContent;
+  var sorted = function(list){ return list.slice().sort(function(a, b){ return a.d.localeCompare(b.d) || mins(a.a) - mins(b.a) || norm(empName(a.emp)).localeCompare(norm(empName(b.emp))); }); };
+  if(!people.length && !week.length && !poses().length){ $('#plan').innerHTML = startCard(); $('#bottom').innerHTML = ''; return; }
+  var offs = live('off');
+  if(ui.mode === 'table'){
+    var rows = (ui.who === '-' ? [] : people.filter(function(e){ return !ui.who || e.id === ui.who; })).map(function(e){ return { id: e.id, n: e.n, h: e.h }; });
+    /* people who were removed but still have shifts this week */
+    week.forEach(function(x){ if(x.emp && !rec(x.emp) && (!ui.who || ui.who === x.emp) && !rows.some(function(r){ return r.id === x.emp; })) rows.push({ id: x.emp, n: empName(x.emp) }); });
+    if(!ui.who || ui.who === '-') rows.push({ id: '', n: t('open'), open: true });
+    var head = '<tr><th></th>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){ return '<th' + (n0 + i === today ? ' class="today"' : '') + '>' + esc(fmtDay(n0 + i)) + '</th>'; }).join('') + '<th>' + esc(t('total')) + '</th></tr>';
+    var body = rows.map(function(r){
+      var mine = week.filter(function(x){ return (x.emp || '') === r.id; }), tot = mine.reduce(function(m, x){ return m + dur(x); }, 0);
+      if(r.open && !mine.length && ui.who !== '-') return '';
+      return '<tr' + (r.open ? ' class="openrow"' : '') + '><td>' + esc(r.n) + '</td>' + [0, 1, 2, 3, 4, 5, 6].map(function(i){
+        var d = numIso(n0 + i), cell = sorted(mine.filter(function(x){ return x.d === d; })), ab = r.id ? offs.filter(function(o){ return o.emp === r.id && o.from <= d && d <= o.to; })[0] : null;
+        return '<td class="cell" data-new="' + esc(r.id) + '|' + d + '">' + (ab ? '<span class="offc">' + esc(abName(ab.kind)) + '</span>' : '') + cell.map(function(x){ var p = posOf(x.pos); return '<button type="button" class="cs' + (bad[x.id] ? ' bad' : '') + '" data-sh="' + esc(x.id) + '" style="--c:' + esc(colOf(x)) + '"' + (bad[x.id] ? ' title="' + esc(bad[x.id].join(' · ')) + '"' : '') + '>' + esc(x.a + '–' + x.b) + (p ? '<small>' + esc(p.n) + '</small>' : '') + '</button>'; }).join('') + '</td>';
+      }).join('') + '<td class="sum' + (r.h && tot > r.h * 60 ? ' over' : '') + '">' + esc(hrs(tot)) + (r.h ? ' / ' + esc(r.h) : '') + ' ' + esc(t('h')) + '</td></tr>';
+    }).join('');
+    $('#plan').innerHTML = '<div class="tblwrap"><table class="grid"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
+  } else {
+    $('#plan').innerHTML = '<div class="days">' + [0, 1, 2, 3, 4, 5, 6].map(function(i){
+      var n = n0 + i, d = numIso(n), list = sorted(shown.filter(function(x){ return x.d === d; }));
+      var away = offs.filter(function(o){ return o.from <= d && d <= o.to && rec(o.emp) && (!ui.who || ui.who === o.emp); });
+      return '<section class="day' + (n === today ? ' today' : '') + '"><div class="dh"><b>' + esc(fmtDay(n, { weekday: 'long', day: 'numeric', month: 'short' })) + '</b><span>' + (list.length ? esc(t('st_hours', hrs(list.reduce(function(m, x){ return m + dur(x); }, 0)))) : '') + '</span><button type="button" data-newday="' + d + '" aria-label="' + esc(t('new_shift')) + '">+</button></div>' +
+        (list.length ? '<ul class="shl">' + list.map(function(x){
+          var p = posOf(x.pos);
+          return '<li class="sh" data-sh="' + esc(x.id) + '" style="--c:' + esc(colOf(x)) + '"><div class="tm">' + esc(x.a + '–' + x.b) + '<small>' + esc(hrs(dur(x)) + ' ' + t('h')) + (overnight(x) ? ' ☾' : '') + '</small></div>' +
+            '<div class="who">' + (x.emp ? esc(empName(x.emp)) : '<span class="open">' + esc(t('open')) + '</span>') + (p ? ' <span class="tag" style="--c:' + esc(p.col) + '">' + esc(p.n) + '</span>' : '') + (x.note ? '<small>' + esc(x.note) + '</small>' : '') +
+            (bad[x.id] ? bad[x.id].map(function(w){ return '<span class="wn">⚠ ' + esc(w) + '</span>'; }).join('') : '') + '</div></li>';
+        }).join('') + '</ul>' : '<p class="none">' + esc(t('no_shifts')) + '</p>') +
+        (away.length ? '<div class="offl">' + away.map(function(o){ return '<b>' + esc(empName(o.emp)) + '</b> – ' + esc(abName(o.kind)); }).join(' · ') + '</div>' : '') + '</section>';
+    }).join('') + '</div>';
+  }
+  $('#bottom').innerHTML = '<button class="btn" id="copyWeek" type="button">' + esc(t('copy_week')) + '</button><button class="btn" id="printWeek" type="button">' + esc(t('print')) + '</button>';
+}
+function startCard(){
+  return '<div class="card"><h3 style="margin:0 0 6px">' + esc(t('start_title')) + '</h3><p style="margin:0">' + esc(t('start_text')) + '</p>' + presetButtons() + '<p class="hint">' + esc(t('start_emp')) + '</p></div>';
+}
+function presetButtons(){
+  var list = PRESETS.slice().sort(function(a, b){ return (b.id === APP.preset) - (a.id === APP.preset); });
+  return '<div class="presets">' + list.map(function(p){ return '<button type="button" data-preset="' + p.id + '">' + esc(p.name[lang]) + '<small>' + esc(p.pos.map(function(x){ return x[lang]; }).join(', ')) + '</small></button>'; }).join('') + '</div>';
+}
+function applyPreset(id){
+  var p = PRESETS.filter(function(x){ return x.id === id; })[0]; if(!p) return;
+  var have = poses(), changes = [], byN = {};
+  have.forEach(function(x){ byN[norm(x.n)] = x.id; });
+  p.pos.forEach(function(names, i){
+    var n = names[lang]; if(byN[norm(n)]) return;
+    var x = { id: uid(), k: 'pos', n: n, col: COLORS[(have.length + i) % COLORS.length], o: have.length + i };
+    byN[norm(n)] = x.id; changes.push(x);
+  });
+  var firstPos = byN[norm(p.pos[0][lang])], tn = {};
+  tpls().forEach(function(x){ tn[norm(x.n) + x.a + x.b] = 1; });
+  p.tpl.forEach(function(x){ var n = TN[x[0]][lang]; if(!tn[norm(n) + x[1] + x[2]]) changes.push({ id: uid(), k: 'tpl', n: n, a: x[1], b: x[2], pos: '' }); });
+  var s = settings(); if(!s.biz && !rec('set')) changes.push(Object.assign({ id: 'set', k: 'set' }, s));
+  touchMany(changes);
+  toast(t('preset_done', p.name[lang]));
+  return firstPos;
+}
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-preset]'); if(b && !b.closest('.ov')){ applyPreset(b.dataset.preset); } });
+
+$('#prev').onclick = function(){ curWeek -= 7; render(); };
+$('#next').onclick = function(){ curWeek += 7; render(); };
+$('#today').onclick = function(){ curWeek = week0(dayNum(todayIso())); render(); };
+$('#who').onchange = function(){ ui.who = this.value; saveUi(); render(); };
+$('#mode').addEventListener('click', function(e){ var b = e.target.closest('[data-m]'); if(b){ ui.mode = b.dataset.m; saveUi(); render(); } });
+$('#stats').addEventListener('click', function(e){ var b = e.target.closest('[data-who]'); if(b){ ui.who = b.dataset.who; saveUi(); render(); } });
+$('#plan').addEventListener('click', function(e){
+  var s = e.target.closest('[data-sh]'); if(s){ editShift(data[s.dataset.sh]); return; }
+  var nd = e.target.closest('[data-newday]'); if(nd){ editShift(null, { d: nd.dataset.newday, emp: ui.who && ui.who !== '-' ? ui.who : '' }); return; }
+  var c = e.target.closest('[data-new]'); if(c){ var p = c.dataset.new.split('|'); editShift(null, { emp: p[0] && rec(p[0]) ? p[0] : '', d: p[1] }); }
+});
+$('#bottom').addEventListener('click', function(e){
+  if(e.target.closest('#copyWeek')) copyWeek();
+  if(e.target.closest('#printWeek')){ var m = ui.mode; ui.mode = 'table'; render(); setTimeout(function(){ window.print(); ui.mode = m; render(); }, 50); }
+});
+$('#add').onclick = function(){ if(ui.view === 'people') editEmp(null); else editShift(null, { emp: ui.who && ui.who !== '-' ? ui.who : '' }); };
+$('#addEmp').onclick = function(){ editEmp(null); };
+
+function copyWeek(){
+  var src = weekShifts(curWeek - 7, curWeek - 1);
+  if(!src.length){ toast(t('copy_none')); return; }
+  var have = {}; weekShifts(curWeek, curWeek + 6).forEach(function(x){ have[[x.d, x.a, x.b, x.pos || '', x.emp || ''].join('|')] = 1; });
+  var made = [], skip = 0;
+  src.forEach(function(x){
+    var d = numIso(dayNum(x.d) + 7), k = [d, x.a, x.b, x.pos || '', x.emp || ''].join('|');
+    if(have[k]){ skip++; return; } have[k] = 1;
+    var emp = x.emp && rec(x.emp) ? x.emp : '';
+    made.push({ id: uid(), k: 'sh', d: d, a: x.a, b: x.b, pos: x.pos || '', emp: emp, note: x.note || '', by: cfg.name });
+  });
+  touchMany(made);
+  toast(t('copied', made.length) + (skip ? ' · ' + t('copy_skip', skip) : ''), made.length ? t('undo') : '', function(){ touchMany(made.map(function(x){ var g = copy(data[x.id]); g.del = true; return g; })); });
+}
+
+/* ---------- a shift ---------- */
+function editShift(orig, pre){
+  pre = pre || {};
+  var x = orig ? copy(orig) : { id: uid(), k: 'sh', d: pre.d || (curWeek <= dayNum(todayIso()) && dayNum(todayIso()) <= curWeek + 6 ? todayIso() : numIso(curWeek)), a: '', b: '', pos: '', emp: pre.emp || '', note: '' };
+  var rep = {};
+  var html = '<h3>' + esc(t(orig ? 'f_date' : 'new_shift')) + (orig ? ': ' + esc(fmtDay(dayNum(x.d), { weekday: 'long', day: 'numeric', month: 'long' })) : '') + '</h3>' +
+    (tpls().length ? '<span class="lbl">' + esc(t('tpls')) + '</span><div class="quick" id="sTpl">' + tpls().map(function(p){ var po = posOf(p.pos); return '<button type="button" data-tpl="' + esc(p.id) + '" style="--c:' + esc(po ? po.col : 'var(--line)') + '">' + esc(p.n) + '<small>' + esc(p.a + '–' + p.b) + '</small></button>'; }).join('') + '</div>' : '') +
+    '<div class="field"><label for="sD">' + esc(t('f_date')) + '</label><input id="sD" type="date" value="' + esc(x.d) + '"></div>' +
+    '<div class="grid2"><div class="field"><label for="sA">' + esc(t('f_from')) + '</label><input id="sA" type="time" step="300" value="' + esc(x.a) + '"></div><div class="field"><label for="sB">' + esc(t('f_to')) + '</label><input id="sB" type="time" step="300" value="' + esc(x.b) + '"></div></div>' +
+    '<p class="hint" id="sLen" style="margin:-8px 0 12px"></p>' +
+    '<div class="field"><span class="lbl">' + esc(t('f_pos')) + '</span><div class="chips" id="sPos"></div></div>' +
+    '<div class="field"><label for="sE">' + esc(t('f_emp')) + '</label><select id="sE"></select></div>' +
+    '<div class="field"><label for="sN">' + esc(t('f_note')) + '</label><input id="sN" value="' + esc(x.note) + '" placeholder="' + esc(t('ph_note')) + '" autocomplete="off"></div>' +
+    (orig ? '' : '<div class="field"><span class="lbl">' + esc(t('repeat')) + '</span><div class="wd" id="sRep"></div></div>') +
+    '<div id="sMsg2"></div><hr>' +
+    '<div class="row2">' + (orig ? '<button class="btn danger" id="sDel" type="button">' + esc(t('delete')) + '</button><button class="btn" id="sDup" type="button">' + esc(t('duplicate')) + '</button>' : '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button>') + '<button class="btn primary" id="sOk" type="button">' + esc(t('save')) + '</button></div>';
+  modal(html, function(el){
+    var read = function(){ x.d = $('#sD', el).value || x.d; x.a = $('#sA', el).value; x.b = $('#sB', el).value; x.emp = $('#sE', el).value; x.note = $('#sN', el).value.trim(); };
+    var drawPos = function(){
+      $('#sPos', el).innerHTML = '<button type="button" data-p=""' + (!x.pos ? ' class="on"' : '') + '>' + esc(t('no_pos')) + '</button>' + poses().map(function(p){ return '<button type="button" data-p="' + esc(p.id) + '" style="--c:' + esc(p.col) + '"' + (x.pos === p.id ? ' class="on"' : '') + '><i></i>' + esc(p.n) + '</button>'; }).join('');
+    };
+    /* people list: whoever has the role first; busy or absent people are marked */
+    var drawEmp = function(){
+      var n = dayNum(x.d), pool = weekShifts(n - 1, n + 1), ok = x.a && x.b && x.a !== x.b, sp = ok ? span(x) : null;
+      var opt = function(e){
+        var note = [];
+        if(absentOn(e.id, x.d)) note.push(t('absent_s'));
+        if(sp){ var o = pool.filter(function(s){ if(s.id === x.id || s.emp !== e.id) return false; var op = span(s); return op[0] < sp[1] && sp[0] < op[1]; })[0]; if(o) note.push(t('busy', o.a + '–' + o.b)); }
+        return '<option value="' + esc(e.id) + '"' + (x.emp === e.id ? ' selected' : '') + '>' + esc(e.n) + (note.length ? ' (' + esc(note.join(', ')) + ')' : '') + '</option>';
+      };
+      var people = emps(), fit = people.filter(function(e){ return !x.pos || !(e.pos || []).length || e.pos.indexOf(x.pos) >= 0; }), rest = people.filter(function(e){ return fit.indexOf(e) < 0; });
+      var gone = x.emp && !rec(x.emp) ? '<option value="' + esc(x.emp) + '" selected>' + esc(empName(x.emp)) + '</option>' : '';
+      $('#sE', el).innerHTML = '<option value="">— ' + esc(t('open')) + ' —</option>' + gone + fit.map(opt).join('') + (rest.length ? '<optgroup label="—">' + rest.map(opt).join('') + '</optgroup>' : '');
+    };
+    var drawRep = function(){
+      if(orig) return;
+      var w = week0(dayNum(x.d)), me = dayNum(x.d);
+      $('#sRep', el).innerHTML = [0, 1, 2, 3, 4, 5, 6].map(function(i){ var n = w + i; return '<button type="button" data-r="' + n + '"' + (n === me ? ' disabled' : rep[n] ? ' class="on"' : '') + '>' + esc(fmtDay(n, { weekday: 'narrow' })) + '</button>'; }).join('');
+    };
+    var check = function(){
+      read();
+      var ok = x.a && x.b && x.a !== x.b;
+      $('#sLen', el).textContent = ok ? hrs(dur(x)) + ' ' + t('h') + (overnight(x) ? ' · ☾ ' + t('next_day') : '') : '';
+      var p = ok ? problems(x, weekShifts(dayNum(x.d) - 1, dayNum(x.d) + 1)) : [];
+      $('#sMsg2', el).innerHTML = p.length ? '<div class="msg warn">' + p.map(function(w){ return '⚠ ' + esc(w); }).join('<br>') + '</div>' : '';
+    };
+    drawPos(); drawEmp(); drawRep(); check();
+    if($('#sTpl', el)) $('#sTpl', el).onclick = function(e){ var b = e.target.closest('[data-tpl]'); if(!b) return; var p = data[b.dataset.tpl]; read(); $('#sA', el).value = p.a; $('#sB', el).value = p.b; if(p.pos && rec(p.pos)){ x.pos = p.pos; drawPos(); } read(); drawEmp(); check(); };
+    $('#sPos', el).onclick = function(e){ var b = e.target.closest('[data-p]'); if(!b) return; read(); x.pos = b.dataset.p; drawPos(); drawEmp(); check(); };
+    ['#sA', '#sB'].forEach(function(s){ $(s, el).addEventListener('change', function(){ read(); drawEmp(); check(); }); });
+    $('#sD', el).addEventListener('change', function(){ read(); rep = {}; drawEmp(); drawRep(); check(); });
+    $('#sE', el).addEventListener('change', check);
+    if(!orig) $('#sRep', el).onclick = function(e){ var b = e.target.closest('[data-r]'); if(!b || b.disabled) return; rep[b.dataset.r] = !rep[b.dataset.r]; drawRep(); };
+    var valid = function(){ read(); if(!x.a || !x.b || x.a === x.b){ $('#sMsg2', el).innerHTML = '<div class="msg err">' + esc(t('err_time')) + '</div>'; return false; } return true; };
+    $('#sOk', el).onclick = function(){
+      if(!valid()) return;
+      x.by = cfg.name; close(el);
+      var prev = orig ? copy(orig) : null, list = [x];
+      Object.keys(rep).forEach(function(n){ if(rep[n] && +n !== dayNum(x.d)){ var c = copy(x); c.id = uid(); c.d = numIso(+n); list.push(c); } });
+      touchMany(list);
+      toast(orig ? t('saved') : list.length > 1 ? t('shifts_added', list.length) : t('shift_added'), t('undo'), function(){
+        if(prev) touchMany([prev]); else touchMany(list.map(function(c){ var g = copy(c); g.del = true; return g; }));
+      });
+    };
+    if(orig){
+      $('#sDel', el).onclick = function(){ var g = copy(orig); g.del = true; close(el); touchMany([g]); toast(t('shift_deleted'), t('undo'), function(){ var b = copy(orig); delete b.del; touchMany([b]); }); };
+      $('#sDup', el).onclick = function(){ if(!valid()) return; close(el); var c = copy(x); c.id = uid(); delete c.del; editShift(null, {}); var m = $('#layer .ov:last-child'); fillShift(m, c); };
+    }
+  });
+}
+/* duplicate: the new-shift window, already filled with the copied values */
+function fillShift(el, c){
+  if(!el) return;
+  $('#sD', el).value = c.d; $('#sA', el).value = c.a; $('#sB', el).value = c.b; $('#sN', el).value = c.note || '';
+  var pb = el.querySelector('#sPos [data-p="' + (c.pos || '') + '"]'); if(pb) pb.click();
+  $('#sD', el).dispatchEvent(new Event('change'));
+  $('#sE', el).value = c.emp || ''; $('#sE', el).dispatchEvent(new Event('change'));
+}
+
+/* ---------- people ---------- */
+function renderPeople(){
+  var people = emps(), n0 = curWeek, week = weekShifts(n0, n0 + 6), today = todayIso();
+  if(!people.length){ $('#people').innerHTML = '<li class="empty">' + esc(t('no_people')) + '</li>'; return; }
+  $('#people').innerHTML = people.map(function(e){
+    var m = empMinutes(e.id, week), over = e.h && m > e.h * 60;
+    var ab = live('off').filter(function(o){ return o.emp === e.id && o.to >= today; }).sort(function(a, b){ return a.from.localeCompare(b.from); })[0];
+    return '<li class="item" data-emp="' + esc(e.id) + '"><div class="ih"><div class="iname">' + esc(e.n) +
+      ((e.pos || []).length ? '<div class="tags">' + e.pos.map(function(id){ var p = posOf(id); return p ? '<span class="tag" style="--c:' + esc(p.col) + '">' + esc(p.n) + '</span>' : ''; }).join('') + '</div>' : '') + '</div>' +
+      '<div class="hrs' + (over ? ' over' : '') + '">' + esc(hrs(m)) + ' ' + esc(t('h')) + '<small>' + esc(e.h ? t('of_h', e.h) : t('this_week')) + '</small></div></div>' +
+      '<div class="meta">' + (e.tel ? '<a href="' + esc(telHref(e.tel)) + '" data-stop>' + esc(e.tel) + '</a>' : '') + (ab ? '<span>' + esc(abName(ab.kind)) + ': ' + esc(fmtDay(dayNum(ab.from), { day: 'numeric', month: 'short' })) + ' – ' + esc(fmtDay(dayNum(ab.to), { day: 'numeric', month: 'short' })) + '</span>' : '') + '</div></li>';
+  }).join('');
+}
+$('#people').addEventListener('click', function(e){ if(e.target.closest('[data-stop]')) return; var li = e.target.closest('[data-emp]'); if(li) editEmp(data[li.dataset.emp]); });
+
+function editEmp(orig){
+  var x = orig ? copy(orig) : { id: uid(), k: 'emp', n: '', tel: '', pos: [], h: '', notas: '' };
+  x.pos = (x.pos || []).slice();
+  var offs = orig ? live('off').filter(function(o){ return o.emp === x.id; }) : [], newOffs = [], gone = {};
+  var html = '<h3>' + esc(orig ? orig.n : t('new_emp')) + '</h3>' +
+    '<div class="field"><label for="eN">' + esc(t('e_name')) + ' <span class="req">*</span></label><input id="eN" value="' + esc(x.n) + '" autocomplete="off" autocapitalize="words"></div>' +
+    '<div class="grid2 wrap"><div class="field"><label for="eT">' + esc(t('e_tel')) + '</label><input id="eT" type="tel" inputmode="tel" value="' + esc(x.tel) + '" placeholder="+54 9 11 2345-6789"></div>' +
+    '<div class="field"><label for="eH">' + esc(t('e_hours')) + '</label><input id="eH" type="number" inputmode="decimal" min="0" max="80" step="0.5" value="' + esc(x.h) + '" placeholder="' + esc(t('ph_hours')) + '"></div></div>' +
+    '<div class="field"><span class="lbl">' + esc(t('e_pos')) + '</span><div class="chips" id="ePos"></div><p class="hint">' + esc(t('e_pos_hint')) + '</p></div>' +
+    '<div class="field"><label for="eNo">' + esc(t('e_notes')) + '</label><textarea id="eNo" placeholder="' + esc(t('ph_enotes')) + '">' + esc(x.notas) + '</textarea></div>' +
+    '<hr><span class="lbl">' + esc(t('absences')) + '</span><ul class="rows" id="eAb"></ul>' +
+    '<div class="addrow"><select class="inp" id="eAk">' + ['vac', 'sick', 'off'].map(function(k){ return '<option value="' + k + '">' + esc(abName(k)) + '</option>'; }).join('') + '</select><input class="inp" id="eAf" type="date" aria-label="' + esc(t('ex_from')) + '"><input class="inp" id="eAt" type="date" aria-label="' + esc(t('ex_to')) + '"></div>' +
+    '<button class="btn wide small" id="eAa" type="button" style="margin-top:8px">' + esc(t('ab_add')) + '</button>' +
+    (orig && waNum(x.tel) ? '<hr><button class="btn go wide" id="eWa" type="button">' + esc(t('send_wa')) + '</button>' : '') +
+    '<div id="eMsg"></div><hr>' +
+    '<div class="row2">' + (orig ? '<button class="btn danger" id="eDel" type="button">' + esc(t('delete')) + '</button>' : '') + '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="eOk" type="button">' + esc(t('save')) + '</button></div>';
+  modal(html, function(el){
+    var msg = function(h, c){ $('#eMsg', el).innerHTML = h ? '<div class="msg ' + (c || 'err') + '">' + h + '</div>' : ''; };
+    var drawPos = function(){ $('#ePos', el).innerHTML = poses().map(function(p){ return '<button type="button" data-p="' + esc(p.id) + '" style="--c:' + esc(p.col) + '"' + (x.pos.indexOf(p.id) >= 0 ? ' class="on"' : '') + '><i></i>' + esc(p.n) + '</button>'; }).join('') || '<span class="hint">—</span>'; };
+    var drawAb = function(){
+      var all = offs.filter(function(o){ return !gone[o.id]; }).concat(newOffs).sort(function(a, b){ return b.from.localeCompare(a.from); });
+      $('#eAb', el).innerHTML = all.length ? all.map(function(o){ return '<li><span class="grow"><b>' + esc(abName(o.kind)) + '</b> <small>' + esc(fmtDay(dayNum(o.from), { day: 'numeric', month: 'short', year: 'numeric' })) + ' – ' + esc(fmtDay(dayNum(o.to), { day: 'numeric', month: 'short', year: 'numeric' })) + '</small></span><button class="x" type="button" data-rm="' + esc(o.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') : '<li style="border-style:dashed"><small>' + esc(t('no_abs')) + '</small></li>';
+    };
+    drawPos(); drawAb();
+    $('#eAf', el).value = todayIso();
+    $('#eAf', el).addEventListener('change', function(){ if(!$('#eAt', el).value || $('#eAt', el).value < this.value) $('#eAt', el).value = this.value; });
+    $('#ePos', el).onclick = function(e){ var b = e.target.closest('[data-p]'); if(!b) return; var i = x.pos.indexOf(b.dataset.p); if(i >= 0) x.pos.splice(i, 1); else x.pos.push(b.dataset.p); drawPos(); };
+    $('#eAb', el).onclick = function(e){ var b = e.target.closest('[data-rm]'); if(!b) return; var id = b.dataset.rm; newOffs = newOffs.filter(function(o){ return o.id !== id; }); gone[id] = 1; drawAb(); };
+    $('#eAa', el).onclick = function(){
+      var f = $('#eAf', el).value, to = $('#eAt', el).value || f;
+      if(!f){ msg(esc(t('ab_err'))); return; }
+      if(to < f){ var s = f; f = to; to = s; }
+      newOffs.push({ id: uid(), k: 'off', emp: x.id, kind: $('#eAk', el).value, from: f, to: to });
+      $('#eAt', el).value = ''; msg(''); drawAb();
+    };
+    $('#eOk', el).onclick = function(){
+      x.n = $('#eN', el).value.trim(); x.tel = $('#eT', el).value.trim(); x.notas = $('#eNo', el).value.trim();
+      var h = parseFloat(String($('#eH', el).value).replace(',', '.')); x.h = h > 0 ? h : '';
+      if(!x.n){ msg(esc(t('err_ename'))); $('#eN', el).focus(); return; }
+      close(el);
+      var prevE = orig ? copy(orig) : null;
+      var changes = [x].concat(newOffs).concat(offs.filter(function(o){ return gone[o.id]; }).map(function(o){ var g = copy(o); g.del = true; return g; }));
+      touchMany(changes);
+      toast(orig ? t('saved') : t('added', x.n), t('undo'), function(){
+        var back = [prevE ? prevE : Object.assign(copy(x), { del: true })];
+        newOffs.forEach(function(o){ back.push(Object.assign(copy(o), { del: true })); });
+        offs.forEach(function(o){ if(gone[o.id]) back.push(copy(o)); });
+        touchMany(back);
+      });
+    };
+    if(orig){
+      $('#eDel', el).onclick = function(){
+        var g = copy(orig); g.del = true; close(el); touchMany([g]);
+        var left = live('sh').filter(function(s){ return s.emp === orig.id && s.d >= todayIso(); }).length;
+        toast(left ? t('emp_shifts_left', orig.n) : t('deleted', orig.n), t('undo'), function(){ var b = copy(orig); delete b.del; touchMany([b]); });
+      };
+      if($('#eWa', el)) $('#eWa', el).onclick = function(){ window.open('https://wa.me/' + waNum(x.tel) + '?text=' + encodeURIComponent(scheduleText(x)), '_blank', 'noopener'); };
+    }
+  });
+}
+/* the person's week as a message: one line per shift */
+function scheduleText(e){
+  var n0 = curWeek, first = String(e.n).split(' ')[0], wk = fmtDay(n0, { day: 'numeric', month: 'short' }) + ' – ' + fmtDay(n0 + 6, { day: 'numeric', month: 'short' });
+  var list = weekShifts(n0, n0 + 6).filter(function(s){ return s.emp === e.id; }).sort(function(a, b){ return a.d.localeCompare(b.d) || mins(a.a) - mins(b.a); });
+  if(!list.length) return t('wa_none', first, wk);
+  return t('wa_hi', first, wk) + '\n' + list.map(function(s){ var p = posOf(s.pos); return '• ' + fmtDay(dayNum(s.d)) + ': ' + s.a + '–' + s.b + (p ? ' (' + p.n + ')' : '') + (s.note ? ' – ' + s.note : ''); }).join('\n') + '\n' + t('total') + ': ' + hrs(empMinutes(e.id, list)) + ' ' + t('h');
+}
+
+/* ---------- roles and typical shifts ---------- */
+function editRoles(){
+  modal('<h3>' + esc(t('s_pos')) + '</h3><p class="hint" style="margin-top:-6px">' + esc(t('s_pos_hint')) + '</p>' +
+    '<span class="lbl" style="margin-top:12px">' + esc(t('pos_list')) + '</span><ul class="rows" id="rPos"></ul>' +
+    '<div class="addrow"><input class="inp" id="rPn" placeholder="' + esc(t('ph_pos')) + '" autocomplete="off"><button class="btn small" id="rPa" type="button">' + esc(t('add_btn')) + '</button></div>' +
+    '<hr><span class="lbl">' + esc(t('tpl_list')) + '</span><ul class="rows" id="rTpl"></ul>' +
+    '<div class="addrow"><input class="inp" id="rTn" placeholder="' + esc(t('ph_tpl')) + '" autocomplete="off"><input class="inp" id="rTa" type="time" step="300" aria-label="' + esc(t('f_from')) + '"><input class="inp" id="rTb" type="time" step="300" aria-label="' + esc(t('f_to')) + '"><select class="inp" id="rTp" aria-label="' + esc(t('f_pos')) + '"></select><button class="btn small" id="rTadd" type="button">' + esc(t('add_btn')) + '</button></div>' +
+    '<div id="rMsg"></div><hr><span class="lbl">' + esc(t('preset_apply')) + '</span>' + presetButtons() +
+    '<button class="btn primary wide" data-close type="button" style="margin-top:6px">' + esc(t('done')) + '</button>', function(el){
+    var draw = function(){
+      $('#rPos', el).innerHTML = poses().map(function(p){ return '<li><button type="button" class="sw" style="--c:' + esc(p.col) + '" data-col="' + esc(p.id) + '" aria-label="color"></button><input class="inp grow" data-ren="' + esc(p.id) + '" value="' + esc(p.n) + '" style="padding:6px 10px;font-size:16px"><button class="x" type="button" data-rmp="' + esc(p.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
+      $('#rTpl', el).innerHTML = tpls().map(function(p){ var po = posOf(p.pos); return '<li><span class="grow"><b>' + esc(p.n) + '</b> <small>' + esc(p.a + '–' + p.b) + (po ? ' · ' + esc(po.n) : '') + '</small></span><button class="x" type="button" data-rmt="' + esc(p.id) + '" aria-label="' + esc(t('delete')) + '">×</button></li>'; }).join('') || '<li style="border-style:dashed"><small>—</small></li>';
+      $('#rTp', el).innerHTML = '<option value="">' + esc(t('no_pos')) + '</option>' + poses().map(function(p){ return '<option value="' + esc(p.id) + '">' + esc(p.n) + '</option>'; }).join('');
+    };
+    draw();
+    var addPos = function(){ var n = $('#rPn', el).value.trim().replace(/\s+/g, ' '); if(!n) return; var ps = poses(); if(ps.some(function(p){ return norm(p.n) === norm(n); })) { $('#rPn', el).value = ''; return; } touchMany([{ id: uid(), k: 'pos', n: n, col: COLORS[ps.length % COLORS.length], o: ps.length }]); $('#rPn', el).value = ''; draw(); };
+    $('#rPa', el).onclick = addPos; $('#rPn', el).onkeydown = function(e){ if(e.key === 'Enter') addPos(); };
+    $('#rTadd', el).onclick = function(){
+      var n = $('#rTn', el).value.trim(), a = $('#rTa', el).value, b = $('#rTb', el).value;
+      if(!n || !a || !b || a === b){ $('#rMsg', el).innerHTML = '<div class="msg err">' + esc(t('err_time')) + '</div>'; return; }
+      $('#rMsg', el).innerHTML = '';
+      touchMany([{ id: uid(), k: 'tpl', n: n, a: a, b: b, pos: $('#rTp', el).value }]); $('#rTn', el).value = ''; draw();
+    };
+    el.addEventListener('change', function(e){ var i = e.target.closest('[data-ren]'); if(!i) return; var p = rec(i.dataset.ren), n = i.value.trim(); if(p && n && n !== p.n){ var g = copy(p); g.n = n; touchMany([g]); } });
+    el.addEventListener('click', function(e){
+      var c = e.target.closest('[data-col]'), rp = e.target.closest('[data-rmp]'), rt = e.target.closest('[data-rmt]'), pr = e.target.closest('[data-preset]');
+      if(c){ var p = copy(rec(c.dataset.col)); p.col = COLORS[(COLORS.indexOf(p.col) + 1) % COLORS.length]; touchMany([p]); draw(); }
+      if(rp){ var g = copy(rec(rp.dataset.rmp)); g.del = true; touchMany([g]); draw(); }
+      if(rt){ var h = copy(rec(rt.dataset.rmt)); h.del = true; touchMany([h]); draw(); }
+      if(pr){ applyPreset(pr.dataset.preset); draw(); }
+    });
+  });
+}
+
+/* ---------- settings and export ---------- */
+$('#gear').onclick = function(){
+  var s = settings();
+  modal('<h3>' + esc(t('settings')) + '</h3><p>' + th('dev_of', cfg.name) + '<br><span class="hint">' + esc(t('data_in', cfg.repo)) + '</span></p>' +
+    '<span class="lbl">' + esc(t('language')) + '</span><div class="lang big">' + langButtons.call({ big: true }, lang) + '</div>' +
+    '<div class="field" style="margin-top:12px"><label for="gBiz">' + esc(t('s_biz')) + '</label><input id="gBiz" value="' + esc(s.biz) + '" placeholder="' + esc(t('ph_biz')) + '" autocomplete="off"></div>' +
+    '<div class="field"><span class="lbl">' + esc(t('s_ws')) + '</span><div class="seg" id="gWs"><button type="button" data-ws="1"' + (s.ws === 1 ? ' class="on"' : '') + '>' + esc(t('mon')) + '</button><button type="button" data-ws="0"' + (s.ws === 0 ? ' class="on"' : '') + '>' + esc(t('sun')) + '</button></div></div>' +
+    '<div style="display:grid;gap:8px;margin-top:6px"><button class="btn" id="gRoles" type="button">' + esc(t('s_pos')) + '</button><button class="btn" id="gExp" type="button">' + esc(t('g_export')) + '</button><button class="btn" id="gShare" type="button">' + esc(t('g_share')) + '</button><button class="btn" id="gSync" type="button">' + esc(t('g_sync')) + '</button><button class="btn" id="gSetup" type="button">' + esc(t('g_setup')) + '</button><button class="btn primary" id="gClose" type="button">' + esc(t('close')) + '</button></div>', function(el){
+    var ws = s.ws;
+    var keep = function(){ var biz = $('#gBiz', el).value.trim(), cur = settings(); if(biz !== cur.biz || ws !== cur.ws){ var keepWeek = numIso(curWeek + 3); touchMany([Object.assign({ id: 'set', k: 'set' }, cur, { biz: biz, ws: ws })]); curWeek = week0(dayNum(keepWeek)); render(); } };
+    $('#gWs', el).onclick = function(e){ var b = e.target.closest('[data-ws]'); if(!b) return; ws = +b.dataset.ws; [].forEach.call(el.querySelectorAll('#gWs button'), function(o){ o.classList.toggle('on', o === b); }); };
+    $('.lang', el).addEventListener('click', function(e){ if(e.target.closest('[data-lang]')){ setTimeout(function(){ keep(); close(el); $('#gear').click(); }); } });
+    var go = function(fn){ return function(){ keep(); close(el); fn(); }; };
+    $('#gRoles', el).onclick = go(editRoles);
+    $('#gExp', el).onclick = go(exportWin);
+    $('#gShare', el).onclick = go(function(){ shareAccess(false); });
+    $('#gSync', el).onclick = go(syncNow);
+    $('#gSetup', el).onclick = go(function(){ $('#setup').hidden = false; $('#app').hidden = true; $('#sName').value = cfg.name; drawSetup(); setMode('code'); $('#sCode').value = showCode(cfg.code); });
+    $('#gClose', el).onclick = go(function(){});
+  });
+};
+var csvLine = function(r){ return r.map(function(v){ v = String(v == null ? '' : v); return /[",;\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';'); };
+var csvFile = function(rows){ return '﻿' + rows.map(csvLine).join('\r\n') + '\r\n'; };
+function exportWin(){
+  var d = new Date(), f = iso(new Date(d.getFullYear(), d.getMonth(), 1)), to = iso(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+  modal('<h3>' + esc(t('ex_title')) + '</h3><div class="grid2"><div class="field"><label for="xF">' + esc(t('ex_from')) + '</label><input id="xF" type="date" value="' + f + '"></div><div class="field"><label for="xT">' + esc(t('ex_to')) + '</label><input id="xT" type="date" value="' + to + '"></div></div>' +
+    '<div style="display:grid;gap:8px"><button class="btn" id="xS" type="button">' + esc(t('ex_shifts')) + '</button><button class="btn" id="xH" type="button">' + esc(t('ex_hours')) + '</button><button class="btn primary" data-close type="button">' + esc(t('close')) + '</button></div>', function(el){
+    var range = function(){ var a = $('#xF', el).value, b = $('#xT', el).value; if(a > b){ var s = a; a = b; b = s; } return [a, b]; };
+    $('#xS', el).onclick = function(){
+      var r = range(), list = live('sh').filter(function(s){ return s.d >= r[0] && s.d <= r[1]; }).sort(function(a, b){ return a.d.localeCompare(b.d) || mins(a.a) - mins(b.a); });
+      var rows = [TX[lang].csv_sh].concat(list.map(function(s){ var p = posOf(s.pos); return [s.d, fmtDay(dayNum(s.d), { weekday: 'short' }), s.a, s.b, hrs(dur(s)), p ? p.n : '', s.emp ? empName(s.emp) : t('open'), s.note || '']; }));
+      download('turnos-' + r[0] + '_' + r[1] + '.csv', csvFile(rows), 'text/csv');
+    };
+    $('#xH', el).onclick = function(){
+      var r = range(), list = live('sh').filter(function(s){ return s.d >= r[0] && s.d <= r[1] && s.emp; }), ids = {};
+      emps().forEach(function(e){ ids[e.id] = 1; }); list.forEach(function(s){ ids[s.emp] = 1; });
+      var n0 = dayNum(r[0]), n1 = dayNum(r[1]);
+      var rows = [TX[lang].csv_h].concat(Object.keys(ids).map(function(id){
+        var mine = list.filter(function(s){ return s.emp === id; }), days = 0;
+        live('off').filter(function(o){ return o.emp === id; }).forEach(function(o){ var a = Math.max(n0, dayNum(o.from)), b = Math.min(n1, dayNum(o.to)); if(b >= a) days += b - a + 1; });
+        return [empName(id), mine.length, hrs(empMinutes(id, mine)), days];
+      }).sort(function(a, b){ return norm(a[0]).localeCompare(norm(b[0])); }));
+      download('horas-' + r[0] + '_' + r[1] + '.csv', csvFile(rows), 'text/csv');
+    };
+  });
+}
+
+/* ---------- small windows ---------- */
+function modal(html, init){
+  var ov = document.createElement('div'); ov.className = 'ov'; ov.innerHTML = '<div class="sheet" role="dialog" aria-modal="true">' + html + '</div>';
+  ov.addEventListener('click', function(e){ if(e.target === ov || e.target.closest('[data-close]')) close(ov); });
+  $('#layer').appendChild(ov); if(init) init(ov); return ov;
+}
+function close(el){ if(el && el.parentNode) el.parentNode.removeChild(el); }
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ var o = $('#layer .ov:last-child'); if(o) close(o); } });
+var toastT = 0;
+function toast(text, act, fn){
+  var old = $('.toast'); if(old) close(old);
+  var el = document.createElement('div'); el.className = 'toast'; el.innerHTML = '<span>' + esc(text) + '</span>' + (act ? '<button type="button">' + esc(act) + '</button>' : '');
+  if(act) el.querySelector('button').onclick = function(){ close(el); fn(); };
+  document.body.appendChild(el); clearTimeout(toastT); toastT = setTimeout(function(){ close(el); }, 6000);
+}
+
+/* ---------- saving to GitHub ---------- */
+function touchMany(list){
+  if(!list.length) return;
+  var now = Date.now();
+  list.forEach(function(x){ x.t = now; data[x.id] = x; });
+  dirty = true; store.set(KEY.data, data); store.set(KEY.dirty, dirty); render(); syncSoon();
+}
+function setSync(st, k, arg){ sync.label = [st, k, arg]; var p = $('#sync'); p.className = 'pill ' + st; p.lastChild.textContent = k === '…' ? '…' : t(k, arg); }
+$('#sync').addEventListener('click', function(){
+  if(!sync.err || !/err|wait/.test(this.className)) return;
+  modal('<h3>' + esc(t('err_title')) + '</h3><p style="overflow-wrap:anywhere;font-family:ui-monospace,Menlo,monospace;font-size:14px">' + esc(sync.err.detail) + '</p>' + (/^PUT 403/.test(sync.err.detail) ? '<div class="msg warn">' + esc(t('err_write')) + '</div>' : '') + '<p class="hint">' + esc(new Date(sync.err.at).toLocaleString(t('locale'))) + ' · navigator.onLine=' + sync.err.online + ' · ' + esc(cfg.repo) + '</p><div class="row2"><button class="btn" data-close type="button">' + esc(t('close')) + '</button><button class="btn primary" id="errRetry" type="button">' + esc(t('err_retry')) + '</button></div>', function(el){ $('#errRetry', el).onclick = function(){ close(el); syncNow(); }; });
+});
+function syncSoon(){ clearTimeout(sync.timer); setSync('wait', 's_saving'); sync.timer = setTimeout(syncNow, 1200); }
+function api(opt){
+  opt = opt || {}; opt.headers = Object.assign({ Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json' }, opt.headers || {}); opt.cache = 'no-store';
+  return fetch('https://api.github.com/repos/' + cfg.repo + '/contents/' + APP.file, opt);
+}
+/* newer change wins per record */
+function merge(remote){
+  var changed = false;
+  Object.keys(remote || {}).forEach(function(id){
+    var r = remote[id], l = data[id];
+    if(!r) return;
+    if(!l || (r.t || 0) > (l.t || 0)){ data[id] = r; changed = true; }
+  });
+  return changed;
+}
+async function httpErr(r, what){
+  var m = ''; try{ var j = await r.clone().json(); m = j.message || ''; if(j.errors) m += ' ' + JSON.stringify(j.errors); }catch(e){ try{ m = (await r.text()).slice(0, 200); }catch(x){} }
+  var e = new Error('http ' + r.status); e.status = r.status; e.detail = what + ' ' + r.status + (m ? ': ' + m : ''); return e;
+}
+async function load(){
+  var r = await api();
+  if(r.status === 404) return { sha: null, c: {} };
+  if(!r.ok) throw await httpErr(r, 'GET');
+  var j = await r.json(), txt = j.content ? b64d(j.content) : '';
+  if(!txt && j.size){ var rr = await api({ headers: { Accept: 'application/vnd.github.raw' } }); if(!rr.ok) throw await httpErr(rr, 'GET raw'); txt = await rr.text(); }
+  var o = JSON.parse(txt || '{}');
+  return { sha: j.sha, c: o.c || {} };
+}
+async function save(){
+  for(var tries = 0; tries < 3; tries++){
+    var cur = await load(); merge(cur.c);
+    var body = { message: cfg.name + ' ' + new Date().toISOString(), content: b64e(JSON.stringify({ v: 1, c: data }) + '\n') };
+    if(cur.sha) body.sha = cur.sha;
+    var r = await api({ method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if(r.ok) return;
+    if(r.status !== 409 && r.status !== 422) throw await httpErr(r, 'PUT');
+    sync.lastConflict = await httpErr(r, 'PUT');
+  }
+  throw sync.lastConflict;
+}
+async function syncNow(){
+  if(!cfg) return;
+  if(sync.busy){ sync.again = true; return; }
+  sync.busy = true; clearTimeout(sync.timer);
+  try{
+    if(dirty){ dirty = false; store.set(KEY.dirty, dirty); try{ await save(); }catch(e){ dirty = true; store.set(KEY.dirty, dirty); throw e; } }
+    else { var cur = await load(); merge(cur.c); }
+    store.set(KEY.data, data);
+    sync.err = null; setSync('ok', 's_saved', hm(Date.now()));
+  }catch(e){
+    if(/http 401/.test(e.message)){
+      var fresh = null; try{ fresh = await openAccess(cfg.code); }catch(x){}
+      if(fresh && fresh.token !== cfg.token){ cfg.token = fresh.token; cfg.repo = fresh.repo; store.set(KEY.cfg, cfg); sync.busy = false; return syncNow(); }
+      setSync('err', 's_expired');
+    }
+    else {
+      sync.err = { at: Date.now(), detail: e.detail || (e.name + ': ' + e.message), online: navigator.onLine };
+      try{ console.error('[ausblick sync]', sync.err.detail, e); }catch(x){}
+      if(e.status) setSync(dirty ? 'wait' : 'err', dirty ? 's_later_err' : 's_error', e.status);
+      else setSync(dirty ? 'wait' : 'err', dirty ? 's_later' : 's_offline');
+    }
+  }
+  sync.busy = false;
+  /* don't redraw under an open window; it redraws when that window saves */
+  if(!$('#layer .ov')) render();
+  if(sync.again){ sync.again = false; syncNow(); }
+}
+setInterval(function(){ if(cfg && document.visibilityState === 'visible') syncNow(); }, 60000);
+addEventListener('online', function(){ syncNow(); });
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') syncNow(); });
+
+curWeek = week0(dayNum(todayIso()));
+applyLang();
+show();
+if(cfg){ setSync(dirty ? 'wait' : 'ok', '…'); syncNow(); }
+window.__as = { get data(){ return data; }, get cfg(){ return cfg; }, syncNow: syncNow, sealAccess: sealAccess, setLang: setLang, problems: problems };
+})();
+</script>
+</body>
+</html>
