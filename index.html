@@ -448,7 +448,7 @@ es: { locale:'es-AR', title:'Turnos', setup_sub:'Configuración del dispositivo'
   start_title:'Empecemos', start_text:'Elegí el rubro: se cargan puestos y turnos típicos. Después podés cambiar todo.', start_emp:'Después cargá el personal.',
   f_date:'Fecha', f_from:'Desde', f_to:'Hasta', f_pos:'Puesto', f_emp:'Empleado', f_note:'Nota', ph_note:'Ej. abrir local, cubre a Juan…', no_pos:'Sin puesto',
   tpls:'Turnos típicos', repeat:'Repetir también en', next_day:'termina al día siguiente', busy:'ocupado {0}', absent_s:'ausente', wish_s:'pidió franco',
-  err_time:'Poné hora de inicio y de fin (distintas).', delete:'Eliminar', cancel:'Cancelar', save:'Guardar', duplicate:'Duplicar',
+  err_time:'Poné hora de inicio y de fin (distintas).', delete:'Eliminar', cancel:'Cancelar', discard:'Descartar', save:'Guardar', duplicate:'Duplicar',
   saved:'Guardado.', added:'{0} agregado.', deleted:'{0} eliminado.', undo:'Deshacer', shift_added:'Turno agregado.', shifts_added:'{0} turnos agregados.', shift_deleted:'Turno eliminado.',
   e_name:'Nombre y apellido', e_tel:'Teléfono', e_pos:'Puestos', e_pos_hint:'Si no marcás ninguno, puede cubrir cualquier puesto.', e_hours:'Horas por semana (objetivo)', ph_hours:'Ej. 40',
   e_notes:'Notas', ph_enotes:'Disponibilidad, francos fijos, contacto de emergencia…', err_ename:'Escribí el nombre.',
@@ -497,7 +497,7 @@ en: { locale:'en-US', title:'Shifts', setup_sub:'Device setup', tab_code:'I have
   start_title:'Let’s start', start_text:'Pick the business type: typical roles and shifts get added. You can change everything later.', start_emp:'Then add the staff.',
   f_date:'Date', f_from:'From', f_to:'To', f_pos:'Role', f_emp:'Employee', f_note:'Note', ph_note:'E.g. opens the shop, covers for Juan…', no_pos:'No role',
   tpls:'Typical shifts', repeat:'Also repeat on', next_day:'ends the next day', busy:'busy {0}', absent_s:'absent', wish_s:'asked for time off',
-  err_time:'Enter a start and an end time (different).', delete:'Delete', cancel:'Cancel', save:'Save', duplicate:'Duplicate',
+  err_time:'Enter a start and an end time (different).', delete:'Delete', cancel:'Cancel', discard:'Discard', save:'Save', duplicate:'Duplicate',
   saved:'Saved.', added:'{0} added.', deleted:'{0} deleted.', undo:'Undo', shift_added:'Shift added.', shifts_added:'{0} shifts added.', shift_deleted:'Shift deleted.',
   e_name:'Full name', e_tel:'Phone', e_pos:'Roles', e_pos_hint:'If none is ticked, they can cover any role.', e_hours:'Hours per week (target)', ph_hours:'E.g. 40',
   e_notes:'Notes', ph_enotes:'Availability, fixed days off, emergency contact…', err_ename:'Enter the name.',
@@ -546,7 +546,7 @@ de: { locale:'de-DE', title:'Schichtplan', setup_sub:'Geräte-Einrichtung', tab_
   start_title:'Los geht’s', start_text:'Wähle die Branche: typische Rollen und Schichten werden angelegt. Später lässt sich alles ändern.', start_emp:'Danach das Personal anlegen.',
   f_date:'Datum', f_from:'Von', f_to:'Bis', f_pos:'Rolle', f_emp:'Mitarbeiter', f_note:'Notiz', ph_note:'Z. B. schließt auf, vertritt Juan…', no_pos:'Ohne Rolle',
   tpls:'Typische Schichten', repeat:'Auch wiederholen am', next_day:'endet am nächsten Tag', busy:'belegt {0}', absent_s:'abwesend', wish_s:'wünscht frei',
-  err_time:'Gib Start- und Endzeit ein (verschieden).', delete:'Löschen', cancel:'Abbrechen', save:'Speichern', duplicate:'Duplizieren',
+  err_time:'Gib Start- und Endzeit ein (verschieden).', delete:'Löschen', cancel:'Abbrechen', discard:'Verwerfen', save:'Speichern', duplicate:'Duplizieren',
   saved:'Gespeichert.', added:'{0} hinzugefügt.', deleted:'{0} gelöscht.', undo:'Rückgängig', shift_added:'Schicht hinzugefügt.', shifts_added:'{0} Schichten hinzugefügt.', shift_deleted:'Schicht gelöscht.',
   e_name:'Vor- und Nachname', e_tel:'Telefon', e_pos:'Rollen', e_pos_hint:'Ist keine angehakt, kann die Person jede Rolle übernehmen.', e_hours:'Stunden pro Woche (Soll)', ph_hours:'Z. B. 40',
   e_notes:'Notizen', ph_enotes:'Verfügbarkeit, feste freie Tage, Notfallkontakt…', err_ename:'Gib den Namen ein.',
@@ -1213,7 +1213,7 @@ function editShift(orig, pre){
     '<div class="field"><label for="sN">' + esc(t('f_note')) + '</label><input id="sN" value="' + esc(x.note) + '" placeholder="' + esc(t('ph_note')) + '" autocomplete="off"></div>' +
     (orig ? '' : '<div class="field"><span class="lbl">' + esc(t('repeat')) + '</span><div class="wd" id="sRep"></div></div>') +
     '<div id="sMsg2"></div><hr>' +
-    '<div class="row2">' + (orig ? '<button class="btn danger" id="sDel" type="button">' + esc(t('delete')) + '</button><button class="btn" id="sDup" type="button">' + esc(t('duplicate')) + '</button>' : '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button>') + '<button class="btn primary" id="sOk" type="button">' + esc(t('save')) + '</button></div>';
+    '<div class="row2">' + (orig ? '<button class="btn danger" id="sDel" type="button">' + esc(t('delete')) + '</button><button class="btn" id="sDup" type="button">' + esc(t('duplicate')) + '</button>' : '<button class="btn" data-discard type="button">' + esc(t('discard')) + '</button>') + '<button class="btn primary" data-close type="button">' + esc(t('done')) + '</button></div>';
   modal(html, function(el){
     var read = function(){ x.d = $('#sD', el).value || x.d; x.a = $('#sA', el).value; x.b = $('#sB', el).value; x.emp = $('#sE', el).value; x.note = $('#sN', el).value.trim(); };
     var drawPos = function(){
@@ -1252,19 +1252,25 @@ function editShift(orig, pre){
     $('#sE', el).addEventListener('change', check);
     if(!orig) $('#sRep', el).onclick = function(e){ var b = e.target.closest('[data-r]'); if(!b || b.disabled) return; rep[b.dataset.r] = !rep[b.dataset.r]; drawRep(); };
     var valid = function(){ read(); if(!x.a || !x.b || x.a === x.b){ $('#sMsg2', el).innerHTML = '<div class="msg err">' + esc(t('err_time')) + '</div>'; return false; } return true; };
-    $('#sOk', el).onclick = function(){
-      if(!valid()) return;
-      x.by = cfg.name; close(el);
+    var same = function(){ return orig && ['d', 'a', 'b', 'pos', 'emp', 'note'].every(function(k){ return (orig[k] || '') === (x[k] || ''); }); };
+    /* closing saves: a new shift without times is simply dropped, one with half the times keeps the window open */
+    el._save = function(){
+      read();
+      if(!orig && !x.a && !x.b) return true;
+      if(!valid()) return false;
+      if(same()) return true;
+      x.by = cfg.name;
       var prev = orig ? copy(orig) : null, list = [x];
       Object.keys(rep).forEach(function(n){ if(rep[n] && +n !== dayNum(x.d)){ var c = copy(x); c.id = uid(); c.d = numIso(+n); list.push(c); } });
       touchMany(list);
       toast(orig ? t('saved') : list.length > 1 ? t('shifts_added', list.length) : t('shift_added'), t('undo'), function(){
         if(prev) touchMany([prev]); else touchMany(list.map(function(c){ var g = copy(c); g.del = true; return g; }));
       });
+      return true;
     };
     if(orig){
       $('#sDel', el).onclick = function(){ var g = copy(orig); g.del = true; close(el); touchMany([g]); toast(t('shift_deleted'), t('undo'), function(){ var b = copy(orig); delete b.del; touchMany([b]); }); };
-      $('#sDup', el).onclick = function(){ if(!valid()) return; close(el); var c = copy(x); editShift(null, { d: c.d, a: c.a, b: c.b, emp: c.emp }); var m = $('#layer .ov:last-child'); if(m){ $('#sN', m).value = c.note || ''; var pb = m.querySelector('#sPos [data-p="' + (c.pos || '') + '"]'); if(pb) pb.click(); $('#sE', m).value = c.emp || ''; $('#sE', m).dispatchEvent(new Event('change')); } };
+      $('#sDup', el).onclick = function(){ if(el._save() === false) return; close(el); var c = copy(x); editShift(null, { d: c.d, a: c.a, b: c.b, emp: c.emp }); var m = $('#layer .ov:last-child'); if(m){ $('#sN', m).value = c.note || ''; var pb = m.querySelector('#sPos [data-p="' + (c.pos || '') + '"]'); if(pb) pb.click(); $('#sE', m).value = c.emp || ''; $('#sE', m).dispatchEvent(new Event('change')); } };
     }
   });
 }
@@ -1311,7 +1317,7 @@ function editEmp(orig){
     '<button class="btn wide small" id="eAa" type="button" style="margin-top:8px">' + esc(t('ab_add')) + '</button>' +
     (orig && waNum(x.tel) ? '<hr><button class="btn go wide" id="eWa" type="button">' + esc(t('send_wa')) + '</button>' : '') +
     '<div id="eMsg"></div><hr>' +
-    '<div class="row2">' + (orig ? '<button class="btn danger" id="eDel" type="button">' + esc(t('delete')) + '</button>' : '') + '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="eOk" type="button">' + esc(t('save')) + '</button></div>';
+    '<div class="row2">' + (orig ? '<button class="btn danger" id="eDel" type="button">' + esc(t('delete')) + '</button>' : '') + '<button class="btn" data-discard type="button">' + esc(t('discard')) + '</button><button class="btn primary" data-close type="button">' + esc(t('done')) + '</button></div>';
   modal(html, function(el){
     var msg = function(h, c){ $('#eMsg', el).innerHTML = h ? '<div class="msg ' + (c || 'err') + '">' + h + '</div>' : ''; };
     var drawPos = function(){ $('#ePos', el).innerHTML = poses().map(function(p){ return '<button type="button" data-p="' + esc(p.id) + '" style="--c:' + esc(p.col) + '"' + (x.pos.indexOf(p.id) >= 0 ? ' class="on"' : '') + '><i></i>' + esc(p.n) + '</button>'; }).join('') || '<span class="hint">—</span>'; };
@@ -1346,12 +1352,16 @@ function editEmp(orig){
       newOffs.push({ id: uid(), k: 'off', emp: x.id, kind: $('#eAk', el).value, from: f, to: to });
       $('#eAt', el).value = ''; msg(''); drawAb();
     };
-    $('#eOk', el).onclick = function(){
+    /* closing saves; an absence with an end date that was not added yet is added too */
+    el._save = function(){
+      if($('#eAt', el).value) $('#eAa', el).click();
       x.n = $('#eN', el).value.trim(); x.tel = $('#eT', el).value.trim(); x.notas = $('#eNo', el).value.trim();
       if($('#eG', el) && $('#eG', el).value !== (x.g || '')){ x.g = $('#eG', el).value; delete x.o; }
       var h = parseFloat(String($('#eH', el).value).replace(',', '.')); x.h = h > 0 ? h : '';
-      if(!x.n){ msg(esc(t('err_ename'))); $('#eN', el).focus(); return; }
-      close(el);
+      var dropped = offs.some(function(o){ return gone[o.id]; });
+      if(!orig && !x.n && !x.tel && !x.notas && !x.h && !x.pos.length && !newOffs.length) return true;   /* opened by mistake */
+      if(!x.n){ msg(esc(t('err_ename'))); $('#eN', el).focus(); return false; }
+      if(orig && !newOffs.length && !dropped && ['n', 'tel', 'notas', 'h', 'g'].every(function(k){ return String(orig[k] == null ? '' : orig[k]) === String(x[k] == null ? '' : x[k]); }) && (orig.pos || []).slice().sort().join() === x.pos.slice().sort().join()) return true;
       var prevE = orig ? copy(orig) : null;
       var changes = [x].concat(newOffs).concat(offs.filter(function(o){ return gone[o.id]; }).map(function(o){ var g = copy(o); g.del = true; return g; }));
       touchMany(changes);
@@ -1361,6 +1371,7 @@ function editEmp(orig){
         offs.forEach(function(o){ if(gone[o.id]) back.push(copy(o)); });
         touchMany(back);
       });
+      return true;
     };
     if(orig){
       $('#eDel', el).onclick = function(){
@@ -1429,7 +1440,8 @@ function editRoles(){
     draw();
     var err = function(k){ $('#rMsg', el).innerHTML = k ? '<div class="msg err">' + esc(t(k)) + '</div>' : ''; };
     var addPos = function(){ var n = $('#rPn', el).value.trim().replace(/\s+/g, ' '); if(!n) return; var ps = poses(); if(ps.some(function(p){ return norm(p.n) === norm(n); })){ $('#rPn', el).value = ''; return; } touchMany([{ id: uid(), k: 'pos', n: n, col: COLORS[ps.length % COLORS.length], o: ps.length }]); $('#rPn', el).value = ''; draw(); };
-    $('#rPa', el).onclick = addPos; $('#rPn', el).onkeydown = function(e){ if(e.key === 'Enter') addPos(); };
+    $('#rPa', el).onclick = addPos;
+    el._save = function(){ if($('#rPn', el).value.trim()) addPos(); return true; }; $('#rPn', el).onkeydown = function(e){ if(e.key === 'Enter') addPos(); };
     $('#rTadd', el).onclick = function(){
       var n = $('#rTn', el).value.trim(), a = $('#rTa', el).value, b = $('#rTb', el).value;
       if(!n || !a || !b || a === b) return err('err_time');
@@ -1459,7 +1471,7 @@ function groupWin(gid){
     '<span class="lbl">' + esc(t('g_hours')) + '</span><div id="gwH" class="hint" style="margin:0 0 8px;line-height:1.6"></div>' +
     '<button class="btn small wide" id="gwHb" type="button">' + esc(t('h_edit')) + '</button>' +
     '<hr><span class="lbl">' + esc(t('v_people')) + '</span><div id="gwP" class="chips"></div>' +
-    '<hr><div class="row2"><button class="btn danger" id="gwDel" type="button">' + esc(t('delete')) + '</button><button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="gwOk" type="button">' + esc(t('save')) + '</button></div>', function(el){
+    '<hr><div class="row2"><button class="btn danger" id="gwDel" type="button">' + esc(t('delete')) + '</button><button class="btn" data-discard type="button">' + esc(t('discard')) + '</button><button class="btn primary" data-close type="button">' + esc(t('done')) + '</button></div>', function(el){
     var draw = function(){
       var cur = rec(gid); if(!cur) return;
       var src = hoursSrc(cur), order = settings().ws === 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0];
@@ -1469,9 +1481,9 @@ function groupWin(gid){
     };
     draw();
     $('#gwHb', el).onclick = function(){ hoursWin(gid, draw); };
-    $('#gwP', el).onclick = function(e){ var b = e.target.closest('[data-gwe]'); if(b){ close(el); editEmp(data[b.dataset.gwe]); } };
-    $('#gwOk', el).onclick = function(){ var n = $('#gwN', el).value.trim().replace(/\s+/g, ' '), cur = rec(gid); close(el); if(cur && n && n !== cur.n){ var c = copy(cur); c.n = n; touchMany([c]); toast(t('saved')); } };
-    $('#gwN', el).onkeydown = function(e){ if(e.key === 'Enter') $('#gwOk', el).click(); };
+    $('#gwP', el).onclick = function(e){ var b = e.target.closest('[data-gwe]'); if(b){ tryClose(el); editEmp(data[b.dataset.gwe]); } };
+    el._save = function(){ var n = $('#gwN', el).value.trim().replace(/\s+/g, ' '), cur = rec(gid); if(cur && n && n !== cur.n){ var c = copy(cur), prev = copy(cur); c.n = n; touchMany([c]); toast(t('saved'), t('undo'), function(){ touchMany([prev]); }); } return true; };
+    $('#gwN', el).onkeydown = function(e){ if(e.key === 'Enter') tryClose(el); };
     $('#gwDel', el).onclick = function(){ var cur = rec(gid); if(!cur) return; var prev = copy(cur), c = copy(cur); c.del = true; close(el); touchMany([c]); toast(t('deleted', cur.n), t('undo'), function(){ var b = copy(prev); delete b.del; touchMany([b]); }); };
   });
 }
@@ -1494,6 +1506,7 @@ function groupsWin(){
     draw();
     var add = function(){ var n = $('#gN', el).value.trim().replace(/\s+/g, ' '); if(!n) return; var gs = grps(); if(!gs.some(function(g){ return norm(g.n) === norm(n); })) touchMany([{ id: uid(), k: 'grp', n: n, o: gs.length * 10 }]); $('#gN', el).value = ''; draw(); $('#gN', el).focus(); };
     $('#gA', el).onclick = add; $('#gN', el).onkeydown = function(e){ if(e.key === 'Enter') add(); };
+    el._save = function(){ if($('#gN', el).value.trim()) add(); return true; };
     el.addEventListener('change', function(e){ var i = e.target.closest('[data-gren]'); if(!i) return; var g = rec(i.dataset.gren), n = i.value.trim(); if(g && n && n !== g.n){ var c = copy(g); c.n = n; touchMany([c]); } });
     el.addEventListener('click', function(e){
       var mv = e.target.closest('[data-gmv]'), rm = e.target.closest('[data-grm]'), hr = e.target.closest('[data-ghr]');
@@ -1646,7 +1659,7 @@ function hoursWin(gid, after){
   modal('<h3>' + esc(g ? t('h_for', g.n) : t('h_title')) + '</h3><p class="hint" style="margin-top:-6px">' + esc(t('h_hint')) + ' ' + esc(t('h_split_hint')) + '</p><ul class="rows" id="hRows" style="margin-top:12px"></ul>' +
     '<button class="btn small wide" id="hCopy" type="button">' + esc(t('h_copy')) + '</button>' +
     '<div class="grid2 wrap" style="margin-top:14px"><div class="field"><label for="hPre">' + esc(t('h_pre')) + '</label><select id="hPre">' + minuteOptions(s.pre) + '</select></div><div class="field"><label for="hPost">' + esc(t('h_post')) + '</label><select id="hPost">' + minuteOptions(s.post) + '</select></div></div>' +
-    '<div id="hMsg"></div><div class="row2">' + ((g ? g.hours : s.hours) ? '<button class="btn danger" id="hClear" type="button">' + esc(t(g ? 'h_inherit' : 'h_clear')) + '</button>' : '') + '<button class="btn" data-close type="button">' + esc(t('cancel')) + '</button><button class="btn primary" id="hOk" type="button">' + esc(t('save')) + '</button></div>', function(el){
+    '<div id="hMsg"></div><div class="row2">' + ((g ? g.hours : s.hours) ? '<button class="btn danger" id="hClear" type="button">' + esc(t(g ? 'h_inherit' : 'h_clear')) + '</button>' : '') + '<button class="btn" data-discard type="button">' + esc(t('discard')) + '</button><button class="btn primary" data-close type="button">' + esc(t('done')) + '</button></div>', function(el){
     var note = function(x){ return !x.o || !x.c ? '' : x.o === x.c ? '24 h' : mins(x.c) < mins(x.o) ? '☾ ' + t('h_next') : hrs(dur({ a: x.o, b: x.c })) + ' ' + t('h'); };
     var draw = function(){
       $('#hRows', el).innerHTML = order.map(function(i){
@@ -1676,8 +1689,10 @@ function hoursWin(gid, after){
     });
     $('#hCopy', el).onclick = function(){ var f = order.filter(function(i){ return cur[i].on; })[0]; if(f == null) return; order.forEach(function(i){ if(cur[i].on) cur[i].iv = copy(cur[f].iv); }); draw(); };
     var minutes = function(v){ return Math.max(0, Math.min(240, parseInt(v, 10) || 0)); };
-    var store1 = function(change){ var cur0 = g ? copy(rec(gid)) : Object.assign({ id: 'set', k: 'set' }, settings()), prev = copy(cur0); close(el); touchMany([Object.assign(cur0, change)]); toast(t('h_saved'), t('undo'), function(){ touchMany([prev]); if(after) after(); }); if(after) after(); };
-    $('#hOk', el).onclick = function(){
+    var store1 = function(change){ var cur0 = g ? copy(rec(gid)) : Object.assign({ id: 'set', k: 'set' }, settings()), prev = copy(cur0); el._save = null; close(el); touchMany([Object.assign(cur0, change)]); toast(t('h_saved'), t('undo'), function(){ touchMany([prev]); if(after) after(); }); if(after) after(); };
+    /* closing saves – but only what changed: a group that only looked at the business hours keeps using them */
+    var initial = null;
+    el._save = function(){
       var hh = {}, err = '';
       order.forEach(function(i){
         var x = cur[i]; if(!x.on) return;
@@ -1688,9 +1703,13 @@ function hoursWin(gid, after){
         for(var j = 1; j < list.length; j++){ var pe = mins(list[j - 1].o) + dur({ a: list[j - 1].o, b: list[j - 1].c }); if(mins(list[j].o) < pe){ err = 'h_overlap'; return; } }
         hh[i] = { o: list[0].o, c: list[0].c }; if(list.length > 1) hh[i].x = list.slice(1).map(function(iv){ return { o: iv.o, c: iv.c }; });
       });
-      if(err){ $('#hMsg', el).innerHTML = '<div class="msg err">' + esc(t(err)) + '</div>'; return; }
-      store1({ hours: hh, pre: minutes($('#hPre', el).value), post: minutes($('#hPost', el).value) });
+      if(err){ $('#hMsg', el).innerHTML = '<div class="msg err">' + esc(t(err)) + '</div>'; return false; }
+      var next = { hours: hh, pre: minutes($('#hPre', el).value), post: minutes($('#hPost', el).value) };
+      if(JSON.stringify(next) === initial) return true;
+      store1(next); return true;
     };
+    /* what the window showed when it opened, in the same shape, to see whether anything changed */
+    initial = (function(){ var hh = {}; order.forEach(function(i){ var x = cur[i]; if(!x.on) return; var l = x.iv.slice().sort(function(a, b){ return mins(a.o) - mins(b.o); }); hh[i] = { o: l[0].o, c: l[0].c }; if(l.length > 1) hh[i].x = l.slice(1).map(function(iv){ return { o: iv.o, c: iv.c }; }); }); return JSON.stringify({ hours: hh, pre: minutes(s.pre), post: minutes(s.post) }); })();
     if($('#hClear', el)) $('#hClear', el).onclick = function(){ store1(g ? { hours: null, pre: null, post: null } : { hours: null }); };
   });
 }
@@ -1712,6 +1731,7 @@ $('#gear').onclick = function(){
     $('#gWs', el).onclick = function(e){ var b = e.target.closest('[data-ws]'); if(!b) return; ws = +b.dataset.ws; $$('#gWs button', el).forEach(function(o){ o.classList.toggle('on', o === b); }); };
     $('.lang', el).addEventListener('click', function(e){ if(e.target.closest('[data-lang]')){ setTimeout(function(){ keep(); close(el); $('#gear').click(); }); } });
     var go = function(fn){ return function(){ keep(); close(el); fn(); }; };
+    el._save = function(){ keep(); return true; };
     $('#gHours', el).onclick = go(function(){ hoursWin(); });
     $('#gRoles', el).onclick = go(editRoles);
     $('#gGrps', el).onclick = go(groupsWin);
@@ -1819,13 +1839,22 @@ $('#stGear').onclick = function(){
 };
 
 /* ---------- small windows ---------- */
+/* A window that edits something saves when it is closed – by tapping next to it, Escape or its Done button –
+   because people tap away out of habit and expect it to be saved. The window sets el._save; returning false
+   keeps it open (something is missing, the message says what). [data-discard] closes without saving. */
 function modal(html, init){
   var ov = document.createElement('div'); ov.className = 'ov'; ov.innerHTML = '<div class="sheet" role="dialog" aria-modal="true">' + html + '</div>';
-  ov.addEventListener('click', function(e){ if(e.target === ov || e.target.closest('[data-close]')) close(ov); });
+  var down = null;
+  ov.addEventListener('pointerdown', function(e){ down = e.target; });   /* a text selection that ends outside is not a tap outside */
+  ov.addEventListener('click', function(e){
+    if(e.target.closest('[data-discard]')){ close(ov); return; }
+    if((e.target === ov && down === ov) || e.target.closest('[data-close]')) tryClose(ov);
+  });
   $('#layer').appendChild(ov); if(init) init(ov); return ov;
 }
+function tryClose(ov){ if(!ov || !ov.parentNode) return; if(ov._save){ var a = document.activeElement; if(a && a.blur && ov.contains(a)) a.blur(); if(ov._save() === false) return; } close(ov); }
 function close(el){ if(el && el.parentNode) el.parentNode.removeChild(el); }
-document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ var o = $('#layer .ov:last-child'); if(o) close(o); } });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ var o = $('#layer .ov:last-child'); if(o) tryClose(o); } });
 var toastT = 0;
 function toast(text, act, fn){
   var old = $('.toast'); if(old) close(old);
