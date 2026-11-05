@@ -147,8 +147,12 @@ main{max-width:980px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-i
 .track{position:relative;height:34px;border-radius:8px;background:var(--bg);cursor:pointer;isolation:isolate;overflow:hidden}
 .track::after{content:"";position:absolute;inset:0;background-image:linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:var(--gs,25%) 100%;pointer-events:none;z-index:1}
 .track .zone{position:absolute;top:0;bottom:0;pointer-events:none;z-index:0}
-.zone.pp,.hband .pp,.hleg .pp{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn) 18%,var(--card)) 0 5px,var(--card) 5px 10px)}
-.zone.op,.hband .op,.hleg .op{background:color-mix(in srgb,var(--in) 11%,var(--card))}
+/* opening hours: stronger in light mode, where pale green on white disappears; edges mark opening and closing */
+:root{--zop:color-mix(in srgb,var(--in) 26%,var(--card));--zedge:color-mix(in srgb,var(--in) 70%,var(--card));--zpp:color-mix(in srgb,var(--warn) 34%,var(--card))}
+@media (prefers-color-scheme: dark){:root{--zop:color-mix(in srgb,var(--in) 14%,var(--card));--zedge:color-mix(in srgb,var(--in) 45%,var(--card));--zpp:color-mix(in srgb,var(--warn) 22%,var(--card))}}
+.zone.pp,.hband .pp,.hleg .pp{background:repeating-linear-gradient(135deg,var(--zpp) 0 5px,var(--card) 5px 10px)}
+.zone.op,.hband .op,.hleg .op{background:var(--zop)}
+.zone.op{box-shadow:inset 2px 0 0 var(--zedge),inset -2px 0 0 var(--zedge)}
 .hband{position:relative;height:10px;border-radius:5px;background:var(--bg);overflow:hidden} .hband i{position:absolute;top:0;bottom:0}
 .hleg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0 0 84px} .hleg i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
 .track.off{background:repeating-linear-gradient(135deg,var(--bg),var(--bg) 6px,var(--line) 6px,var(--line) 8px)}
