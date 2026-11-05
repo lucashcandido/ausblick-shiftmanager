@@ -41,6 +41,7 @@ Einfacher Schichtplaner und **Basis für die Schichtplanung aller Ausblick-Kunde
   - Drucken.
 - **Export:** Schichten und Stunden pro Person (inkl. Soll/Saldo) als CSV für Excel.
 - **Rubro-Modelle:** Cochera, Peluquería, Gastronomía, Comercio, General. Sie legen Rollen und typische Schichten an; die Vorlagen bekommen dabei die erste Rolle des Modells.
+- **Kein Speichern-Knopf mehr:** Fenster speichern beim Schließen – daneben tippen, Escape oder „Fertig“. Wer nichts übernehmen will, tippt „Verwerfen“. Fehlt etwas (z. B. Name oder zweite Uhrzeit), bleibt das Fenster offen und sagt, was fehlt; ein neues Fenster ohne Eingaben schließt einfach. Jede Änderung zeigt „Gespeichert“ mit Rückgängig.
 - ES / EN / DE, Woche ab Montag oder Sonntag, offline-fähig, „Deshacer“ überall.
 
 ## „Mis turnos“ für Mitarbeitende
